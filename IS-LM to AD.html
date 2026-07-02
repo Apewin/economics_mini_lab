@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Macroeconomic Equilibrium: IS-LM & AD | Teaching Suite</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-color: #f4f6f8;
+            --panel-bg: #ffffff;
+            --primary-dark: #2c3e50;
+            --is-color: #2980b9;
+            --lm-color: #2980b9;
+            --md-color: #8e44ad;
+            --ms-color: #16a085;
+            --price-color: #f39c12;
+            --base-light: #d1d8e0;
+            --eq-color: #e74c3c;
+            --border-color: #dcdde1;
+            --text-muted: #7f8c8d;
+            --ad-color: #e67e22;
+        }
+
+        body {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: var(--bg-color);
+        }
+
+        .view-container {
+            display: none;
+            flex: 1;
+            height: 100%;
+        }
+        .view-container.active-view {
+            display: flex;
+        }
+
+        .left-panel {
+            flex: 1;
+            background: var(--panel-bg);
+            border-right: 2px solid var(--border-color);
+            display: flex;
+            overflow: auto;
+            padding: 15px;
+        }
+
+        .right-panel {
+            width: 480px;
+            background: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            padding: 18px 22px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        /* ========= Part 1 (完美，不做任何改动) ========= */
+        .is-layout {
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            gap: 12px;
+        }
+        .is-chart-wrapper {
+            width: 100%;
+        }
+
+        /* ========= Part 2 (完美，不做任何改动) ========= */
+        .lm-layout {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .lm-chart-wrapper {
+           flex: 1;
+		   margin: 0 - 10px;
+        }
+
+        /* ========= Part 3 布局：上下两图，参考 Part1 ========= */
+        .ad-layout {
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            gap: 10px;
+        }
+        .ad-chart-wrapper {
+            width: 100%;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* 右侧面板样式 */
+        .right-nav {
+            display: flex;
+            background: #e1e6ea;
+            border-radius: 8px;
+            padding: 6px;
+            margin-bottom: 20px;
+            gap: 6px;
+        }
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            font-weight: bold;
+            padding: 8px 0;
+            cursor: pointer;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+        .tab-btn:hover { color: var(--primary-dark); }
+        .tab-btn.active {
+            background: var(--panel-bg);
+            color: var(--primary-dark);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+
+        h1 { font-size: 1.8rem; margin: 0 0 12px 0; }
+        .info-box {
+            background: var(--panel-bg);
+            border-left: 4px solid var(--primary-dark);
+            padding: 10px 14px;
+            margin-bottom: 14px;
+            border-radius: 4px;
+        }
+        .info-box p { font-size: 0.95rem; color: #555; line-height: 1.4; }
+        .info-box h3 { font-size: 1.1rem; margin: 0 0 4px 0; }
+        .controls-wrapper {
+            background: var(--panel-bg);
+            padding: 18px;
+            border-radius: 8px;
+            margin-top: 10px;
+            flex: 1;
+        }
+        .control-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        .reset-btn {
+            background: #ecf0f1;
+            border: none;
+            border-radius: 24px;
+            padding: 4px 12px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-weight: bold;
+            float: right;
+            margin-bottom: 10px;
+        }
+        .reset-btn:hover { background: #bdc3c7; }
+        input[type="range"] { width: 100%; cursor: pointer; height: 5px; }
+        .val-display {
+            font-weight: bold;
+            font-size: 1rem;
+            background: #ecf0f1;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+        .control-group { margin-bottom: 16px; }
+        .control-group:last-child { margin-bottom: 0; }
+        .eq-stats {
+            background: #ecf0f1;
+            border-radius: 10px;
+            padding: 8px 12px;
+            margin-top: 14px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        .eq-stats span { font-weight: 800; color: #e74c3c; }
+        .copyright {
+            margin-top: auto;
+            padding-top: 16px;
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        .clearfix::after { content: ""; clear: both; display: table; }
+    </style>
+</head>
+<body>
+
+<!-- VIEW 1: IS CURVE (完美，不做任何改动) -->
+<div id="is-view" class="view-container active-view">
+    <div class="left-panel is-layout">
+        <div class="is-chart-wrapper"><canvas id="kcChart"></canvas></div>
+        <div class="is-chart-wrapper"><canvas id="isChart"></canvas></div>
+    </div>
+    <div class="right-panel">
+        <div class="right-nav">
+            <button class="tab-btn active" onclick="switchTab('is')">IS Curve</button>
+            <button class="tab-btn" onclick="switchTab('lm')">LM Curve</button>
+            <button class="tab-btn" onclick="switchTab('ad')">IS-LM & AD</button>
+        </div>
+        <h1>Deriving the IS Curve</h1>
+        <div class="info-box"><h3>Keynesian Cross</h3><p>Adjusting fiscal policy shifts the planned expenditure line.</p></div>
+        <div class="info-box" style="border-left-color:#2980b9;"><h3>IS Curve Space</h3><p>Changing r moves the point along the curve; changing G shifts the entire curve.</p></div>
+        <div class="controls-wrapper">
+            <div class="clearfix"><button class="reset-btn" id="resetIS">⟳ Reset</button></div>
+            <div class="control-group"><div class="control-header"><span style="color:#2980b9;">Fiscal Policy (G)</span><span class="val-display" id="valG" style="color:#2980b9;">500</span></div><input type="range" id="inpG" min="0" max="1500" step="100" value="500" style="accent-color:#2980b9;"></div>
+            <div class="control-group"><div class="control-header"><span style="color:#e74c3c;">Interest Rate (r)</span><span class="val-display" id="valR-IS" style="color:#e74c3c;">10.0%</span></div><input type="range" id="inpR-IS" min="2" max="18" step="0.5" value="10" style="accent-color:#e74c3c;"></div>
+        </div>
+        <div class="copyright">© 2026 Instructional Suite</div>
+    </div>
+</div>
+
+<!-- VIEW 2: LM CURVE (完美，不做任何改动) -->
+<div id="lm-view" class="view-container">
+    <div class="left-panel lm-layout">
+        <div class="lm-chart-wrapper"><canvas id="mmChart"></canvas></div>
+        <div class="lm-chart-wrapper"><canvas id="lmChart"></canvas></div>
+    </div>
+    <div class="right-panel">
+        <div class="right-nav">
+            <button class="tab-btn" onclick="switchTab('is')">IS Curve</button>
+            <button class="tab-btn active" onclick="switchTab('lm')">LM Curve</button>
+            <button class="tab-btn" onclick="switchTab('ad')">IS-LM & AD</button>
+        </div>
+        <h1>Deriving the LM Curve</h1>
+        <div class="info-box" style="border-left-color:#8e44ad;"><h3>Money Market</h3><p>Real Money Supply M^S/P. Price level change affects real balances.</p></div>
+        <div class="info-box" style="border-left-color:#2980b9;"><h3>LM Curve Space</h3><p>Changing Y moves along LM; changing M^S or P shifts LM.</p></div>
+        <div class="controls-wrapper">
+            <div class="clearfix"><button class="reset-btn" id="resetLM">⟳ Reset</button></div>
+            <div class="control-group"><div class="control-header"><span style="color:#8e44ad;">Income (Y, bn $)</span><span class="val-display" id="valY" style="color:#8e44ad;">8000</span></div><input type="range" id="inpY" min="4000" max="12000" step="500" value="8000" style="accent-color:#8e44ad;"></div>
+            <div class="control-group"><div class="control-header"><span style="color:#16a085;">Money Supply (M^S)</span><span class="val-display" id="valMs" style="color:#16a085;">2000</span></div><input type="range" id="inpMs" min="1000" max="3500" step="100" value="2000" style="accent-color:#16a085;"></div>
+            <div class="control-group"><div class="control-header"><span style="color:#f39c12;">Price Level (P)</span><span class="val-display" id="valP" style="color:#f39c12;">1.0</span></div><input type="range" id="inpP" min="0.5" max="2.0" step="0.1" value="1.0" style="accent-color:#f39c12;"></div>
+        </div>
+        <div class="copyright">© 2026 Instructional Suite</div>
+    </div>
+</div>
+
+<!-- VIEW 3: INTEGRATED (IS-LM + AD 两图上下布局) -->
+<div id="ad-view" class="view-container">
+    <div class="left-panel ad-layout">
+        <div class="ad-chart-wrapper"><canvas id="islmIntegrated"></canvas></div>
+        <div class="ad-chart-wrapper"><canvas id="adIntegrated"></canvas></div>
+    </div>
+    <div class="right-panel">
+        <div class="right-nav">
+            <button class="tab-btn" onclick="switchTab('is')">IS Curve</button>
+            <button class="tab-btn" onclick="switchTab('lm')">LM Curve</button>
+            <button class="tab-btn active" onclick="switchTab('ad')">IS-LM & AD</button>
+        </div>
+        <h1>IS-LM → AD: Integrated View</h1>
+        <div class="info-box" style="border-left-color:#e67e22;"><h3>Aggregate Demand</h3><p>Fiscal/Monetary policy shifts AD; Price level moves along AD.</p></div>
+        <div class="controls-wrapper">
+            <div class="clearfix"><button class="reset-btn" id="resetAD">⟳ Reset</button></div>
+            <div class="control-group"><div class="control-header"><span style="color:#2980b9;">Fiscal (G)</span><span class="val-display" id="valG_AD" style="color:#2980b9;">500</span></div><input type="range" id="inpG_AD" min="0" max="1500" step="100" value="500" style="accent-color:#2980b9;"></div>
+            <div class="control-group"><div class="control-header"><span style="color:#16a085;">Monetary (M^S)</span><span class="val-display" id="valMs_AD" style="color:#16a085;">2000</span></div><input type="range" id="inpMs_AD" min="1000" max="3500" step="100" value="2000" style="accent-color:#16a085;"></div>
+            <div class="control-group"><div class="control-header"><span style="color:#f39c12;">Price Level (P)</span><span class="val-display" id="valP_AD" style="color:#f39c12;">1.0</span></div><input type="range" id="inpP_AD" min="0.5" max="2.0" step="0.1" value="1.0" style="accent-color:#f39c12;"></div>
+            <div class="eq-stats">Y* = <span id="eqY">--</span> &nbsp;| r* = <span id="eqR">--</span>%</div>
+            <div class="eq-stats">AD: (P=<span id="curP_ad">--</span>, Y=<span id="curY_ad">--</span>)</div>
+        </div>
+        <div class="copyright">Dashed: baseline (G=500, Ms=2000, P=1.0) | Solid: current | Dotted lines link equilibrium</div>
+    </div>
+</div>
+
+<script>
+    // ========== CONSTANTS ==========
+    const MPC = 0.75;
+    const k_money = 0.5;
+    const h_money = 200;
+    const X_IS_MIN = 4000, X_IS_MAX = 15000;
+    const Y_MIN = 4000, Y_MAX = 12000;
+    const M_MAX = 5000;
+    const G_BASE = 500;
+    const Ms_BASE = 2000;
+    const P_BASE = 1.0;
+
+    let kcChart, isChart, mmChart, lmChart;
+    let islmIntegrated, adIntegrated;
+
+    // 插件：固定 Y 轴宽度（IS 横坐标对齐）
+    const fixedYWidthPlugin = {
+        id: 'fixedYWidth',
+        afterFit: (scale) => {
+            if (scale.id === 'y') scale.width = 85;
+        }
+    };
+    Chart.register(fixedYWidthPlugin);
+
+    const labelPlugin = {
+        id: 'marketLabels',
+        afterDraw: (chart) => {
+            if (!chart.config.data?.labelsConfig) return;
+            const ctx = chart.ctx;
+            const scX = chart.scales.x, scY = chart.scales.y;
+            if (!scX || !scY) return;
+            ctx.save();
+            ctx.font = 'bold 13px "Segoe UI"';
+            chart.config.data.labelsConfig.forEach(lbl => {
+                ctx.fillStyle = lbl.color;
+                let px = scX.getPixelForValue(lbl.x) + (lbl.offsetX || 0);
+                let py = scY.getPixelForValue(lbl.y) + (lbl.offsetY || 0);
+                ctx.fillText(lbl.text, px, py);
+            });
+            ctx.restore();
+        }
+    };
+    Chart.register(labelPlugin);
+
+    const xAxisKFormat = {
+        ticks: { callback: (val) => (val / 1000).toFixed(0) + 'k', font: { size: 11 } }
+    };
+    const commonOpts = {
+        responsive: false,
+        maintainAspectRatio: false,
+        animation: false,
+        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+        layout: { padding: { left: 5, right: 8, top: 8, bottom: 5 } }
+    };
+
+    // ========== 尺寸控制函数 ==========
+    function resizeISCharts() {
+        const wrapper1 = document.querySelector('#is-view .is-chart-wrapper:first-child');
+        const wrapper2 = document.querySelector('#is-view .is-chart-wrapper:last-child');
+        if (!wrapper1 || !wrapper2) return;
+        let width = wrapper1.clientWidth;
+        if (width === 0) width = 480;
+        width = Math.min(width, 480);
+        const height = width * 3 / 4;
+        const canvas1 = document.getElementById('kcChart');
+        const canvas2 = document.getElementById('isChart');
+        canvas1.width = width; canvas1.height = height;
+        canvas2.width = width; canvas2.height = height;
+        canvas1.style.width = `${width}px`; canvas1.style.height = `${height}px`;
+        canvas2.style.width = `${width}px`; canvas2.style.height = `${height}px`;
+        if (kcChart) kcChart.resize();
+        if (isChart) isChart.resize();
+        updateIS();
+    }
+
+function resizeLMCharts() {
+    const containers = document.querySelectorAll('#lm-view .lm-chart-wrapper');
+    if (containers.length !== 2) return;
+    let w1 = containers[0].clientWidth;
+    let w2 = containers[1].clientWidth;
+    if (w1 === 0 || w2 === 0) return;
+    // 计算目标大小：取较小容器宽度的 105%，最大 450px
+    let maxSize = Math.min(w1, w2, 450);
+    let size = maxSize * 1.05;   // 扩大为容器的 105%
+    const canvas1 = document.getElementById('mmChart');
+    const canvas2 = document.getElementById('lmChart');
+    canvas1.width = size; canvas1.height = size;
+    canvas2.width = size; canvas2.height = size;
+    canvas1.style.width = `${size}px`; canvas1.style.height = `${size}px`;
+    canvas2.style.width = `${size}px`; canvas2.style.height = `${size}px`;
+    // 确保画布在容器内居中
+    canvas1.style.margin = "0 auto";
+    canvas2.style.margin = "0 auto";
+    if (mmChart) mmChart.resize();
+    if (lmChart) lmChart.resize();
+    updateLM();
+}
+
+    function resizeAdCharts() {
+        // 上下两图：宽度限制 550px，4:3 比例
+        const wrapper = document.querySelector('#ad-view .ad-chart-wrapper');
+        if (!wrapper) return;
+        let targetWidth = wrapper.clientWidth;
+        if (targetWidth === 0) targetWidth = 500;
+        targetWidth = Math.min(targetWidth, 500);
+        const targetHeight = targetWidth * 3 / 4;
+        
+        const islmCanvas = document.getElementById('islmIntegrated');
+        const adCanvas = document.getElementById('adIntegrated');
+        islmCanvas.width = targetWidth; islmCanvas.height = targetHeight;
+        adCanvas.width = targetWidth; adCanvas.height = targetHeight;
+        islmCanvas.style.width = `${targetWidth}px`; islmCanvas.style.height = `${targetHeight}px`;
+        adCanvas.style.width = `${targetWidth}px`; adCanvas.style.height = `${targetHeight}px`;
+        
+        if (islmIntegrated) islmIntegrated.resize();
+        if (adIntegrated) adIntegrated.resize();
+        
+        updateIntegrated();
+    }
+
+    function resizeAllCharts() {
+        resizeISCharts();
+        resizeLMCharts();
+        resizeAdCharts();
+    }
+
+    // ========== INITIALIZE CHARTS ==========
+    function initAllCharts() {
+        // IS view
+        kcChart = new Chart(document.getElementById('kcChart'), {
+            type: 'scatter', data: { datasets: [] },
+            options: { ...commonOpts, scales: { x: { min: X_IS_MIN, max: X_IS_MAX, ...xAxisKFormat, title: { display: true, text: 'Output Y (bn $)', font: { size: 15, weight: 'bold' } } }, y: { min: X_IS_MIN, max: X_IS_MAX, ...xAxisKFormat, title: { display: true, text: 'Planned Expenditure PE (bn $)', font: { size: 15, weight: 'bold' } } } } }
+        });
+        isChart = new Chart(document.getElementById('isChart'), {
+            type: 'scatter', data: { datasets: [], labelsConfig: [] },
+            options: { ...commonOpts, scales: { x: { min: X_IS_MIN, max: X_IS_MAX, ...xAxisKFormat, title: { display: true, text: 'Output Y (bn $)', font: { size: 15, weight: 'bold' } } }, y: { min: 0, max: 20, title: { display: true, text: 'Interest Rate r (%)', font: { size: 15, weight: 'bold' } }, ticks: { stepSize: 5, font: { size: 11 } } } } }
+        });
+
+        // LM view
+        mmChart = new Chart(document.getElementById('mmChart'), {
+            type: 'scatter', data: { datasets: [], labelsConfig: [] },
+            options: { ...commonOpts, scales: { x: { min: 0, max: M_MAX, ticks: { callback: (v) => (v/1000).toFixed(0) + 'k', font: { size: 12 } }, title: { display: true, text: 'Real Money Balances M/P (bn $)', font: { size: 15, weight: 'bold' } } }, y: { min: 0, max: 25, title: { display: true, text: 'Interest Rate r (%)', font: { size: 15, weight: 'bold' } }, ticks: { font: { size: 11 } } } } }
+        });
+        lmChart = new Chart(document.getElementById('lmChart'), {
+            type: 'scatter', data: { datasets: [], labelsConfig: [] },
+            options: { ...commonOpts, scales: { x: { min: Y_MIN, max: Y_MAX, ...xAxisKFormat, title: { display: true, text: 'Output Y (bn $)', font: { size: 15, weight: 'bold' } } }, y: { min: 0, max: 25, title: { display: true, text: 'Interest Rate r (%)', font: { size: 15, weight: 'bold' } }, ticks: { display: false } } } }
+        });
+
+        // Integrated charts (IS-LM 和 AD)
+        const islmX = { min: 4000, max: 15500, ...xAxisKFormat, title: { display: false } };
+        const adX = { min: 4000, max: 15500, ...xAxisKFormat, title: { display: true, text: 'Y (bn $)', font: { size: 14, weight: 'bold' } } };
+        const islmY = { min: 0, max: 22, title: { display: true, text: 'r (%)', font: { size: 14, weight: 'bold' } }, ticks: { stepSize: 5, font: { size: 11 } } };
+        const adY = { min: 0.4, max: 2.4, title: { display: true, text: 'Price Level P', font: { size: 14, weight: 'bold' } }, ticks: { callback: (v) => v.toFixed(1), font: { size: 11 } } };
+
+        islmIntegrated = new Chart(document.getElementById('islmIntegrated'), {
+            type: 'scatter', data: { datasets: [], labelsConfig: [] },
+            options: { ...commonOpts, scales: { x: islmX, y: islmY } }
+        });
+        adIntegrated = new Chart(document.getElementById('adIntegrated'), {
+            type: 'scatter', data: { datasets: [] },
+            options: { ...commonOpts, scales: { x: adX, y: adY } }
+        });
+
+        resizeAllCharts();
+        window.addEventListener('resize', () => resizeAllCharts());
+    }
+
+    // ========== UPDATE FUNCTIONS ==========
+    function updateIS() {
+        const G = parseFloat(document.getElementById('inpG').value);
+        const r = parseFloat(document.getElementById('inpR-IS').value);
+        document.getElementById('valG').innerText = G;
+        document.getElementById('valR-IS').innerText = r.toFixed(1) + '%';
+        const current_Y = 4 * (3000 - 100 * r + G);
+        const peIntercept = 3000 - 100 * r + G;
+        const peInterceptBase = 3000 - 100 * 10 + 500;
+
+        let line45 = [{x: X_IS_MIN, y: X_IS_MIN}, {x: X_IS_MAX, y: X_IS_MAX}];
+        let peBase = [], peCurr = [];
+        for(let x = X_IS_MIN; x <= X_IS_MAX; x += 2000) {
+            peBase.push({x, y: peInterceptBase + MPC * x});
+            peCurr.push({x, y: peIntercept + MPC * x});
+        }
+        let kcProj = [{x: current_Y, y: current_Y}, {x: current_Y, y: X_IS_MIN}];
+        kcChart.data.datasets = [
+            { borderColor: '#bdc3c7', borderWidth: 2, pointRadius: 0, showLine: true, data: line45 },
+            { borderColor: '#aecbfa', borderWidth: 2, borderDash: [6,6], pointRadius: 0, showLine: true, data: peBase },
+            { borderColor: '#2980b9', borderWidth: 3, pointRadius: 0, showLine: true, data: peCurr },
+            { borderColor: '#95a5a6', borderWidth: 2, borderDash: [6,4], pointRadius: 0, showLine: true, data: kcProj },
+            { backgroundColor: '#e74c3c', pointRadius: 6, pointBorderWidth: 2, pointBorderColor: '#fff', data: [{x: current_Y, y: current_Y}] }
+        ];
+        kcChart.update();
+
+        let isBase = [], isCurr = [];
+        for(let x = X_IS_MIN; x <= X_IS_MAX; x += 1000) {
+            let r_base = (12000 + 4*500 - x)/400;
+            let r_curr = (12000 + 4*G - x)/400;
+            if(r_base>=0 && r_base<=20) isBase.push({x, y: r_base});
+            if(r_curr>=0 && r_curr<=20) isCurr.push({x, y: r_curr});
+        }
+        let vertProj = [{x: current_Y, y: 20}, {x: current_Y, y: r}];
+        let horProj = [{x: X_IS_MIN, y: r}, {x: current_Y, y: r}];
+        let isLabel = { text: 'IS', x: 11000, y: (12000+4*G-11000)/400, color: '#2980b9', offsetX: 10, offsetY: -8 };
+        isChart.data.datasets = [
+            { borderColor: '#aecbfa', borderWidth: 2, borderDash: [6,6], pointRadius: 0, showLine: true, data: isBase },
+            { borderColor: '#2980b9', borderWidth: 3, pointRadius: 0, showLine: true, data: isCurr },
+            { borderColor: '#7f8c8d', borderWidth: 2, borderDash: [6,4], pointRadius: 0, showLine: true, data: vertProj },
+            { borderColor: '#e67e22', borderWidth: 2, borderDash: [5,6], pointRadius: 0, showLine: true, data: horProj },
+            { backgroundColor: '#e74c3c', pointRadius: 6, pointBorderWidth: 2, pointBorderColor: '#fff', data: [{x: current_Y, y: r}] }
+        ];
+        isChart.data.labelsConfig = [isLabel];
+        isChart.update();
+    }
+
+    function updateLM() {
+        const Y = parseFloat(document.getElementById('inpY').value);
+        const Ms = parseFloat(document.getElementById('inpMs').value);
+        const P = parseFloat(document.getElementById('inpP').value);
+        document.getElementById('valY').innerText = Y;
+        document.getElementById('valMs').innerText = Ms;
+        document.getElementById('valP').innerText = P.toFixed(1);
+        const realMsBase = Ms_BASE / P_BASE;
+        const realMs = Ms / P;
+        const r_eq = (k_money * Y - realMs) / h_money;
+
+        let msBase = [{x: realMsBase, y: 0}, {x: realMsBase, y: 25}];
+        let msCurr = [{x: realMs, y: 0}, {x: realMs, y: 25}];
+        let mdBase = [], mdCurr = [];
+        for(let m=0; m<=M_MAX; m+=800) {
+            mdBase.push({x:m, y: (k_money*8000 - m)/h_money});
+            mdCurr.push({x:m, y: (k_money*Y - m)/h_money});
+        }
+        let mmProj = [{x: realMs, y: r_eq}, {x: M_MAX, y: r_eq}];
+        mmChart.data.datasets = [
+            { borderColor: '#95a5a6', borderWidth: 2, borderDash: [6,6], pointRadius: 0, showLine: true, data: msBase },
+            { borderColor: '#95a5a6', borderWidth: 2, borderDash: [6,6], pointRadius: 0, showLine: true, data: mdBase },
+            { borderColor: '#16a085', borderWidth: 3, pointRadius: 0, showLine: true, data: msCurr },
+            { borderColor: '#8e44ad', borderWidth: 3, pointRadius: 0, showLine: true, data: mdCurr },
+            { borderColor: '#7f8c8d', borderWidth: 2, borderDash: [6,4], pointRadius: 0, showLine: true, data: mmProj },
+            { backgroundColor: '#e74c3c', pointRadius: 6, data: [{x: realMs, y: r_eq}] }
+        ];
+        mmChart.data.labelsConfig = [
+            { text: 'Mˢ/P', x: realMs, y: 22, color: '#16a085', offsetX: 6 },
+            { text: 'L(r)', x: 3800, y: (k_money*Y-3800)/h_money, color: '#8e44ad', offsetX: 6, offsetY: -6 }
+        ];
+        mmChart.update();
+
+        let lmBase = [], lmCurr = [];
+        for(let y=Y_MIN; y<=Y_MAX; y+=800) {
+            let r_b = (k_money*y - realMsBase)/h_money;
+            let r_c = (k_money*y - realMs)/h_money;
+            if(r_b>=0 && r_b<=25) lmBase.push({x:y, y:r_b});
+            if(r_c>=0 && r_c<=25) lmCurr.push({x:y, y:r_c});
+        }
+        let lmProj = [{x: Y_MIN, y: r_eq}, {x: Y, y: r_eq}, {x: Y, y: 0}];
+        lmChart.data.datasets = [
+            { borderColor: '#95a5a6', borderWidth: 2, borderDash: [6,6], pointRadius: 0, showLine: true, data: lmBase },
+            { borderColor: '#2980b9', borderWidth: 3, pointRadius: 0, showLine: true, data: lmCurr },
+            { borderColor: '#7f8c8d', borderWidth: 2, borderDash: [6,4], pointRadius: 0, showLine: true, data: lmProj },
+            { backgroundColor: '#e74c3c', pointRadius: 6, data: [{x: Y, y: r_eq}] }
+        ];
+        lmChart.data.labelsConfig = [{ text: 'LM', x: 10800, y: (k_money*10800 - realMs)/h_money, color: '#2980b9', offsetX: 10, offsetY: -6 }];
+        lmChart.update();
+    }
+
+    function computeEq(G, Ms, P) {
+        let Y = 6000 + 2*G + Ms/P;
+        let r = (12000 + 4*G - Y)/400;
+        return { Y: Math.min(15500, Math.max(4000, Y)), r: Math.min(22, Math.max(0, r)) };
+    }
+
+    function updateIntegrated() {
+        const G = parseFloat(document.getElementById('inpG_AD').value);
+        const Ms = parseFloat(document.getElementById('inpMs_AD').value);
+        const P = parseFloat(document.getElementById('inpP_AD').value);
+        document.getElementById('valG_AD').innerText = G;
+        document.getElementById('valMs_AD').innerText = Ms;
+        document.getElementById('valP_AD').innerText = P.toFixed(2);
+        const eq = computeEq(G, Ms, P);
+        const baseEq = computeEq(G_BASE, Ms_BASE, P_BASE);
+        document.getElementById('eqY').innerText = Math.round(eq.Y);
+        document.getElementById('eqR').innerText = eq.r.toFixed(2);
+        document.getElementById('curP_ad').innerText = P.toFixed(2);
+        document.getElementById('curY_ad').innerText = Math.round(eq.Y);
+
+        const realMs = Ms / P;
+        const realMsBase = Ms_BASE / P_BASE;
+
+        // IS-LM 图 (已移除横向虚线)
+        let isBase=[], lmBase=[], isCurr=[], lmCurr=[];
+        for(let y=4000; y<=15500; y+=500) {
+            let r_is_base = (12000+4*G_BASE - y)/400;
+            let r_lm_base = (k_money*y - realMsBase)/h_money;
+            let r_is_curr = (12000+4*G - y)/400;
+            let r_lm_curr = (k_money*y - realMs)/h_money;
+            if(r_is_base>=0 && r_is_base<=22) isBase.push({x:y, y:r_is_base});
+            if(r_lm_base>=0 && r_lm_base<=22) lmBase.push({x:y, y:r_lm_base});
+            if(r_is_curr>=0 && r_is_curr<=22) isCurr.push({x:y, y:r_is_curr});
+            if(r_lm_curr>=0 && r_lm_curr<=22) lmCurr.push({x:y, y:r_lm_curr});
+        }
+        let vertProj = [{x: eq.Y, y: eq.r}, {x: eq.Y, y: 0}];
+        // 横向虚线已移除，不再添加到 datasets 中
+        islmIntegrated.data.datasets = [
+            { borderColor: '#aecbfa', borderWidth: 2, borderDash: [6,6], pointRadius: 0, showLine: true, data: isBase },
+            { borderColor: '#aecbfa', borderWidth: 2, borderDash: [6,6], pointRadius: 0, showLine: true, data: lmBase },
+            { borderColor: '#2980b9', borderWidth: 3, pointRadius: 0, showLine: true, data: isCurr },
+            { borderColor: '#16a085', borderWidth: 3, pointRadius: 0, showLine: true, data: lmCurr },
+            { borderColor: '#7f8c8d', borderWidth: 2, borderDash: [5,5], pointRadius: 0, showLine: true, data: vertProj },
+            { backgroundColor: '#e74c3c', pointRadius: 7, data: [{x: eq.Y, y: eq.r}] }
+        ];
+        islmIntegrated.data.labelsConfig = [
+            { text: 'IS', x: 11000, y: (12000+4*G-11000)/400, color: '#2980b9', offsetX: 8, offsetY: -6 },
+            { text: 'LM', x: 11000, y: (k_money*11000 - realMs)/h_money, color: '#16a085', offsetX: 8, offsetY: 6 }
+        ];
+        islmIntegrated.update();
+
+            // AD 曲线
+    let adCurve = [], adBaseCurve = [];
+    for(let p=0.5; p<=2.4; p+=0.05) {
+        let y_ad = 6000 + 2*G + Ms/p;
+        let y_base = 6000 + 2*G_BASE + Ms_BASE/p;
+        if(y_ad>=4000 && y_ad<=16000) adCurve.push({x: y_ad, y: p});
+        if(y_base>=4000 && y_base<=16000) adBaseCurve.push({x: y_base, y: p});
+    }
+	let adVertProj = [{x: eq.Y, y: 2.4}, {x: eq.Y, y: 0.4}];
+    let horProjAD = [{x: eq.Y, y: P}, {x: 4000, y: P}];   // 新增
+    adIntegrated.data.datasets = [
+        { borderColor: '#f0b27a', borderWidth: 2, borderDash: [6,6], pointRadius: 0, showLine: true, data: adBaseCurve },
+        { borderColor: '#e67e22', borderWidth: 3, pointRadius: 0, showLine: true, data: adCurve },
+        { borderColor: '#95a5a6', borderWidth: 2, borderDash: [6,4], pointRadius: 0, showLine: true, data: adVertProj },
+        { borderColor: '#e67e22', borderWidth: 2, borderDash: [6,4], pointRadius: 0, showLine: true, data: horProjAD },   // 新增
+        { backgroundColor: '#e74c3c', pointRadius: 6, data: [{x: eq.Y, y: P}] }
+    ];
+	if (adIntegrated) adIntegrated.update();
+    }
+
+    // ========== RESET ==========
+    function resetIS() { document.getElementById('inpG').value='500'; document.getElementById('inpR-IS').value='10'; updateIS(); }
+    function resetLM() { document.getElementById('inpY').value='8000'; document.getElementById('inpMs').value='2000'; document.getElementById('inpP').value='1.0'; updateLM(); }
+    function resetAD() { document.getElementById('inpG_AD').value='500'; document.getElementById('inpMs_AD').value='2000'; document.getElementById('inpP_AD').value='1.0'; updateIntegrated(); }
+
+    // ========== TAB SWITCHING ==========
+    function switchTab(tabId) {
+        document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active-view'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        if(tabId === 'is') {
+            document.getElementById('is-view').classList.add('active-view');
+            document.querySelectorAll('.tab-btn').forEach(btn => { if(btn.innerText === 'IS Curve') btn.classList.add('active'); });
+        } else if(tabId === 'lm') {
+            document.getElementById('lm-view').classList.add('active-view');
+            document.querySelectorAll('.tab-btn').forEach(btn => { if(btn.innerText === 'LM Curve') btn.classList.add('active'); });
+        } else {
+            document.getElementById('ad-view').classList.add('active-view');
+            document.querySelectorAll('.tab-btn').forEach(btn => { if(btn.innerText === 'IS-LM & AD') btn.classList.add('active'); });
+        }
+        setTimeout(() => resizeAllCharts(), 30);
+    }
+
+    window.onload = () => {
+        initAllCharts();
+        document.getElementById('inpG').addEventListener('input', updateIS);
+        document.getElementById('inpR-IS').addEventListener('input', updateIS);
+        document.getElementById('inpY').addEventListener('input', updateLM);
+        document.getElementById('inpMs').addEventListener('input', updateLM);
+        document.getElementById('inpP').addEventListener('input', updateLM);
+        document.getElementById('inpG_AD').addEventListener('input', updateIntegrated);
+        document.getElementById('inpMs_AD').addEventListener('input', updateIntegrated);
+        document.getElementById('inpP_AD').addEventListener('input', updateIntegrated);
+        document.getElementById('resetIS').addEventListener('click', resetIS);
+        document.getElementById('resetLM').addEventListener('click', resetLM);
+        document.getElementById('resetAD').addEventListener('click', resetAD);
+        window.addEventListener('resize', () => resizeAllCharts());
+    };
+</script>
+</body>
+</html>

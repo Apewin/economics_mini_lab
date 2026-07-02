@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Economics Lab: Optimized Price Controls (Classroom Max-Font Edition)</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        /* 隐藏滚动条，强制自适应全屏 */
+        body, html { margin: 0; padding: 0; height: 100vh; width: 100vw; overflow: hidden; background-color: #eef2f5; font-family: 'Segoe UI', system-ui, sans-serif; }
+        
+        #app-wrapper { display: flex; height: 100%; padding: 20px; box-sizing: border-box; gap: 25px; }
+        
+        /* 左侧区域（图表 + 底部勾选框）占据更大比例 */
+        #left-col { flex: 2.2; background: white; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); display: flex; flex-direction: column; padding: 25px; box-sizing: border-box; }
+        
+        /* 图表容器，自动撑满剩余空间 */
+        #chart-container { flex-grow: 1; width: 100%; min-height: 0; position: relative; }
+        
+        /* 图表下方的控制行 - 字号加大 */
+        #chart-controls { display: flex; justify-content: center; align-items: center; gap: 35px; padding-top: 20px; border-top: 1px solid #eee; margin-top: 10px; }
+        
+        /* 右侧区域（仪表盘 + 控制面板）固定最大宽度 */
+        #right-col { flex: 1; max-width: 450px; min-width: 380px; background: white; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); display: flex; flex-direction: column; padding: 25px; box-sizing: border-box; overflow-y: auto; gap: 16px; }
+        
+        /* 标题字号加大 */
+        .panel-title { font-size: 22px; font-weight: 800; color: #212529; border-left: 5px solid #1971c2; padding-left: 12px; margin-bottom: 5px; }
+        
+        /* 优化的网格数据面板 - 字号加大 */
+        #status-indicator { padding: 10px; border-radius: 6px; text-align: center; font-weight: bold; font-size: 18px; }
+        .binding { background: #fff5f5; color: #c92a2a; border: 1px solid #ffa8a8; }
+        .non-binding { background: #e9f7ef; color: #2b8a3e; border: 1px solid #8ce99a; }
+
+        .dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .welfare-grid { grid-template-columns: repeat(3, 1fr); border-top: 2px dashed #dee2e6; padding-top: 15px; margin-top: 5px; }
+        .stat-box { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; padding: 12px 5px; text-align: center; display: flex; flex-direction: column; gap: 4px; }
+        .stat-label { font-size: 13px; color: #6c757d; font-weight: 700; text-transform: uppercase; }
+        .stat-val { font-size: 22px; font-weight: bold; color: #212529; }
+        .highlight-box { border-color: #a5d8ff; background: #e7f5ff; }
+        .highlight-box .stat-label { color: #1971c2; }
+        .highlight-bm { border-color: #495057; background: #e9ecef; }
+        .cs-val { color: #1971c2; } .ps-val { color: #c92a2a; } .dwl-val { color: #f59f00; }
+
+        /* 控制滑块面板 - 字号加大 */
+        .control-section { background: #f8f9fa; padding: 15px 18px; border-radius: 8px; border: 1px solid #e9ecef; }
+        .control-row { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+        .control-row:last-child { margin-bottom: 0; }
+        label { font-size: 16px; font-weight: 700; color: #495057; min-width: 120px; }
+        input[type="range"] { flex-grow: 1; cursor: pointer; height: 6px; }
+        .val-display { min-width: 45px; font-family: monospace; font-weight: bold; color: #1971c2; text-align: right; font-size: 17px; }
+        
+        .toggle-group { display: flex; gap: 20px; }
+        .toggle-item { display: flex; align-items: center; gap: 8px; font-size: 17px; cursor: pointer; font-weight: bold; color: #495057; }
+        .toggle-item input { cursor: pointer; width: 18px; height: 18px; }
+
+        /* SVG 样式大字号设定 */
+        .tick text { font-size: 16px; fill: #212529; font-weight: bold; }
+        .axis-label { font-size: 20px; font-weight: bold; fill: #212529; }
+    </style>
+</head>
+<body>
+
+<div id="app-wrapper">
+    <!-- 左边：大图表区域 + 底部图例复选框 -->
+    <div id="left-col">
+        <div id="chart-container"></div>
+        <div id="chart-controls">
+            <label class="toggle-item"><input type="checkbox" id="chk-cs" checked> <span style="color:#4dabf7; font-size: 22px;">■</span> CS</label>
+            <label class="toggle-item"><input type="checkbox" id="chk-ps" checked> <span style="color:#ff8787; font-size: 22px;">■</span> PS</label>
+            <label class="toggle-item"><input type="checkbox" id="chk-dwl" checked> <span style="color:#fab005; font-size: 22px;">■</span> DWL</label>
+            <label class="toggle-item"><input type="checkbox" id="chk-gap" checked> <span style="color:#c92a2a; font-size: 22px;">■</span> Shortage/Surplus</label>
+        </div>
+    </div>
+
+    <!-- 右边：仪表盘 + 调节滑块 -->
+    <div id="right-col">
+        
+        <!-- 结果面板 -->
+        <div class="panel-title">Market Dashboard</div>
+        <div id="status-indicator">Initializing...</div>
+
+        <div class="dashboard-grid">
+            <div class="stat-box"><span class="stat-label">Eq. Price (Pf)</span><span class="stat-val" id="res-pe">-</span></div>
+            <div class="stat-box"><span class="stat-label">Eq. Qty (Qf)</span><span class="stat-val" id="res-qe">-</span></div>
+            <div class="stat-box"><span class="stat-label">Qty Demanded</span><span class="stat-val" id="res-qd">-</span></div>
+            <div class="stat-box"><span class="stat-label">Qty Supplied</span><span class="stat-val" id="res-qs">-</span></div>
+            
+            <div class="stat-box highlight-box"><span class="stat-label">Transacted (Qt)</span><span class="stat-val" id="res-qt">-</span></div>
+            <div class="stat-box highlight-bm" id="black-market-box" style="display:none;"><span class="stat-label" style="color:#212529">Black Market (Pbm)</span><span class="stat-val" id="res-pbm">-</span></div>
+        </div>
+
+        <div class="dashboard-grid welfare-grid">
+            <div class="stat-box"><span class="stat-label">CS</span><span class="stat-val cs-val" id="res-cs">-</span></div>
+            <div class="stat-box"><span class="stat-label">PS</span><span class="stat-val ps-val" id="res-ps">-</span></div>
+            <div class="stat-box"><span class="stat-label">DWL</span><span class="stat-val dwl-val" id="res-dwl">-</span></div>
+        </div>
+
+        <hr style="border:0; border-top: 1px solid #e9ecef; margin: 5px 0;">
+
+        <!-- 调节面板 -->
+        <div class="panel-title">Control Panel</div>
+        
+        <div class="control-section">
+            <div class="control-row">
+                <label>Policy Type:</label>
+                <div class="toggle-group">
+                    <label class="toggle-item"><input type="radio" name="policy" value="ceiling" checked style="font-weight:normal"> Ceiling</label>
+                    <label class="toggle-item"><input type="radio" name="policy" value="floor" style="font-weight:normal"> Floor</label>
+                </div>
+            </div>
+            <div class="control-row">
+                <label>Regulated Price:</label>
+                <input type="range" id="price-slider" min="10" max="90" value="35">
+                <span class="val-display" id="price-val">$35</span>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <div class="control-row">
+                <label>Demand Ed:</label>
+                <input type="range" id="ped-slider" min="0.4" max="2.5" step="0.1" value="1.0">
+                <span class="val-display" id="ped-val">1.0</span>
+            </div>
+            <div class="control-row">
+                <label>Supply Es:</label>
+                <input type="range" id="pes-slider" min="0.4" max="2.5" step="0.1" value="1.0">
+                <span class="val-display" id="pes-val">1.0</span>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    let state = {};
+    const margin = {top: 40, right: 65, bottom: 50, left: 75};
+    
+    const svg = d3.select("#chart-container").append("svg");
+    const chartG = svg.append("g");
+    
+    const xAxisGroup = chartG.append("g");
+    const yAxisGroup = chartG.append("g");
+    
+    const xLabel = chartG.append("text").attr("class", "axis-label").text("Q");
+    const yLabel = chartG.append("text").attr("class", "axis-label").attr("text-anchor", "middle").text("P");
+
+    // 图层清晰分离
+    const areaLayer = chartG.append("g");  
+    const guideLayer = chartG.append("g"); 
+    const lineLayer = chartG.append("g");  
+    const topLayer = chartG.append("g");   
+
+    const x = d3.scaleLinear().domain([0, 100]);
+    const y = d3.scaleLinear().domain([0, 100]);
+
+    function calcAndUpdateData() {
+        state.policy = document.querySelector('input[name="policy"]:checked').value;
+        state.Preg = +document.getElementById('price-slider').value;
+        state.ed = +document.getElementById('ped-slider').value;
+        state.es = +document.getElementById('pes-slider').value;
+        state.b = 1 / state.ed; 
+        state.d = 1 / state.es; 
+        
+        state.Qe = 100 / (state.b + state.d);
+        state.Pe = state.d * state.Qe;
+
+        state.Qd_reg = (100 - state.Preg) / state.b;
+        state.Qs_reg = state.Preg / state.d;
+        state.isBinding = (state.policy === 'ceiling' && state.Preg < state.Pe) || (state.policy === 'floor' && state.Preg > state.Pe);
+        
+        state.Pbm = null;
+
+        if (state.isBinding) {
+            state.Qt = Math.min(state.Qd_reg, state.Qs_reg);
+            state.finalCS = (100 - state.Preg) * state.Qt - 0.5 * state.b * state.Qt * state.Qt;
+            state.finalPS = state.Preg * state.Qt - 0.5 * state.d * state.Qt * state.Qt;
+            const Pd_at_Qt = 100 - state.b * state.Qt;
+            // 【修复点】：之前的代码这里漏写了 state. 前缀，导致报错终止运行
+            const Ps_at_Qt = state.d * state.Qt; 
+            state.finalDWL = 0.5 * (Pd_at_Qt - Ps_at_Qt) * (state.Qe - state.Qt);
+            if (state.policy === 'ceiling') state.Pbm = 100 - state.b * state.Qt;
+        } else {
+            state.Qt = state.Qe;
+            state.finalCS = 0.5 * (100 - state.Pe) * state.Qe;
+            state.finalPS = 0.5 * state.Pe * state.Qe;
+            state.finalDWL = 0;
+        }
+
+        // 更新控制面板和数据面板
+        document.getElementById('price-val').innerText = `$${state.Preg}`;
+        document.getElementById('ped-val').innerText = state.ed.toFixed(1);
+        document.getElementById('pes-val').innerText = state.es.toFixed(1);
+        
+        document.getElementById('res-pe').innerText = `$${state.Pe.toFixed(1)}`;
+        document.getElementById('res-qe').innerText = state.Qe.toFixed(1);
+        document.getElementById('res-qd').innerText = state.Qd_reg.toFixed(1);
+        document.getElementById('res-qs').innerText = state.Qs_reg.toFixed(1);
+        document.getElementById('res-qt').innerText = state.Qt.toFixed(1);
+        document.getElementById('res-cs').innerText = `$${Math.max(0, state.finalCS).toFixed(1)}`;
+        document.getElementById('res-ps').innerText = `$${Math.max(0, state.finalPS).toFixed(1)}`;
+        document.getElementById('res-dwl').innerText = `$${state.finalDWL.toFixed(1)}`;
+        
+        const statusEl = document.getElementById('status-indicator');
+        statusEl.className = state.isBinding ? 'binding' : 'non-binding';
+        statusEl.innerText = state.isBinding ? `Binding ${state.policy === 'ceiling' ? 'Ceiling' : 'Floor'}` : "Non-binding (Equilibrium)";
+        
+        const bmBox = document.getElementById('black-market-box');
+        if (state.Pbm) {
+            bmBox.style.display = 'flex';
+            document.getElementById('res-pbm').innerText = `$${state.Pbm.toFixed(1)}`;
+        } else {
+            bmBox.style.display = 'none';
+        }
+
+        drawChart();
+    }
+
+    function drawChart() {
+        const container = document.getElementById('chart-container');
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+        
+        if (width === 0 || height === 0) return; 
+
+        const innerW = width - margin.left - margin.right;
+        const innerH = height - margin.top - margin.bottom;
+
+        svg.attr("width", width).attr("height", height);
+        chartG.attr("transform", `translate(${margin.left},${margin.top})`);
+
+        x.range([0, innerW]);
+        y.range([innerH, 0]);
+
+        // 渲染大字号坐标轴
+        xAxisGroup.attr("transform", `translate(0,${innerH})`).call(d3.axisBottom(x).ticks(10));
+        yAxisGroup.call(d3.axisLeft(y).ticks(10));
+
+        // 调整轴名标签位置
+        xLabel.attr("x", innerW + 20).attr("y", innerH + 5).attr("text-anchor", "start");
+        yLabel.attr("x", 0).attr("y", -25);
+
+        // 清空重绘
+        areaLayer.selectAll("*").remove();
+        guideLayer.selectAll("*").remove();
+        lineLayer.selectAll("*").remove();
+        topLayer.selectAll("*").remove();
+
+        const {b, d, Preg, Qe, Pe, Qt, Pbm, isBinding, policy, Qd_reg, Qs_reg} = state;
+
+        // 1. 供需曲线
+        lineLayer.append("line").attr("x1", x(0)).attr("y1", y(100)).attr("x2", x(100/b)).attr("y2", y(0)).attr("stroke", "#1c7ed6").attr("stroke-width", 4);
+        lineLayer.append("line").attr("x1", x(0)).attr("y1", y(0)).attr("x2", x(100/d)).attr("y2", y(100)).attr("stroke", "#e03131").attr("stroke-width", 4);
+        
+        // 大字号 D 和 S 标签 (20px)
+        let D_x = 95; let D_y = 100 - b * D_x;
+        if (D_y < 4) { D_y = 4; D_x = (100 - D_y) / b; }
+        lineLayer.append("text").attr("x", x(D_x) + 10).attr("y", y(D_y) + 6).attr("fill", "#1c7ed6").style("font-size", "20px").style("font-weight", "bold").text("D");
+
+        let S_x = 95; let S_y = d * S_x;
+        if (S_y > 96) { S_y = 96; S_x = S_y / d; }
+        lineLayer.append("text").attr("x", x(S_x) + 10).attr("y", y(S_y) + 6).attr("fill", "#e03131").style("font-size", "20px").style("font-weight", "bold").text("S");
+
+        // 2. 均衡价格与数量标签加大 (15px)
+        guideLayer.append("line").attr("x1", x(Qe)).attr("y1", y(Pe)).attr("x2", x(Qe)).attr("y2", y(0)).attr("stroke", "#2b8a3e").attr("stroke-dasharray", "3,2").attr("opacity", 0.6);
+        guideLayer.append("line").attr("x1", x(Qe)).attr("y1", y(Pe)).attr("x2", x(0)).attr("y2", y(Pe)).attr("stroke", "#2b8a3e").attr("stroke-dasharray", "3,2").attr("opacity", 0.6);
+        guideLayer.append("text").attr("x", x(Qe)).attr("y", innerH + 25).attr("text-anchor", "middle").attr("fill", "#2b8a3e").style("font-size","15px").style("font-weight","bold").text("Qf");
+        guideLayer.append("text").attr("x", -45).attr("y", y(Pe) + 5).attr("fill", "#2b8a3e").style("font-size","15px").style("font-weight","bold").text("Pf");
+
+        // 3. 管制价格 Preg
+        lineLayer.append("line").attr("x1", 0).attr("x2", innerW).attr("y1", y(Preg)).attr("y2", y(Preg)).attr("stroke", "#444").attr("stroke-width", 2.5).attr("stroke-dasharray", "6,3");
+        guideLayer.append("text").attr("x", -50).attr("y", y(Preg) + 5).attr("fill", "#444").style("font-weight","bold").style("font-size","15px").text("Preg");
+
+        if (isBinding) {
+            // 交易量 Qt 辅助线
+            guideLayer.append("line").attr("x1", x(Qt)).attr("y1", y(Preg)).attr("x2", x(Qt)).attr("y2", y(0)).attr("stroke", "#888").attr("stroke-width", 1.5);
+            guideLayer.append("text").attr("x", x(Qt)).attr("y", innerH + 25).attr("text-anchor", "middle").attr("fill", "#1971c2").style("font-size","15px").style("font-weight","bold").text("Qt");
+
+            // 黑市价格 Pbm
+            if (Pbm) {
+                topLayer.append("line").attr("x1", x(Qt)).attr("y1", y(Pbm)).attr("x2", x(0)).attr("y2", y(Pbm)).attr("stroke", "#000").attr("stroke-dasharray", "3,3").attr("opacity", 0.8);
+                topLayer.append("circle").attr("cx", x(Qt)).attr("cy", y(Pbm)).attr("r", 5).attr("fill", "#000");
+                topLayer.append("text").attr("x", -50).attr("y", y(Pbm) + 5).attr("fill", "#000").style("font-weight","bold").style("font-size","15px").text("Pbm");
+            }
+            
+            // 4. Shortage/Surplus (置于最顶层的 topLayer 渲染，避免被遮挡)
+            if (document.getElementById('chk-gap').checked) {
+                const qMin = Math.min(Qd_reg, Qs_reg);
+                const qMax = Math.max(Qd_reg, Qs_reg);
+                const isCeiling = policy === 'ceiling';
+                const gapColor = isCeiling ? "#c92a2a" : "#2b8a3e"; 
+                const gapValue = (qMax - qMin).toFixed(1);
+
+                // 加粗虚线与端点
+                topLayer.append("line")
+                    .attr("x1", x(qMin)).attr("y1", y(Preg))
+                    .attr("x2", x(qMax)).attr("y2", y(Preg))
+                    .attr("stroke", gapColor).attr("stroke-width", 4.5).attr("stroke-dasharray", "5,2");
+
+                topLayer.append("circle").attr("cx", x(qMin)).attr("cy", y(Preg)).attr("r", 6).attr("fill", gapColor);
+                topLayer.append("circle").attr("cx", x(qMax)).attr("cy", y(Preg)).attr("r", 6).attr("fill", gapColor);
+                
+                // 提示文字加大 (18px)
+                topLayer.append("text")
+                    .attr("x", x((qMin + qMax) / 2))
+                    .attr("y", isCeiling ? y(Preg) + 24 : y(Preg) - 14)
+                    .attr("text-anchor", "middle").attr("fill", gapColor)
+                    .style("font-size", "18px").style("font-weight", "bold")
+                    .text(`${isCeiling ? "Shortage" : "Surplus"}: ${gapValue}`);
+            }
+
+            // 5. 福利填充色块
+            if (document.getElementById('chk-cs').checked) {
+                const csPoints = [[0, Preg], [0, 100], [Qt, 100-b*Qt], [Qt, Preg]];
+                areaLayer.append("polygon").attr("points", csPoints.map(p => [x(p[0]), y(p[1])].join(",")).join(" ")).attr("fill", "#4dabf7").attr("opacity", 0.4);
+            }
+            if (document.getElementById('chk-ps').checked) {
+                const psPoints = [[0, Preg], [Qt, Preg], [Qt, d*Qt], [0, 0]];
+                areaLayer.append("polygon").attr("points", psPoints.map(p => [x(p[0]), y(p[1])].join(",")).join(" ")).attr("fill", "#ff8787").attr("opacity", 0.4);
+            }
+            if (document.getElementById('chk-dwl').checked) {
+                const dwlPoints = [[Qt, 100-b*Qt], [Qe, Pe], [Qt, d*Qt]];
+                areaLayer.append("polygon").attr("points", dwlPoints.map(p => [x(p[0]), y(p[1])].join(",")).join(" ")).attr("fill", "#fab005").attr("opacity", 0.6);
+            }
+        } else {
+            // Non-binding 状态下的 CS/PS 填充
+            if (document.getElementById('chk-cs').checked) {
+                areaLayer.append("polygon").attr("points", [[x(0),y(Pe)], [x(0),y(100)], [x(Qe),y(Pe)]].join(" ")).attr("fill", "#4dabf7").attr("opacity", 0.3);
+            }
+            if (document.getElementById('chk-ps').checked) {
+                areaLayer.append("polygon").attr("points", [[x(0),y(Pe)], [x(Qe),y(Pe)], [x(0),y(0)]].join(" ")).attr("fill", "#ff8787").attr("opacity", 0.3);
+            }
+        }
+    }
+
+    // 绑定事件
+    d3.selectAll("input").on("input", calcAndUpdateData).on("change", calcAndUpdateData);
+    window.addEventListener("resize", drawChart);
+    
+    // 初始化启动
+    calcAndUpdateData();
+</script>
+</body>
+</html>

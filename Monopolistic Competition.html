@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monopolistic Competition - Long-Run Lab</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; display: flex; height: 100vh; background: #f0f2f5; color: #1a202c; overflow: hidden; }
+        .left-panel { flex: 7; display: flex; flex-direction: column; padding: 15px; background: #fff; border-right: 1px solid #cbd5e0; box-sizing: border-box; }
+        .right-panel { flex: 3; padding: 20px; background: #f8fafc; overflow-y: auto; box-sizing: border-box; }
+
+        .chart-container { flex-grow: 1; position: relative; min-height: 0; }
+
+        .controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #edf2f7; padding: 15px; border-radius: 12px; margin-top: 10px; border: 1px solid #e2e8f0; }
+        .control-group { display: flex; flex-direction: column; }
+        .control-group label { font-size: 0.8rem; font-weight: 800; margin-bottom: 4px; color: #4a5568; text-transform: uppercase; }
+        input[type="range"] { width: 100%; cursor: pointer; }
+
+        .toggles { grid-column: span 2; display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; padding: 8px; background: #fff; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .toggles label { cursor: pointer; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+
+        h2 { margin: 0 0 12px 0; font-size: 1.3rem; color: #2d3748; border-left: 5px solid #4299e1; padding-left: 10px; }
+        .stat-box { background: #fff; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .stat-row { display: flex; justify-content: space-between; margin: 6px 0; font-size: 0.95rem; }
+        .val { font-weight: bold; color: #3182ce; }
+        
+        .status-banner { padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; margin-top: 5px; font-size: 0.9rem; transition: all 0.3s ease; }
+        .status-profit { background: #c6f6d5; color: #22543d; border: 2px solid #9ae6b4; }
+        .status-loss { background: #fed7d7; color: #822727; border: 2px solid #feb2b2; }
+        .status-lr { background: #ebf8ff; color: #2a4365; border: 2px solid #4299e1; box-shadow: 0 0 10px rgba(66, 153, 225, 0.3); }
+
+        .copyright { position: fixed; bottom: 8px; right: 15px; font-size: 10px; color: #a0aec0; }
+    </style>
+</head>
+<body>
+
+<div class="left-panel">
+    <div class="chart-container">
+        <canvas id="mcChart"></canvas>
+    </div>
+
+    <div class="controls-grid">
+        <div class="control-group">
+            <label>Demand Shift (Long-Run Entry/Exit):</label>
+            <input type="range" id="inpDShift" min="15" max="55" step="0.1" value="34">
+        </div>
+        <div class="control-group">
+            <label>Cost Level (Fixed Cost):</label>
+            <input type="range" id="inpFC" min="15" max="100" step="1" value="48">
+        </div>
+        <div class="toggles">
+            <label><input type="checkbox" id="showProfit" checked> Economic Profit</label>
+            <label><input type="checkbox" id="showDWL"> Allocative Eff. (DWL)</label>
+            <label><input type="checkbox" id="showEC"> Productive Eff. (Cap. Gap)</label>
+        </div>
+    </div>
+</div>
+
+<div class="right-panel">
+    <h2>Market Report</h2>
+    <div class="stat-box">
+        <div class="stat-row">Price (Pₑ): <span class="val" id="lblP">$0.00</span></div>
+        <div class="stat-row">Quantity (Qₑ): <span class="val" id="lblQ">0.00</span></div>
+        <div class="stat-row">ATC at Qₑ: <span class="val" id="lblATC">$0.00</span></div>
+    </div>
+
+    <h2>Financials & Gaps</h2>
+    <div class="stat-box">
+        <div class="stat-row">Total Profit: <span class="val" id="lblProfit">$0.00</span></div>
+        <div class="stat-row">DWL Area: <span class="val" id="lblDWL">$0.00</span></div>
+        <div class="stat-row">Excess Capacity: <span class="val" id="lblEC">0.00 units</span></div>
+    </div>
+
+    <h2>Firm Status</h2>
+    <div id="statusBanner" class="status-banner">Determining market state...</div>
+
+    <div style="margin-top: 15px; font-size: 0.8rem; color: #718096; background: #fff; padding: 10px; border-radius: 8px; border: 1px dashed #cbd5e0;">
+        <b>Hint:</b> The "Demand Shift" slider will <b>snap</b> when you are within 1% of the zero-profit equilibrium.
+    </div>
+</div>
+
+<div class="copyright">© 2026 Economics Visualization. Dr. Jia Edition.</div>
+
+<script>
+    let chart;
+    const ctx = document.getElementById('mcChart').getContext('2d');
+
+    function update() {
+        let a = parseFloat(document.getElementById('inpDShift').value);
+        const fc = parseFloat(document.getElementById('inpFC').value);
+
+        /* MATHEMATICAL SNAP LOGIC:
+           Long-run equilibrium occurs when P = ATC and MR = MC.
+           Given: P = a - 2Q, MR = a - 4Q, MC = 2Q + 10, ATC = Q + 10 + FC/Q
+           Equilibrium Q_e = (a - 10) / 6
+           Set P(Q_e) = ATC(Q_e) => 3(Q_e)^2 = FC => Q_lr = sqrt(FC/3)
+           Target a_lr = 6 * Q_lr + 10
+        */
+        const q_lr_target = Math.sqrt(fc / 3);
+        const a_lr_target = 6 * q_lr_target + 10;
+
+        // Snapping: if within 1.2 units of the target 'a', snap to it.
+        if (Math.abs(a - a_lr_target) < 1.2) {
+            a = a_lr_target;
+        }
+
+        const q_e = (a - 10) / 6;
+        const p_e = a - 2 * q_e;
+        const atc_e = q_e + 10 + (fc / q_e);
+        const profit = (p_e - atc_e) * q_e;
+
+        // Efficiency points
+        const q_soc = (a - 10) / 4; // P = MC
+        const q_prod = Math.sqrt(fc); // Min ATC (MC = ATC)
+        const dwl = 0.5 * (p_e - (2 * q_e + 10)) * (q_soc - q_e);
+
+        // Update Labels
+        document.getElementById('lblP').innerText = "$" + p_e.toFixed(2);
+        document.getElementById('lblQ').innerText = q_e.toFixed(2);
+        document.getElementById('lblATC').innerText = "$" + atc_e.toFixed(2);
+        document.getElementById('lblProfit').innerText = "$" + profit.toFixed(2);
+        document.getElementById('lblProfit').style.color = Math.abs(profit) < 0.1 ? "#2b6cb0" : (profit > 0 ? "#2f855a" : "#c53030");
+        document.getElementById('lblDWL').innerText = "$" + Math.max(0, dwl).toFixed(2);
+        document.getElementById('lblEC').innerText = Math.max(0, q_prod - q_e).toFixed(2);
+
+        const banner = document.getElementById('statusBanner');
+        if (Math.abs(profit) < 0.1) {
+            banner.innerText = "LONG-RUN EQUILIBRIUM: Zero Economic Profit (Normal Profit). Entry/Exit stops.";
+            banner.className = "status-banner status-lr";
+        } else if (profit > 0) {
+            banner.innerText = "SHORT-RUN: Supernormal Profit. Expect new firms to enter (Demand shifts left).";
+            banner.className = "status-banner status-profit";
+        } else {
+            banner.innerText = "SHORT-RUN: Economic Loss. Expect firms to exit (Demand shifts right).";
+            banner.className = "status-banner status-loss";
+        }
+
+        renderChart(a, fc, q_e, p_e, atc_e, q_soc, q_prod);
+    }
+
+    function renderChart(a, fc, q_e, p_e, atc_e, q_soc, q_prod) {
+        const dD = [], dMR = [], dMC = [], dATC = [];
+        for (let q = 0.2; q <= 15; q += 0.2) {
+            dD.push({x: q, y: a - 2 * q});
+            dMR.push({x: q, y: a - 4 * q});
+            dMC.push({x: q, y: 2 * q + 10});
+            dATC.push({x: q, y: q + 10 + fc / q});
+        }
+
+        chart.data.datasets[0].data = dD;
+        chart.data.datasets[1].data = dMR;
+        chart.data.datasets[2].data = dMC;
+        chart.data.datasets[3].data = dATC;
+        chart.data.datasets[4].data = [{x: q_e, y: p_e}];
+
+        // Toggle lines for Socially Optimal and Productive Efficiency
+        const showDWL = document.getElementById('showDWL').checked;
+        const showEC = document.getElementById('showEC').checked;
+        chart.data.datasets[5].data = showDWL ? [{x: q_soc, y: 0}, {x: q_soc, y: (a - 2 * q_soc)}] : [];
+        chart.data.datasets[6].data = showEC ? [{x: q_prod, y: 0}, {x: q_prod, y: (2 * q_prod + 10)}] : [];
+
+        chart.options.plugins.shading = {
+            q_e, p_e, atc_e, q_soc, q_prod, a,
+            showProfit: document.getElementById('showProfit').checked,
+            showDWL, showEC
+        };
+        chart.update('none');
+    }
+
+    const shadingPlugin = {
+        id: 'shading',
+        beforeDatasetsDraw(chart, args, options) {
+            const {ctx, scales: {x, y}} = chart;
+            const {q_e, p_e, atc_e, q_soc, q_prod, a, showProfit, showDWL, showEC} = options;
+
+            const drawArea = (pts, color) => {
+                ctx.save(); ctx.fillStyle = color; ctx.beginPath();
+                ctx.moveTo(x.getPixelForValue(pts[0].x), y.getPixelForValue(pts[0].y));
+                pts.forEach(p => ctx.lineTo(x.getPixelForValue(p.x), y.getPixelForValue(p.y)));
+                ctx.closePath(); ctx.fill(); ctx.restore();
+            };
+
+            // 1. PROJECTION LINES (Dashed coordinates)
+            ctx.save();
+            ctx.strokeStyle = '#718096';
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            // Line to Y-axis (Price)
+            ctx.moveTo(x.getPixelForValue(q_e), y.getPixelForValue(p_e));
+            ctx.lineTo(x.getPixelForValue(0), y.getPixelForValue(p_e));
+            // Line to X-axis (Quantity)
+            ctx.moveTo(x.getPixelForValue(q_e), y.getPixelForValue(p_e));
+            ctx.lineTo(x.getPixelForValue(q_e), y.getPixelForValue(0));
+            ctx.stroke();
+            ctx.restore();
+
+            // 2. PROFIT/LOSS AREA
+            if (showProfit && q_e > 0) {
+                const color = p_e >= atc_e ? 'rgba(72, 187, 120, 0.25)' : 'rgba(245, 101, 101, 0.25)';
+                drawArea([{x:0, y:p_e}, {x:q_e, y:p_e}, {x:q_e, y:atc_e}, {x:0, y:atc_e}], color);
+            }
+
+            // 3. DWL TRIANGLE
+            if (showDWL && q_soc > q_e) {
+                const mc_at_qe = 2 * q_e + 10;
+                drawArea([{x:q_e, y:p_e}, {x:q_soc, y:a - 2 * q_soc}, {x:q_e, y:mc_at_qe}], 'rgba(237, 137, 54, 0.4)');
+            }
+
+            // 4. EXCESS CAPACITY INDICATOR
+            if (showEC && q_prod > q_e) {
+                const yLine = 4;
+                ctx.save();
+                ctx.strokeStyle = '#805ad5';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x.getPixelForValue(q_e), y.getPixelForValue(yLine));
+                ctx.lineTo(x.getPixelForValue(q_prod), y.getPixelForValue(yLine));
+                ctx.stroke();
+                // Vertical ticks for the gap
+                ctx.beginPath();
+                ctx.moveTo(x.getPixelForValue(q_e), y.getPixelForValue(yLine-2)); ctx.lineTo(x.getPixelForValue(q_e), y.getPixelForValue(yLine+2));
+                ctx.moveTo(x.getPixelForValue(q_prod), y.getPixelForValue(yLine-2)); ctx.lineTo(x.getPixelForValue(q_prod), y.getPixelForValue(yLine+2));
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+    };
+
+    window.onload = () => {
+        chart = new Chart(ctx, {
+            type: 'line',
+            plugins: [shadingPlugin],
+            data: {
+                datasets: [
+                    { label: 'Demand (D)', borderColor: '#3182ce', borderWidth: 3, pointRadius: 0, data: [] },
+                    { label: 'Marg. Revenue (MR)', borderColor: '#3182ce', borderWidth: 2, borderDash: [6,4], pointRadius: 0, data: [] },
+                    { label: 'Marg. Cost (MC)', borderColor: '#e53e3e', borderWidth: 3, pointRadius: 0, data: [] },
+                    { label: 'Avg. Total Cost (ATC)', borderColor: '#805ad5', borderWidth: 3, pointRadius: 0, data: [] },
+                    { type: 'scatter', label: 'Equilibrium (E)', backgroundColor: '#1a202c', pointRadius: 6, data: [] },
+                    { label: 'Alloc. Efficient Q', borderColor: '#ed8936', borderWidth: 1.5, borderDash: [2,2], pointRadius: 0, data: [] },
+                    { label: 'Prod. Efficient Q', borderColor: '#48bb78', borderWidth: 1.5, borderDash: [2,2], pointRadius: 0, data: [] }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, animation: false,
+                scales: {
+                    x: { type: 'linear', min: 0, max: 15, title: {display:true, text:'Quantity (Units)', font:{weight:'bold'}} },
+                    y: { type: 'linear', min: 0, max: 60, title: {display:true, text:'Price / Cost ($)', font:{weight:'bold'}} }
+                },
+                plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: {size: 11} } } }
+            }
+        });
+        document.querySelectorAll('input').forEach(el => el.addEventListener('input', update));
+        update();
+    };
+</script>
+</body>
+</html>

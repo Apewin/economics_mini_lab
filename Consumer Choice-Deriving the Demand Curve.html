@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consumer Choice Theory - Interactive Classroom</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #2c3e50;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+        .app-container {
+            display: flex;
+            width: 100%;
+            flex-grow: 1;
+            gap: 20px;
+            min-height: 0;
+        }
+        .panel-left {
+            width: 55%;
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+            display: flex;
+            flex-direction: column;
+        }
+        .panel-right {
+            width: 45%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .chart-container-top {
+            height: 60%;
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+            display: flex;
+            flex-direction: column;
+        }
+        .controls-container-bottom {
+            height: 40%;
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        /* Headers & Reset Button layout */
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+            margin-bottom: 5px;
+        }
+        h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e272e;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .panel-left h2, .chart-container-top h2 {
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .reset-btn {
+            background-color: #95a5a6;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .reset-btn:hover {
+            background-color: #7f8c8d;
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            background: #f1f2f6;
+            padding: 12px 18px;
+            border-radius: 8px;
+        }
+        .control-row label {
+            font-weight: 700;
+            font-size: 16px;
+            width: 180px;
+            color: #2f3542;
+        }
+        .slider-wrapper {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+            gap: 15px;
+        }
+        input[type="range"] {
+            flex-grow: 1;
+            cursor: pointer;
+            height: 6px;
+        }
+        .value-badge {
+            font-size: 18px;
+            font-weight: 800;
+            color: #d35400;
+            min-width: 75px;
+            text-align: right;
+            background: #fff;
+            padding: 5px 10px;
+            border-radius: 6px;
+            border: 1px solid #dfe4ea;
+        }
+        .radio-group {
+            display: flex;
+            gap: 30px;
+            flex-grow: 1;
+        }
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 16px !important;
+            font-weight: 600 !important;
+        }
+        input[type="radio"] {
+            transform: scale(1.3);
+        }
+        canvas {
+            width: 100% !important;
+            flex-grow: 1;
+            min-height: 0;
+        }
+        
+        /* Copyright text formatting */
+        .copyright {
+            margin-top: 15px;
+            font-size: 11px;
+            color: #95a5a6;
+            text-align: right;
+            border-top: 1px solid #f1f2f6;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Left half: Consumer Equilibrium Graph -->
+        <div class="panel-left">
+            <h2>1. Consumer Equilibrium & Effects Breakdown</h2>
+            <canvas id="equilibriumChart"></canvas>
+            
+            <!-- Copyright / Credits -->
+            <div class="copyright">
+                &copy; 2026 Teaching Tool for AP/IB/A-Level Economics. Dr.Jia All rights reserved.
+            </div>
+        </div>
+
+        <!-- Right half: Split vertically -->
+        <div class="panel-right">
+            <div class="chart-container-top">
+                <h2>2. Derived Demand Curve for Good X</h2>
+                <canvas id="demandChart"></canvas>
+            </div>
+            
+            <div class="controls-container-bottom">
+                <div class="header-row">
+                    <h2>Interactive Parameters</h2>
+                    <button class="reset-btn" id="resetBtn">↺ Reset Values</button>
+                </div>
+                
+                <div class="control-row">
+                    <label>Good X Type:</label>
+                    <div class="radio-group">
+                        <label class="radio-label"><input type="radio" name="goodType" value="normal" checked> Normal Good</label>
+                        <label class="radio-label"><input type="radio" name="goodType" value="inferior"> Inferior Good</label>
+                    </div>
+                </div>
+
+                <div class="control-row">
+                    <label for="priceX">Price of Good X (P<sub>X</sub>):</label>
+                    <div class="slider-wrapper">
+                        <input type="range" id="priceX" min="1.5" max="9.5" step="0.05" value="5">
+                        <span class="value-badge" id="priceXLabel">$5.00</span>
+                    </div>
+                </div>
+
+                <div class="control-row">
+                    <label for="income">Consumer Income (I):</label>
+                    <div class="slider-wrapper">
+                        <input type="range" id="income" min="70" max="140" step="1" value="100">
+                        <span class="value-badge" id="incomeLabel">$100</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set Global Font Settings for better Classroom Visibility
+        Chart.defaults.font.size = 15;
+        Chart.defaults.color = '#2f3542';
+
+        const Py = 5;
+        const Px_init = 5;
+        const I_init = 100;
+
+        // Core Mathematical Engine for Indifference Curves and Optima
+        function getCoordinates(Px, I, type) {
+            let xA = 10, yA = 10; 
+            let xB, yB, xC, yC;
+            let ic0_params, ic1_params;
+
+            if (type === 'normal') {
+                xC = 0.5 * I / Px;
+                yC = 0.5 * I / Py;
+
+                ic0_params = { x0: 0, y0: 0, k: 100 };
+                xB = Math.sqrt(100 * Py / Px);
+                yB = 100 / xB;
+                ic1_params = { x0: 0, y0: 0, k: xC * yC };
+            } else {
+                xC = 10 * Math.pow(5 / Px, 0.8) * Math.pow(100 / I, 1.5);
+                yC = (I - Px * xC) / Py;
+
+                let c0 = 25; 
+                ic0_params = { 
+                    x0: xA - c0, 
+                    y0: yA - c0 * (Px_init / Py), 
+                    k: c0 * c0 * (Px_init / Py) 
+                };
+
+                xB = Math.sqrt(ic0_params.k * Py / Px) + ic0_params.x0;
+                yB = ic0_params.y0 + ic0_params.k / (xB - ic0_params.x0);
+
+                let c1 = 25 * Math.sqrt(5 / Px);
+                ic1_params = {
+                    x0: xC - c1,
+                    y0: yC - c1 * (Px / Py),
+                    k: c1 * c1 * (Px / Py)
+                };
+            }
+            return { xA, yA, xB, yB, xC, yC, ic0_params, ic1_params };
+        }
+
+        function generateICPoints(params, max_x) {
+            let points = [];
+            let startX = Math.max(0.1, params.x0 + 0.1);
+            for (let x = startX; x <= max_x; x += 0.5) {
+                let y = params.y0 + params.k / (x - params.x0);
+                if (y > -2 && y <= 40) points.push({ x: x, y: y });
+            }
+            return points;
+        }
+
+        const ctxEq = document.getElementById('equilibriumChart').getContext('2d');
+        const ctxDe = document.getElementById('demandChart').getContext('2d');
+
+        // Main Consumer Equilibrium Chart
+        const eqChart = new Chart(ctxEq, {
+            type: 'line',
+            data: {
+                datasets: [
+                    { label: 'Initial Budget (BL₀)', data: [], borderColor: '#7f8c8d', borderWidth: 3, borderDash: [6, 6], pointRadius: 0, fill: false },
+                    { label: 'Initial Curve (IC₀)', data: [], borderColor: '#3498db', borderWidth: 3, borderDash: [6, 6], pointRadius: 0, fill: false, tension: 0.2 },
+                    { label: 'New Budget Line (BL₁)', data: [], borderColor: '#c0392b', borderWidth: 4, pointRadius: 0, fill: false },
+                    { label: 'New Curve (IC₁)', data: [], borderColor: '#2980b9', borderWidth: 4, pointRadius: 0, fill: false, tension: 0.2 },
+                    { label: 'Compensated Budget Line', data: [], borderColor: '#8e44ad', borderWidth: 2.5, pointRadius: 0, fill: false },
+                    { label: 'Optima Dots', data: [], backgroundColor: (ctx) => ['#2c3e50', '#8e44ad', '#27ae60'][ctx.dataIndex], pointRadius: 9, showLine: false }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { type: 'linear', min: 0, max: 45, title: { display: true, text: 'Quantity of Good X', font: {size: 16, weight: 'bold'} } },
+                    y: { type: 'linear', min: 0, max: 28, title: { display: true, text: 'Quantity of Good Y', font: {size: 16, weight: 'bold'} } }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: { 
+                            font: { size: 14, weight: 'bold' },
+                            filter: (item) => ['New Budget Line (BL₁)', 'New Curve (IC₁)', 'Compensated Budget Line'].includes(item.text) 
+                        }
+                    },
+                    annotation: {
+                        annotations: {
+                            lineA: { type: 'line', xMin: 0, xMax: 0, yMin: 0, yMax: 0, borderColor: 'rgba(44, 62, 80, 0.4)', borderWidth: 2, borderDash: [4, 4] },
+                            lineB: { type: 'line', xMin: 0, xMax: 0, yMin: 0, yMax: 0, borderColor: 'rgba(142, 68, 173, 0.4)', borderWidth: 2, borderDash: [4, 4] },
+                            lineC: { type: 'line', xMin: 0, xMax: 0, yMin: 0, yMax: 0, borderColor: 'rgba(39, 174, 96, 0.4)', borderWidth: 2, borderDash: [4, 4] },
+                            
+                            subZone: { type: 'box', xMin: 0, xMax: 0, yMin: 0, yMax: 1.5, backgroundColor: 'rgba(142, 68, 173, 0.2)', borderWidth: 1, borderColor: 'rgba(142, 68, 173, 0.5)' },
+                            incZone: { type: 'box', xMin: 0, xMax: 0, yMin: 1.6, yMax: 3.1, backgroundColor: 'rgba(39, 174, 96, 0.2)', borderWidth: 1, borderColor: 'rgba(39, 174, 96, 0.5)' },
+                            
+                            labelA: { type: 'label', xValue: 0, yValue: 0, content: 'A', font: { size: 18, weight: 'bold' }, color: '#2c3e50', backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 4 },
+                            labelB: { type: 'label', xValue: 0, yValue: 0, content: 'B', font: { size: 18, weight: 'bold' }, color: '#8e44ad', backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 4 },
+                            labelC: { type: 'label', xValue: 0, yValue: 0, content: 'C', font: { size: 18, weight: 'bold' }, color: '#27ae60', backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 4 },
+                            
+                            txtSub: { type: 'label', xValue: 0, yValue: 0.75, content: 'Sub Effect', font: { size: 14, weight: 'bold' }, color: '#8e44ad' },
+                            txtInc: { type: 'label', xValue: 0, yValue: 2.35, content: 'Income Effect', font: { size: 14, weight: 'bold' }, color: '#218c74' }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Demand Curve Chart
+        const deChart = new Chart(ctxDe, {
+            type: 'line',
+            data: {
+                datasets: [
+                    { label: 'Initial Demand', data: [], borderColor: '#95a5a6', borderWidth: 2.5, borderDash: [6, 6], pointRadius: 0, fill: false },
+                    { label: 'Current Demand', data: [], borderColor: '#2c3e50', borderWidth: 4, pointRadius: 0, fill: false },
+                    { label: 'Market Position', data: [], backgroundColor: '#c0392b', pointRadius: 9, showLine: false }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { type: 'linear', min: 0, max: 45, title: { display: true, text: 'Quantity Demanded (Qₓ)', font: {size: 16, weight: 'bold'} } },
+                    y: { type: 'linear', min: 0, max: 11, title: { display: true, text: 'Price of Good X (Pₓ)', font: {size: 16, weight: 'bold'} } }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            font: { size: 14, weight: 'bold' },
+                            filter: (item) => item.text !== 'Initial Demand' 
+                        }
+                    }
+                }
+            }
+        });
+
+        const staticNormalDemand = [];
+        const staticInferiorDemand = [];
+        for (let p = 1.5; p <= 10; p += 0.2) {
+            staticNormalDemand.push({ x: getCoordinates(p, 100, 'normal').xC, y: p });
+            staticInferiorDemand.push({ x: getCoordinates(p, 100, 'inferior').xC, y: p });
+        }
+
+        function updateSimulation() {
+            const Px = parseFloat(document.getElementById('priceX').value);
+            const I = parseFloat(document.getElementById('income').value);
+            const type = document.querySelector('input[name="goodType"]:checked').value;
+
+            document.getElementById('priceXLabel').innerText = `$${Px.toFixed(2)}`;
+            document.getElementById('incomeLabel').innerText = `$${I}`;
+
+            const { xA, yA, xB, yB, xC, yC, ic0_params, ic1_params } = getCoordinates(Px, I, type);
+
+            // Left Chart: Lines
+            eqChart.data.datasets[0].data = [{ x: 0, y: 100 / Py }, { x: 100 / Px_init, y: 0 }];
+            eqChart.data.datasets[1].data = generateICPoints(ic0_params, 55);
+            eqChart.data.datasets[2].data = [{ x: 0, y: I / Py }, { x: I / Px, y: 0 }];
+            eqChart.data.datasets[3].data = generateICPoints(ic1_params, 55);
+            eqChart.data.datasets[4].data = [{ x: 0, y: yB + xB * (Px / Py) }, { x: xB + yB * (Py / Px), y: 0 }];
+            eqChart.data.datasets[5].data = [{ x: xA, y: yA }, { x: xB, y: yB }, { x: xC, y: yC }];
+
+            // Annotations
+            const anno = eqChart.options.plugins.annotation.annotations;
+            anno.lineA.xMin = anno.lineA.xMax = xA; anno.lineA.yMax = yA;
+            anno.lineB.xMin = anno.lineB.xMax = xB; anno.lineB.yMax = yB;
+            anno.lineC.xMin = anno.lineC.xMax = xC; anno.lineC.yMax = yC;
+
+            anno.labelA.xValue = xA + 1; anno.labelA.yValue = yA + 1.5;
+            anno.labelB.xValue = xB + 1; anno.labelB.yValue = yB + 1.5;
+            anno.labelC.xValue = xC + 1; anno.labelC.yValue = yC + 1.5;
+
+            anno.subZone.xMin = Math.min(xA, xB); anno.subZone.xMax = Math.max(xA, xB);
+            anno.incZone.xMin = Math.min(xB, xC); anno.incZone.xMax = Math.max(xB, xC);
+
+            anno.txtSub.xValue = (xA + xB) / 2;
+            anno.txtInc.xValue = (xB + xC) / 2;
+
+            eqChart.update('none');
+
+            // Right Chart
+            deChart.data.datasets[0].data = (type === 'normal') ? staticNormalDemand : staticInferiorDemand;
+            const dynamicDemandCurve = [];
+            for (let p = 1.5; p <= 10; p += 0.2) {
+                dynamicDemandCurve.push({ x: getCoordinates(p, I, type).xC, y: p });
+            }
+            deChart.data.datasets[1].data = dynamicDemandCurve;
+            deChart.data.datasets[2].data = [{ x: xC, y: Px }];
+            
+            deChart.update('none');
+        }
+
+        // --- Reset Logic ---
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            // Restore Values Without Changing Good Type
+            document.getElementById('priceX').value = 5;
+            document.getElementById('income').value = 100;
+            // Re-render
+            updateSimulation();
+        });
+
+        // Event Listeners
+        document.getElementById('priceX').addEventListener('input', updateSimulation);
+        document.getElementById('income').addEventListener('input', updateSimulation);
+        document.querySelectorAll('input[name="goodType"]').forEach(r => r.addEventListener('change', updateSimulation));
+
+        // Initial Paint
+        updateSimulation();
+    </script>
+</body>
+</html>

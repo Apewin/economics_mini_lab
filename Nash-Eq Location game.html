@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotelling's Law: Spatial Competition</title>
+    <style>
+        :root {
+            --red: #eb4d4b;
+            --blue: #0984e3;
+            --bg: #f7f9fc;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: #2d3436;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+        .container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 850px;
+            position: relative;
+        }
+        h1 { text-align: center; margin-bottom: 30px; font-weight: 700; }
+
+        /* Reset Button */
+        #reset-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            background: #dfe6e9;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        #reset-btn:hover { background: #b2bec3; }
+
+        /* Statistics Dashboard */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .stat-card {
+            background: #f1f2f6;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border-bottom: 5px solid #dfe4ea;
+        }
+        .stat-card.red-border { border-color: var(--red); }
+        .stat-card.blue-border { border-color: var(--blue); }
+        
+        .stat-label { font-size: 0.85rem; text-transform: uppercase; font-weight: 600; color: #636e72; }
+        .stat-val { font-size: 2.2rem; font-weight: 800; margin: 5px 0; }
+        .pos-label { font-size: 0.95rem; font-weight: 500; }
+
+        /* The Street / Axis */
+        .axis-area {
+            position: relative;
+            height: 140px;
+            margin-bottom: 40px;
+        }
+        .instruction-banner {
+            position: absolute;
+            top: -50px;
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+            color: #d35400;
+            background: #ffeaa7;
+            padding: 8px 0;
+            border-radius: 8px;
+            z-index: 20;
+        }
+
+        .street-visual {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            height: 45px;
+            background: #dfe6e9;
+            border-radius: 25px;
+            display: flex;
+            overflow: hidden;
+            border: 4px solid #b2bec3;
+            cursor: crosshair;
+        }
+        .market-share {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: width 0.3s ease;
+        }
+        #share-red { background: var(--red); }
+        #share-blue { background: var(--blue); }
+
+        /* Stall Icons with Colored Borders */
+        .stall-icon {
+            position: absolute;
+            bottom: 75px;
+            transform: translateX(-50%);
+            z-index: 15;
+            transition: left 0.3s ease;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 50%;
+            font-size: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            pointer-events: none;
+        }
+        .red-icon { border: 4px solid var(--red); }
+        .blue-icon { border: 4px solid var(--blue); }
+
+        /* Controls */
+        .controls {
+            display: none;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 12px;
+        }
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .control-row label { font-weight: 700; width: 100px; }
+        input[type=range] { flex: 1; cursor: pointer; }
+
+        .note {
+            font-size: 0.9rem;
+            color: #636e72;
+            margin-top: 20px;
+            padding: 15px;
+            border-left: 4px solid #00b894;
+            background: #e8f8f5;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <button id="reset-btn">Reset Game</button>
+    <h1>Ice Cream Stall Game</h1>
+
+    <div class="stats-grid">
+        <div class="stat-card red-border">
+            <div class="stat-label">Red Stall Customers</div>
+            <div class="stat-val" style="color: var(--red)" id="cust-red">0</div>
+            <div class="pos-label">Position: <span id="pos-red-text">-</span></div>
+        </div>
+        <div class="stat-card blue-border">
+            <div class="stat-label">Blue Stall Customers</div>
+            <div class="stat-val" style="color: var(--blue)" id="cust-blue">0</div>
+            <div class="pos-label">Position: <span id="pos-blue-text">-</span></div>
+        </div>
+    </div>
+
+    <div class="axis-area">
+        <div id="setup-hint" class="instruction-banner">STEP 1: Click on the street to place RED stall</div>
+        
+        <div id="icon-red" class="stall-icon red-icon" style="display:none">🍦</div>
+        <div id="icon-blue" class="stall-icon blue-icon" style="display:none">🍦</div>
+
+        <div class="street-visual" id="street-clickbox">
+            <div id="share-red" class="market-share"></div>
+            <div id="share-blue" class="market-share"></div>
+        </div>
+    </div>
+
+    <div class="controls" id="control-panel">
+        <div class="control-row">
+            <label style="color: var(--red)">Red Pos:</label>
+            <input type="range" id="range-red" min="0" max="100">
+        </div>
+        <div class="control-row">
+            <label style="color: var(--blue)">Blue Pos:</label>
+            <input type="range" id="range-blue" min="0" max="100">
+        </div>
+        <p style="text-align:center; color: #b2bec3; font-size:0.85rem;">Collision prevention active. 50 vs 51 results in an even split.</p>
+    </div>
+
+    <div class="note">
+        <strong>The Hotelling Model:</strong> If 100 customers are evenly distributed, two stalls will naturally move toward the middle (Nash Equilibrium) to protect their market share.
+    </div>
+</div>
+
+<script>
+    let step = 1; 
+    let posRed = 0;
+    let posBlue = 0;
+
+    const street = document.getElementById('street-clickbox');
+    const setupHint = document.getElementById('setup-hint');
+    const iconRed = document.getElementById('icon-red');
+    const iconBlue = document.getElementById('icon-blue');
+    const shareRed = document.getElementById('share-red');
+    const shareBlue = document.getElementById('share-blue');
+    
+    const sliderRed = document.getElementById('range-red');
+    const sliderBlue = document.getElementById('range-blue');
+    const controlPanel = document.getElementById('control-panel');
+
+    const uiCustRed = document.getElementById('cust-red');
+    const uiCustBlue = document.getElementById('cust-blue');
+    const uiPosRed = document.getElementById('pos-red-text');
+    const uiPosBlue = document.getElementById('pos-blue-text');
+
+    street.addEventListener('click', (e) => {
+        if (step > 2) return;
+        const rect = street.getBoundingClientRect();
+        let clickedPos = Math.round(((e.clientX - rect.left) / rect.width) * 100);
+        clickedPos = Math.max(0, Math.min(100, clickedPos));
+
+        if (step === 1) {
+            posRed = clickedPos;
+            iconRed.style.left = posRed + "%";
+            iconRed.style.display = "flex";
+            uiPosRed.innerText = posRed;
+            setupHint.innerText = "STEP 2: Click to place BLUE stall";
+            step = 2;
+        } else if (step === 2) {
+            if (clickedPos === posRed) clickedPos = (posRed < 100) ? posRed + 1 : posRed - 1;
+            posBlue = clickedPos;
+            iconBlue.style.left = posBlue + "%";
+            iconBlue.style.display = "flex";
+            uiPosBlue.innerText = posBlue;
+            sliderRed.value = posRed;
+            sliderBlue.value = posBlue;
+            setupHint.style.display = "none";
+            controlPanel.style.display = "block";
+            step = 3;
+            updateUI();
+        }
+    });
+
+    sliderRed.addEventListener('input', (e) => {
+        let val = parseInt(e.target.value);
+        if (val === posBlue) val = (val > posRed) ? posBlue - 1 : posBlue + 1;
+        posRed = val;
+        sliderRed.value = val;
+        updateUI();
+    });
+
+    sliderBlue.addEventListener('input', (e) => {
+        let val = parseInt(e.target.value);
+        if (val === posRed) val = (val > posBlue) ? posRed - 1 : posRed + 1;
+        posBlue = val;
+        sliderBlue.value = val;
+        updateUI();
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', () => {
+        step = 1;
+        iconRed.style.display = "none";
+        iconBlue.style.display = "none";
+        controlPanel.style.display = "none";
+        setupHint.style.display = "block";
+        setupHint.innerText = "STEP 1: Click on the street to place RED stall";
+        uiCustRed.innerText = "0";
+        uiCustBlue.innerText = "0";
+        uiPosRed.innerText = "-";
+        uiPosBlue.innerText = "-";
+        shareRed.style.width = "0%";
+        shareBlue.style.width = "0%";
+    });
+
+    function updateUI() {
+        iconRed.style.left = posRed + "%";
+        iconBlue.style.left = posBlue + "%";
+        uiPosRed.innerText = posRed;
+        uiPosBlue.innerText = posBlue;
+
+        let redShare, blueShare;
+        
+        // Logical Adjustment for even split at 50 vs 51
+        if (posRed < posBlue) {
+            // Using floor for midpoint to ensure 50/51 split = 50.0
+            redShare = Math.floor((posRed + posBlue) / 2);
+            blueShare = 100 - redShare;
+            shareRed.style.width = redShare + "%";
+            shareBlue.style.width = blueShare + "%";
+            shareRed.style.order = "1";
+            shareBlue.style.order = "2";
+        } else {
+            blueShare = Math.floor((posRed + posBlue) / 2);
+            redShare = 100 - blueShare;
+            shareBlue.style.width = blueShare + "%";
+            shareRed.style.width = redShare + "%";
+            shareBlue.style.order = "1";
+            shareRed.style.order = "2";
+        }
+
+        uiCustRed.innerText = redShare.toFixed(1);
+        uiCustBlue.innerText = blueShare.toFixed(1);
+        shareRed.innerText = redShare > 10 ? Math.round(redShare) : "";
+        shareBlue.innerText = blueShare > 10 ? Math.round(blueShare) : "";
+    }
+</script>
+
+</body>
+</html>

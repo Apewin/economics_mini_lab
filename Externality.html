@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Externality & Policy Lab Pro</title>
+    <style>
+        :root {
+            --primary: #0d6efd;
+            --success: #198754;
+            --danger: #dc3545;
+            --purple: #6f42c1;
+            --orange: #fd7e14; /* 新增橙色用于政策标记 */
+            --dark: #212529;
+            --gray: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: #ced4da;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #app-container {
+            display: flex;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            height: 780px;
+            width: 1250px;
+        }
+
+        #controls {
+            width: 360px;
+            padding: 30px;
+            background: var(--gray);
+            border-right: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        #chart-wrap {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: white;
+            padding: 20px;
+        }
+
+        h2 { margin: 0 0 10px 0; font-size: 1.5rem; color: var(--dark); border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+        .group { background: white; padding: 15px; border-radius: 8px; border: 1px solid #eee; }
+        label { display: block; font-weight: bold; margin-bottom: 10px; font-size: 0.9rem; }
+
+        .toggle-btn {
+            display: flex;
+            background: #eee;
+            padding: 4px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+        .toggle-btn input { display: none; }
+        .toggle-btn label {
+            flex: 1; text-align: center; padding: 10px 0; margin: 0;
+            cursor: pointer; border-radius: 4px; transition: 0.2s;
+            font-size: 0.85rem; color: #666;
+        }
+        .toggle-btn input:checked + label {
+            background: white; color: var(--primary); font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        input[type="range"] { width: 100%; cursor: pointer; }
+        .range-meta { display: flex; justify-content: space-between; font-size: 0.75rem; color: #888; margin-top: 4px; }
+        .val-tag { float: right; color: var(--primary); font-weight: bold; font-size: 1.1rem; }
+
+        #data-panel {
+            margin-top: auto;
+            background: var(--dark);
+            color: white;
+            padding: 18px;
+            border-radius: 8px;
+        }
+        .efficiency-status {
+            margin-top: 12px; padding: 10px; border-radius: 4px;
+            text-align: center; font-weight: bold; font-size: 1rem;
+        }
+
+        canvas { max-width: 100%; height: auto; }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <div id="controls">
+        <h2>Demo Controls</h2>
+
+        <div class="group">
+            <label>1. Externality Source</label>
+            <div class="toggle-btn">
+                <input type="radio" name="extSrc" id="srcP" value="prod" checked>
+                <label for="srcP">Production</label>
+                <input type="radio" name="extSrc" id="srcC" value="cons">
+                <label for="srcC">Consumption</label>
+            </div>
+            <label>Magnitude: <span id="eLab" class="val-tag">0</span></label>
+            <input type="range" id="eSlide" min="-40" max="40" value="0">
+            <div class="range-meta"><span>Negative (Cost)</span><span>Positive (Benefit)</span></div>
+        </div>
+
+        <div class="group">
+            <label>2. Policy Applied To</label>
+            <div class="toggle-btn">
+                <input type="radio" name="polTar" id="tarP" value="prod" checked>
+                <label for="tarP">Producer</label>
+                <input type="radio" name="polTar" id="tarC" value="cons">
+                <label for="tarC">Consumer</label>
+            </div>
+            <label>Tax / Subsidy: <span id="pLab" class="val-tag">0</span></label>
+            <input type="range" id="pSlide" min="-40" max="40" value="0">
+            <div class="range-meta"><span>Tax (-)</span><span>Subsidy (+)</span></div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px; padding: 5px 10px;">
+            <input type="checkbox" id="dwlToggle" style="width:22px; height:22px; cursor:pointer;">
+            <label for="dwlToggle" style="margin:0; color:var(--danger); cursor:pointer; font-size: 1rem;">Show DWL Triangle</label>
+        </div>
+
+        <div id="data-panel">
+            <div id="stats-content"></div>
+            <div id="eff-msg" class="efficiency-status"></div>
+        </div>
+    </div>
+
+    <div id="chart-wrap">
+        <canvas id="mainChart" width="850" height="750"></canvas>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('mainChart');
+    const ctx = canvas.getContext('2d');
+    
+    const pad = { t: 70, r: 140, b: 70, l: 80 };
+    const w = canvas.width - pad.l - pad.r;
+    const h = canvas.height - pad.t - pad.b;
+
+    const qx = q => pad.l + (q / 100) * w;
+    const py = p => pad.t + h - (p / 120) * h;
+
+    const allInputs = document.querySelectorAll('input');
+
+    function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const eSrc = document.querySelector('input[name="extSrc"]:checked').value;
+        const eVal = parseInt(document.getElementById('eSlide').value);
+        const pTar = document.querySelector('input[name="polTar"]:checked').value;
+        const pVal = parseInt(document.getElementById('pSlide').value);
+        const showDWL = document.getElementById('dwlToggle').checked;
+
+        document.getElementById('eLab').innerText = eVal;
+        document.getElementById('pLab').innerText = pVal;
+
+        // 基础偏移量：外部性导致的偏移
+        let mpc_base = (eSrc === 'prod') ? eVal : 0; 
+        let mpb_base = (eSrc === 'cons') ? -eVal : 0;
+
+        // 最终偏移量：外部性 + 政策导致的整体偏移
+        let s_final = mpc_base + ((pTar === 'prod') ? -pVal : 0);
+        let d_final = mpb_base + ((pTar === 'cons') ? pVal : 0);
+
+        const q_out = (100 + d_final - s_final) / 2;
+        const p_out = q_out + s_final;
+
+        // 1. 坐标轴与网格
+        ctx.strokeStyle = "#f0f0f0"; ctx.lineWidth = 1;
+        for(let i=0; i<=100; i+=20) {
+            ctx.beginPath(); ctx.moveTo(qx(i), py(0)); ctx.lineTo(qx(i), py(120)); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(qx(0), py(i)); ctx.lineTo(qx(100), py(i)); ctx.stroke();
+        }
+        ctx.strokeStyle = "#333"; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, pad.t+h); ctx.lineTo(pad.l+w, pad.t+h); ctx.stroke();
+        ctx.fillStyle = "#000"; ctx.font = "bold 16px sans-serif";
+        ctx.fillText("Quantity", qx(95), py(0) + 40);
+        ctx.fillText("Price", pad.l - 60, pad.t - 20);
+
+        // 2. 绘制基础社会曲线
+        const msbLabel = (eVal === 0 && eSrc === 'cons') ? "MSB = MPB" : "MSB";
+        const mscLabel = (eVal === 0 && eSrc === 'prod') ? "MSC = MPC" : "MSC";
+        drawCurve(0, 0, 100, 100, varColor('--danger'), 5, mscLabel);
+        drawCurve(0, 100, 100, 0, varColor('--primary'), 5, msbLabel);
+
+        // 3. 原始私人曲线 & 外部性 Gap
+        if (eVal !== 0) {
+            let isBenefit = eVal > 0;
+            let extColor = isBenefit ? varColor('--success') : "#6c757d";
+            let extText = isBenefit ? "External Benefit" : "External Cost";
+
+            if (eSrc === 'prod') {
+                drawCurve(0, mpc_base, 100, 100 + mpc_base, "#adb5bd", 2, "MPC", [8, 6]);
+                drawGapMarker(15, 15, 15 + mpc_base, extColor, extText); // Q=15 (左侧) 画外部性
+            }
+            if (eSrc === 'cons') {
+                drawCurve(0, 100 + mpb_base, 100, mpb_base, "#adb5bd", 2, "MPB", [8, 6]);
+                drawGapMarker(15, 85, 85 + mpb_base, extColor, extText); 
+            }
+        }
+
+        // 4. 政策调整后的最终曲线 & 政策 Gap
+        if (pVal !== 0) {
+            let polColor = varColor('--orange');
+            let polText = pVal > 0 ? "Subsidy Gap" : "Tax Gap";
+
+            if (pTar === 'prod') {
+                drawCurve(0, s_final, 100, 100 + s_final, varColor('--purple'), 3, "S + Policy", [4, 2]);
+                drawGapMarker(85, 85 + mpc_base, 85 + s_final, polColor, polText); // Q=85 (右侧) 画政策影响
+            } else {
+                drawCurve(0, 100 + d_final, 100, d_final, varColor('--purple'), 3, "D + Policy", [4, 2]);
+                drawGapMarker(85, 15 + mpb_base, 15 + d_final, polColor, polText);
+            }
+        }
+
+        // 5. 均衡点
+        markPoint(50, 50, varColor('--success'), "Social Optimum");
+        markPoint(q_out, p_out, varColor('--purple'), "Market Outcome");
+
+        // 6. DWL
+        if (showDWL && Math.abs(q_out - 50) > 0.5) {
+            ctx.beginPath();
+            ctx.fillStyle = "rgba(220, 53, 69, 0.25)";
+            ctx.moveTo(qx(50), py(50));
+            ctx.lineTo(qx(q_out), py(q_out)); 
+            ctx.lineTo(qx(q_out), py(100 - q_out)); 
+            ctx.closePath(); ctx.fill();
+            ctx.fillStyle = varColor('--danger'); ctx.font = "bold 26px sans-serif";
+            ctx.fillText("DWL", qx(q_out > 50 ? 55 : 30), py(50));
+        }
+
+        updateStats(q_out);
+    }
+
+    // --- 重构：通用的间距标注段函数 ---
+    function drawGapMarker(q, y1, y2, color, text) {
+        if (y1 === y2) return; // 如果没有间距就不画
+        
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        
+        // 主垂直线
+        ctx.beginPath();
+        ctx.moveTo(qx(q), py(y1));
+        ctx.lineTo(qx(q), py(y2));
+        ctx.stroke();
+
+        // 顶部与底部端点线 (横向短线)
+        ctx.beginPath(); ctx.moveTo(qx(q)-6, py(y1)); ctx.lineTo(qx(q)+6, py(y1)); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(qx(q)-6, py(y2)); ctx.lineTo(qx(q)+6, py(y2)); ctx.stroke();
+
+        // 文本标签处理：根据是在左边(Q=15)还是右边(Q=85)动态调整文字对齐，防止重叠
+        ctx.fillStyle = color;
+        ctx.font = "bold 15px sans-serif";
+        ctx.textBaseline = "middle";
+        
+        if (q > 50) {
+            ctx.textAlign = "right";
+            ctx.fillText(text, qx(q) - 12, py((y1 + y2) / 2));
+        } else {
+            ctx.textAlign = "left";
+            ctx.fillText(text, qx(q) + 12, py((y1 + y2) / 2));
+        }
+        ctx.restore();
+    }
+
+    function drawCurve(q1, p1, q2, p2, color, width, label, dash = []) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.setLineDash(dash);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.moveTo(qx(q1), py(p1));
+        ctx.lineTo(qx(q2), py(p2));
+        ctx.stroke();
+
+        let lx = q1 + (q2 - q1) * 0.92;
+        let ly = p1 + (p2 - p1) * 0.92;
+        ctx.fillStyle = color;
+        ctx.font = "bold 22px sans-serif";
+        ctx.fillText(label, qx(lx) + 12, py(ly));
+        ctx.restore();
+    }
+
+    function markPoint(q, p, color, label) {
+        if (q < 0 || q > 100) return;
+        ctx.setLineDash([5, 5]);
+        ctx.strokeStyle = color; ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(qx(q), py(p)); ctx.lineTo(qx(q), py(0));
+        ctx.moveTo(qx(q), py(p)); ctx.lineTo(qx(0), py(p));
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.beginPath(); ctx.arc(qx(q), py(p), 6, 0, Math.PI * 2);
+        ctx.fillStyle = color; ctx.fill();
+
+        ctx.font = "bold 18px sans-serif";
+        ctx.fillText(label, qx(q) + 12, py(p) - 15);
+        ctx.font = "14px monospace";
+        ctx.fillText("Q=" + q.toFixed(1), qx(q) - 20, py(0) + 25);
+    }
+
+    function updateStats(q) {
+        const stats = document.getElementById('stats-content');
+        const msg = document.getElementById('eff-msg');
+        stats.innerHTML = `
+            <b>Target Q:</b> 50.0<br>
+            <b>Actual Q:</b> ${q.toFixed(1)}<br>
+            <b>Efficiency Gap:</b> ${Math.abs(q - 50).toFixed(1)}
+        `;
+
+        if (Math.abs(q - 50) < 0.5) {
+            msg.innerText = "Efficiency Restored";
+            msg.style.background = varColor('--success');
+        } else {
+            msg.innerText = q > 50 ? "Overproduction" : "Underproduction";
+            msg.style.background = q > 50 ? varColor('--danger') : varColor('--purple');
+        }
+    }
+
+    function varColor(name) {
+        return getComputedStyle(document.documentElement).getPropertyValue(name.replace('var(', '').replace(')', '')).trim();
+    }
+
+    allInputs.forEach(input => input.addEventListener('input', render));
+    render();
+</script>
+
+</body>
+</html>
