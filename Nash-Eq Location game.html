@@ -22,7 +22,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            user-select: none; /* Prevent text selection during drag */
+            user-select: none;
         }
         .container {
             background: white;
@@ -35,7 +35,7 @@
             display: flex;
             flex-direction: column;
             position: relative;
-            overflow-y: auto; /* 允许在屏幕较小时滚动，防止内容被切掉 */
+            overflow-y: auto; 
         }
         
         h1 { 
@@ -46,7 +46,6 @@
             color: #2f3542;
         }
 
-        /* Rules Box */
         .rules-box {
             background: #f8f9fa;
             border-left: 6px solid #747d8c;
@@ -58,7 +57,6 @@
             margin-bottom: 20px;
         }
 
-        /* Reset Button */
         #reset-btn {
             position: absolute;
             top: 25px;
@@ -75,7 +73,6 @@
         }
         #reset-btn:hover { background: #b2bec3; }
 
-        /* Statistics Dashboard - Sized Down */
         .stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -102,7 +99,6 @@
         .stat-val { font-size: 3.8rem; font-weight: 900; margin: 5px 0; line-height: 1; }
         .pos-label { font-size: 1.2rem; font-weight: 700; }
 
-        /* The Street & Axis Area */
         .axis-area {
             flex-grow: 1;
             display: flex;
@@ -113,7 +109,6 @@
             min-height: 280px;
         }
         
-        /* 提示框改为相对定位，占据独立空间，彻底告别重合 */
         .instruction-banner {
             position: relative;
             width: 100%;
@@ -126,15 +121,15 @@
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.08);
             z-index: 20;
-            margin-bottom: 30px; /* 给下方的红方摊位留出安全距离 */
+            margin-bottom: 30px; 
         }
 
         .street-wrapper {
             position: relative;
             width: 100%;
-            height: 60px; /* 街道高度微调 */
-            margin-top: 75px; /* 给红方图标留空间 */
-            margin-bottom: 75px; /* 给蓝方图标留空间 */
+            height: 60px; 
+            margin-top: 75px; 
+            margin-bottom: 75px; 
         }
 
         .street-visual {
@@ -160,10 +155,9 @@
         #share-red { background: var(--red); }
         #share-blue { background: var(--blue); }
 
-        /* Draggable Stall Icons */
         .stall-icon {
             position: absolute;
-            width: 70px; /* 尺寸微缩 */
+            width: 70px; 
             height: 70px;
             display: flex;
             align-items: center;
@@ -179,7 +173,6 @@
         .red-icon { top: -80px; border: 5px solid var(--red); }
         .blue-icon { bottom: -80px; border: 5px solid var(--blue); }
 
-        /* Drag States */
         .can-drag {
             cursor: grab;
             box-shadow: 0 0 20px rgba(0,0,0,0.25);
@@ -192,7 +185,6 @@
             pointer-events: none;
         }
 
-        /* 理论说明框 (默认隐藏，触发后保证在视野内) */
         .note {
             display: none;
             font-size: 1.15rem;
@@ -206,7 +198,6 @@
             margin-top: 15px;
         }
 
-        /* Toast Notification */
         #toast-container {
             position: fixed;
             top: 40px;
@@ -252,7 +243,6 @@
         <br>3. <strong>Rationality Rule:</strong> A move is only valid if it <strong>strictly increases</strong> your customers!
     </div>
 
-    <!-- Big Dashboard -->
     <div class="stats-grid">
         <div class="stat-card red-border" id="card-red">
             <div class="stat-label">Red Stall Customers</div>
@@ -266,7 +256,6 @@
         </div>
     </div>
 
-    <!-- Visual Interactive Area -->
     <div class="axis-area">
         <div id="setup-hint" class="instruction-banner">STEP 1: Click on the street to place RED stall</div>
         
@@ -281,7 +270,6 @@
         </div>
     </div>
 
-    <!-- Hidden Theorem Output -->
     <div class="note" id="nash-note">
         <strong>The Hotelling Model (Nash Equilibrium Reached):</strong> <br>
         When customers are distributed evenly, competitors naturally converge precisely at the center <strong>(Position 50)</strong>. At this point, neither player can improve their payoff by deviating unilaterally. 
@@ -321,16 +309,15 @@
         setTimeout(() => toast.classList.remove('show'), 2500);
     }
 
+    // 核心修复点：移除取整，恢复连续分布逻辑
     function calculateShares(r, b) {
         if (step === 2) return { red: 100, blue: 0 };
         if (r === b) return { red: 50, blue: 50 };
         const mid = (r + b) / 2;
         if (r < b) {
-            let shareR = Math.floor(mid);
-            return { red: shareR, blue: 100 - shareR };
+            return { red: mid, blue: 100 - mid };
         } else {
-            let shareB = Math.floor(mid);
-            return { red: 100 - shareB, blue: shareB };
+            return { red: 100 - mid, blue: mid };
         }
     }
 
@@ -377,6 +364,7 @@
             shareRed.style.order = "2";
         }
 
+        // 仅供界面柱状图内文字显示的友好取整
         shareRed.innerText = shares.red > 8 ? Math.round(shares.red) : "";
         shareBlue.innerText = shares.blue > 8 ? Math.round(shares.blue) : "";
     }
@@ -384,7 +372,6 @@
     function checkEquilibrium() {
         if (posRed === 50 && posBlue === 50) {
             step = 4;
-            // 确保文字框展示出来，并且如果屏幕比较小的话能够自动滚到底部让大家看到
             const noteBox = document.getElementById('nash-note');
             noteBox.style.display = 'block';
             
@@ -398,7 +385,6 @@
             cardBlue.classList.add('active-turn');
             street.style.cursor = "default";
             
-            // 稍作延迟后平滑滚动到底部（防止屏幕较小时文字被遮挡）
             setTimeout(() => {
                 noteBox.scrollIntoView({ behavior: 'smooth', block: 'end' });
             }, 100);
