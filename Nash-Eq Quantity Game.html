@@ -13,19 +13,28 @@
             --font-lg: 20px;
             --font-xl: 24px;
         }
-        /* 优化1：缩减全局边距 */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding: 10px 20px; 
+            padding: 10px 20px;
             background-color: var(--bg);
             color: var(--primary);
-            font-size: var(--font-lg); 
+            font-size: var(--font-lg);
         }
-        h1 { text-align: center; font-size: 28px; margin-top: 5px; margin-bottom: 0px; }
-        h2 { font-size: 22px; border-bottom: 2px solid var(--secondary); padding-bottom: 5px; margin-top: 5px; margin-bottom: 10px; }
-        
-        /* 优化1：缩减选项卡和内容区空白 */
+        h1 {
+            text-align: center;
+            font-size: 28px;
+            margin-top: 5px;
+            margin-bottom: 0px;
+        }
+        h2 {
+            font-size: 22px;
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 5px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
+
         .tabs {
             display: flex;
             justify-content: center;
@@ -43,19 +52,25 @@
             margin: 0 5px;
             border-radius: 8px 8px 0 0;
         }
-        .tab-btn:hover { background-color: #ccc; }
-        .tab-btn.active { background-color: var(--secondary); color: white; }
-        
+        .tab-btn:hover {
+            background-color: #ccc;
+        }
+        .tab-btn.active {
+            background-color: var(--secondary);
+            color: white;
+        }
+
         .tab-content {
             display: none;
             background: white;
             padding: 15px;
             border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
-        .tab-content.active { display: block; }
-        
-        /* 优化1：横向撑满窗口，三图平分空间 */
+        .tab-content.active {
+            display: block;
+        }
+
         .flex-container {
             display: flex;
             gap: 15px;
@@ -64,21 +79,21 @@
             width: 100%;
             flex-wrap: nowrap;
         }
-        .graph-wrapper { 
-            flex: 1; 
-            text-align: center; 
+        .graph-wrapper {
+            flex: 1;
+            text-align: center;
+            min-width: 0;
         }
         canvas {
             background: #fff;
             border: 1px solid #ccc;
             border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            width: 100%; /* 响应式铺满外层 wrapper */
-            max-width: 500px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            width: 100%;
             height: auto;
+            max-width: 100%;
         }
-        
-        /* 优化1：控制台区域变得更加紧凑 */
+
         .controls {
             background: #f1f2f6;
             padding: 15px;
@@ -94,34 +109,132 @@
         }
         input[type="range"] {
             width: 50%;
-            height: 25px; 
+            height: 25px;
             cursor: pointer;
         }
-        input[type="checkbox"] { width: 25px; height: 25px; cursor: pointer; vertical-align: middle; }
-        .checkbox-label { margin-right: 25px; font-weight: bold; cursor: pointer; }
-        
+        input[type="checkbox"] {
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            vertical-align: middle;
+        }
+        .checkbox-label {
+            margin-right: 25px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
         .btn {
-            background-color: var(--secondary); color: white; border: none; padding: 12px 24px;
-            border-radius: 5px; cursor: pointer; font-size: var(--font-lg); font-weight: bold; margin-right: 10px;
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: var(--font-lg);
+            font-weight: bold;
+            margin-right: 10px;
         }
-        .btn:hover { background-color: #2980b9; }
-        .btn-reset { background-color: #95a5a6; }
-        .btn-reset:hover { background-color: #7f8c8d; }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        .btn-reset {
+            background-color: #95a5a6;
+        }
+        .btn-reset:hover {
+            background-color: #7f8c8d;
+        }
 
-        .data-table { width: 100%; border-collapse: collapse; font-size: var(--font-lg); background: white; }
-        .data-table th, .data-table td { border: 2px solid #ddd; padding: 12px; text-align: center; }
-        .data-table th { background-color: var(--primary); color: white; }
-        
-        .table-container { flex: 1; max-height: 550px; overflow-y: auto; border: 2px solid #ddd; border-radius: 5px; }
-        
-        .highlight { font-weight: bold; color: var(--accent); }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: var(--font-lg);
+            background: white;
+        }
+        .data-table th,
+        .data-table td {
+            border: 2px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+        .data-table th {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .table-container {
+            flex: 0 0 36%;
+            max-height: 600px;
+            overflow-y: auto;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .highlight {
+            font-weight: bold;
+            color: var(--accent);
+        }
         .data-box {
-            background: #eaf2f8; padding: 20px; border-radius: 8px;
-            border-left: 5px solid var(--secondary); flex: 1;
+            background: #eaf2f8;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid var(--secondary);
+            flex: 0 0 28%;
+            min-width: 200px;
         }
-        .data-box p { margin: 10px 0; }
+        .data-box p {
+            margin: 10px 0;
+        }
 
-        footer { text-align: center; margin-top: 20px; font-size: 16px; color: #7f8c8d; }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 16px;
+            color: #7f8c8d;
+        }
+
+        /* Step2 专用：图更紧凑，表格占更多空间 */
+        .step2-graph {
+            flex: 0 0 40% !important;
+            max-width: 40%;
+        }
+        .step2-table {
+            flex: 0 0 55% !important;
+        }
+
+        /* Step3 专用：图更紧凑，数据框占更多空间 */
+        .step3-graph {
+            flex: 0 0 42% !important;
+            max-width: 42%;
+        }
+        .step3-data {
+            flex: 0 0 52% !important;
+        }
+
+        /* 小屏适配：堆叠显示 */
+        @media (max-width: 1100px) {
+            .flex-container {
+                flex-wrap: wrap;
+            }
+            .graph-wrapper {
+                flex: 1 1 100% !important;
+                max-width: 100% !important;
+            }
+            .table-container,
+            .data-box {
+                flex: 1 1 100% !important;
+                max-height: 400px;
+            }
+            .step2-graph,
+            .step3-graph {
+                flex: 1 1 100% !important;
+                max-width: 100% !important;
+            }
+            .step2-table,
+            .step3-data {
+                flex: 1 1 100% !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -148,12 +261,11 @@
                 <input type="range" id="slider-s1-qb" min="0" max="90" step="1" value="15" oninput="updateStep1()">
             </div>
             <p style="text-align: center; margin-top: 10px; margin-bottom: 0;">
-                Current Profit: <span class="highlight" id="val-s1-profit">$...</span> 
+                Current Profit: <span class="highlight" id="val-s1-profit">$...</span>
                 &nbsp;&nbsp;|&nbsp;&nbsp; Max Profit is at Q_B = <span class="highlight" id="val-s1-opt-qb">...</span>
             </p>
         </div>
 
-        <!-- 优化1：调大内部画布分辨率，配合外层 CSS 实现高清占满 -->
         <div class="flex-container">
             <div class="graph-wrapper">
                 <canvas id="canvas-s1-left" width="450" height="450"></canvas>
@@ -182,10 +294,10 @@
         </div>
 
         <div class="flex-container">
-            <div class="graph-wrapper" style="flex: 1.2;">
-                <canvas id="canvas-s2" width="550" height="550"></canvas>
+            <div class="graph-wrapper step2-graph">
+                <canvas id="canvas-s2" width="700" height="700"></canvas>
             </div>
-            <div class="table-container">
+            <div class="table-container step2-table">
                 <table class="data-table" id="table-s2">
                     <thead>
                         <tr>
@@ -219,10 +331,10 @@
         </div>
 
         <div class="flex-container">
-            <div class="graph-wrapper" style="flex: 1.5;">
-                <canvas id="canvas-s3" width="650" height="500"></canvas>
+            <div class="graph-wrapper step3-graph">
+                <canvas id="canvas-s3" width="840" height="840"></canvas>
             </div>
-            <div class="data-box">
+            <div class="data-box step3-data">
                 <h3 style="margin-top: 0;">Market Real-Time Data</h3>
                 <p><strong>Total Quantity (Q):</strong> <span id="stat-q">...</span></p>
                 <p><strong>Market Price (P):</strong> $<span id="stat-p">...</span></p>
@@ -243,19 +355,21 @@
 
     <script>
         class CanvasGraph {
-            constructor(canvasId, xMax, yMax, xLabel, yLabel) {
+            // 增加 scale 参数，用于统一缩放所有图形元素（文字大小、点半径、线宽等）
+            constructor(canvasId, xMax, yMax, xLabel, yLabel, scale = 1.0) {
                 this.canvas = document.getElementById(canvasId);
                 this.ctx = this.canvas.getContext('2d');
                 this.w = this.canvas.width;
                 this.h = this.canvas.height;
                 this.padL = 70;
-                this.padB = 60;
-                this.padT = 30;
-                this.padR = 40;
+                this.padR = 50;
+                this.padT = 35;
+                this.padB = 55;
                 this.xMax = xMax;
                 this.yMax = yMax;
                 this.xLabel = xLabel;
                 this.yLabel = yLabel;
+                this.scale = scale; // 保存缩放系数
             }
 
             clear() {
@@ -266,14 +380,14 @@
             px(x) { return this.padL + (x / this.xMax) * (this.w - this.padL - this.padR); }
             py(y) { return this.h - this.padB - (y / this.yMax) * (this.h - this.padT - this.padB); }
 
-            drawLine(x1, y1, x2, y2, color, width, dash=[]) {
+            drawLine(x1, y1, x2, y2, color, width, dash = []) {
                 const ctx = this.ctx;
                 ctx.beginPath();
                 ctx.setLineDash(dash);
                 ctx.moveTo(this.px(x1), this.py(y1));
                 ctx.lineTo(this.px(x2), this.py(y2));
                 ctx.strokeStyle = color;
-                ctx.lineWidth = width;
+                ctx.lineWidth = width * this.scale; // 线宽缩放
                 ctx.stroke();
                 ctx.setLineDash([]);
             }
@@ -285,42 +399,44 @@
                 ctx.lineTo(this.padL, this.h - this.padB);
                 ctx.lineTo(this.w - this.padR + 10, this.h - this.padB);
                 ctx.strokeStyle = "#333";
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 2 * this.scale;
                 ctx.stroke();
 
-                ctx.font = "bold 15px Arial";
+                const fs = 14 * this.scale;
+                ctx.font = `bold ${fs}px Arial`;
                 ctx.fillStyle = "#333";
                 ctx.textAlign = "center";
-                ctx.fillText(this.xLabel, this.padL + (this.w - this.padL - this.padR)/2, this.h - 15);
-                
+                ctx.fillText(this.xLabel, this.padL + (this.w - this.padL - this.padR) / 2, this.h - 12);
+
                 ctx.save();
-                ctx.translate(20, this.padT + (this.h - this.padT - this.padB)/2);
-                ctx.rotate(-Math.PI/2);
+                ctx.translate(18, this.padT + (this.h - this.padT - this.padB) / 2);
+                ctx.rotate(-Math.PI / 2);
                 ctx.fillText(this.yLabel, 0, 0);
                 ctx.restore();
 
-                ctx.font = "13px Arial";
+                ctx.font = `${12 * this.scale}px Arial`;
                 ctx.fillText("0", this.padL - 15, this.h - this.padB + 15);
             }
 
-            drawPoint(x, y, color, label, showLines=false, radius=6, symbol='circle') {
+            drawPoint(x, y, color, label, showLines = false, radius = 6, symbol = 'circle') {
                 const ctx = this.ctx;
+                const r = radius * this.scale;
                 if (showLines) {
                     this.drawLine(x, 0, x, y, "#95a5a6", 1.5, [4, 4]);
                     this.drawLine(0, y, x, y, "#95a5a6", 1.5, [4, 4]);
                 }
-                
+
                 ctx.beginPath();
                 if (symbol === 'star') {
                     let rot = Math.PI / 2 * 3;
                     let cx = this.px(x);
                     let cy = this.py(y);
                     let spikes = 5;
-                    let outerRadius = radius + 3;
-                    let innerRadius = radius - 1;
+                    let outerRadius = r + 3 * this.scale;
+                    let innerRadius = r - 1 * this.scale;
                     let step = Math.PI / spikes;
 
-                    ctx.moveTo(cx, cy - outerRadius)
+                    ctx.moveTo(cx, cy - outerRadius);
                     for (let i = 0; i < spikes; i++) {
                         let sx = cx + Math.cos(rot) * outerRadius;
                         let sy = cy + Math.sin(rot) * outerRadius;
@@ -337,36 +453,52 @@
                     ctx.fillStyle = color;
                     ctx.fill();
                 } else {
-                    ctx.arc(this.px(x), this.py(y), radius, 0, 2*Math.PI);
+                    ctx.arc(this.px(x), this.py(y), r, 0, 2 * Math.PI);
                     ctx.fillStyle = color;
                     ctx.fill();
                 }
-                
+
                 ctx.strokeStyle = "#fff";
-                ctx.lineWidth = 1.5;
+                ctx.lineWidth = 1.5 * this.scale;
                 ctx.stroke();
 
                 if (label) {
-                    ctx.font = "bold 13px Arial";
+                    const fs = 13 * this.scale;
+                    ctx.font = `bold ${fs}px Arial`;
                     ctx.fillStyle = "#000";
                     ctx.textAlign = "left";
-                    ctx.fillText(label, this.px(x) + 8, this.py(y) - 8);
+                    let tx = this.px(x) + 8 * this.scale;
+                    let ty = this.py(y) - 8 * this.scale;
+                    // 防止文字溢出右边界
+                    if (tx + ctx.measureText(label).width > this.w - this.padR) {
+                        ctx.textAlign = "right";
+                        tx = this.px(x) - 8 * this.scale;
+                    }
+                    ctx.fillText(label, tx, ty);
                 }
             }
 
-            drawText(text, x, y, color="black", align="left") {
+            drawText(text, x, y, color = "black", align = "left") {
                 const ctx = this.ctx;
-                ctx.font = "bold 14px Arial";
+                const fs = 14 * this.scale;
+                ctx.font = `bold ${fs}px Arial`;
                 ctx.fillStyle = color;
                 ctx.textAlign = align;
-                ctx.fillText(text, this.px(x), this.py(y));
+                let tx = this.px(x);
+                let ty = this.py(y);
+                // 防止溢出右边界
+                if (align === "left" && tx + ctx.measureText(text).width > this.w - this.padR) {
+                    ctx.textAlign = "right";
+                    tx = this.w - this.padR - 2;
+                }
+                ctx.fillText(text, tx, ty);
             }
 
             fillPoly(points, color) {
                 const ctx = this.ctx;
                 ctx.beginPath();
                 ctx.moveTo(this.px(points[0].x), this.py(points[0].y));
-                for(let i=1; i<points.length; i++) {
+                for (let i = 1; i < points.length; i++) {
                     ctx.lineTo(this.px(points[i].x), this.py(points[i].y));
                 }
                 ctx.closePath();
@@ -379,17 +511,20 @@
         const MC = 30;
 
         let graph1L, graph1M, graph1R;
+
         function initStep1() {
-            graph1L = new CanvasGraph("canvas-s1-left", 100, 130, "Firm B Quantity (Q_B)", "Price & Cost ($)");
-            graph1M = new CanvasGraph("canvas-s1-middle", 100, 2500, "Firm B Quantity (Q_B)", "Firm B Profit ($)");
-            graph1R = new CanvasGraph("canvas-s1-right", 100, 100, "Firm A Quantity (Q_A)", "Firm B Quantity (Q_B)");
+            // Step 1 的 Canvas 尺寸为 450，设置 scale=0.75 使文字视觉大小适中
+            const s1Scale = 1.2;
+            graph1L = new CanvasGraph("canvas-s1-left", 100, 130, "Firm B Quantity (Q_B)", "Price & Cost ($)", s1Scale);
+            graph1M = new CanvasGraph("canvas-s1-middle", 100, 2500, "Firm B Quantity (Q_B)", "Firm B Profit ($)", s1Scale);
+            graph1R = new CanvasGraph("canvas-s1-right", 100, 100, "Firm B Quantity (Q_B)", "Firm A Quantity (Q_A)", s1Scale);
             updateStep1();
         }
 
         function updateStep1() {
             let qa = parseFloat(document.getElementById('slider-s1-qa').value);
             let qb = parseFloat(document.getElementById('slider-s1-qb').value);
-            
+
             document.getElementById('val-s1-qa').innerText = qa;
             document.getElementById('val-s1-qb').innerText = qb;
 
@@ -398,14 +533,12 @@
             let profit = (currentP - MC) * qb;
             let optQb = Math.max(0, (residualA - MC) / 2);
             let maxProfit = (residualA - optQb - MC) * optQb;
-
-            // 优化2：计算最优点对应的残差需求曲线价格
             let optP = Math.max(0, residualA - optQb);
 
             document.getElementById('val-s1-profit').innerText = profit.toFixed(0);
             document.getElementById('val-s1-opt-qb').innerText = optQb.toFixed(1);
 
-            // --- Left Graph ---
+            // Left Graph
             graph1L.clear();
             graph1L.drawLine(0, residualA, residualA, 0, "blue", 3);
             graph1L.drawText("D (Residual)", residualA - 15, 8, "blue");
@@ -414,21 +547,17 @@
             graph1L.drawLine(0, residualA, mrEnd, 0, "green", 3);
             graph1L.drawText("MR", mrEnd - 5, 8, "green");
 
-            graph1L.drawLine(0, MC, 100, MC, "red", 2, [6,4]);
+            graph1L.drawLine(0, MC, 100, MC, "red", 2, [6, 4]);
             graph1L.drawText("MC", 90, MC - 5, "red");
 
-            // 优化2：将绿星直接绘制在需求曲线上 (optQb, optP)
             graph1L.drawPoint(optQb, optP, "green", `Optimum P=${optP.toFixed(1)}`, true, 8, 'star');
             graph1L.drawPoint(qb, currentP, "orange", `Current`, true, 8, 'circle');
 
-
-            // --- Middle Graph ---
+            // Middle Graph
             graph1M.clear();
-            
-            // 优化3：剔除负值部分，仅在 profit >= 0 时连线
             graph1M.ctx.beginPath();
             let isDrawing = false;
-            for(let x=0; x<=100; x++) {
+            for (let x = 0; x <= 100; x++) {
                 let p = (Math.max(0, residualA - x) - MC) * x;
                 if (p >= 0) {
                     if (!isDrawing) {
@@ -440,21 +569,32 @@
                 }
             }
             graph1M.ctx.strokeStyle = "purple";
-            graph1M.ctx.lineWidth = 3;
+            graph1M.ctx.lineWidth = 3 * graph1M.scale;
             graph1M.ctx.stroke();
             graph1M.drawText("Profit Curve", optQb + 10, Math.max(100, maxProfit * 0.9), "purple");
 
             graph1M.drawPoint(optQb, maxProfit, "green", "Max Profit", true, 8, 'star');
             graph1M.drawPoint(qb, profit, "orange", "Current", true, 8, 'circle');
 
-
-            // --- Right Graph ---
+            // Right Graph
             graph1R.clear();
-            graph1R.drawLine(0, 45, 90, 0, "blue", 3);
-            graph1R.drawText("R_B (Reaction Curve)", 45, 25, "blue");
+            graph1R.drawLine(0, 90, 45, 0, "purple", 3);
+            graph1R.drawText("B's Best Response", 20, 80, "purple");
 
-            graph1R.drawPoint(qa, optQb, "green", "Best Response", true, 8, 'star');
-            graph1R.drawPoint(qa, qb, "orange", "Current", true, 8, 'circle');
+            graph1R.drawPoint(optQb, qa, "green", "B's Best", true, 8, 'star');
+            graph1R.drawPoint(qb, qa, "orange", "Current", true, 8, 'circle');
+
+            graph1R.ctx.beginPath();
+            graph1R.ctx.setLineDash([4, 4]);
+            graph1R.ctx.moveTo(graph1R.px(0), graph1R.py(qa));
+            graph1R.ctx.lineTo(graph1R.px(90), graph1R.py(qa));
+            graph1R.ctx.strokeStyle = "#999";
+            graph1R.ctx.lineWidth = 1.5 * graph1R.scale;
+            graph1R.ctx.stroke();
+            graph1R.ctx.setLineDash([]);
+
+            graph1R.drawText("Q_A = " + qa.toFixed(1), 5, qa + 3, "#2c3e50", "left");
+            graph1R.drawText("Q_B^opt = " + optQb.toFixed(1), optQb + 2, 5, "#2c3e50", "left");
         }
 
         let graph2;
@@ -462,7 +602,8 @@
         let s2_turn = 0;
 
         function initStep2() {
-            graph2 = new CanvasGraph("canvas-s2", 100, 100, "Firm A Quantity (Q_A)", "Firm B Quantity (Q_B)");
+            // Step 2 尺寸 700，scale=1.0 保持适中
+            graph2 = new CanvasGraph("canvas-s2", 100, 100, "Firm A Quantity (Q_A)", "Firm B Quantity (Q_B)", 1.6);
             resetStep2();
         }
 
@@ -480,26 +621,26 @@
         function resetStep2() {
             let startQA = parseFloat(document.getElementById('slider-s2-start').value);
             document.getElementById('val-s2-start').innerText = startQA;
-            
+
             s2_history = [{ qa: startQA, qb: 0 }];
             s2_turn = 0;
-            
+
             document.getElementById('tbody-s2').innerHTML = `
-                <tr style="background:#f9f9f9;">
-                    <td>0</td>
-                    <td>Start</td>
-                    <td><strong>${startQA.toFixed(1)}</strong></td>
-                    <td>0.0</td>
-                </tr>
-            `;
-            
+                    <tr style="background:#f9f9f9;">
+                        <td>0</td>
+                        <td>Start</td>
+                        <td><strong>${startQA.toFixed(1)}</strong></td>
+                        <td>0.0</td>
+                    </tr>
+                `;
+
             drawStep2Base();
-            graph2.drawPoint(startQA, 0, "orange", "Start", false, 8);
+            graph2.drawPoint(startQA, 0, "orange", "Start", false, 7);
         }
 
         function step2NextTurn() {
             if (s2_turn >= 15) return;
-            
+
             let last = s2_history[s2_history.length - 1];
             let nextQA = last.qa;
             let nextQB = last.qb;
@@ -517,17 +658,17 @@
             s2_history.push({ qa: nextQA, qb: nextQB });
 
             drawStep2Base();
-            
+
             graph2.ctx.beginPath();
             graph2.ctx.moveTo(graph2.px(s2_history[0].qa), graph2.py(s2_history[0].qb));
-            for(let i=1; i<s2_history.length; i++) {
+            for (let i = 1; i < s2_history.length; i++) {
                 graph2.ctx.lineTo(graph2.px(s2_history[i].qa), graph2.py(s2_history[i].qb));
             }
             graph2.ctx.strokeStyle = "orange";
-            graph2.ctx.lineWidth = 2;
+            graph2.ctx.lineWidth = 2.5 * graph2.scale;
             graph2.ctx.stroke();
 
-            for(let i=0; i<s2_history.length; i++) {
+            for (let i = 0; i < s2_history.length; i++) {
                 graph2.drawPoint(s2_history[i].qa, s2_history[i].qb, "orange", "", false, 5);
             }
             graph2.drawPoint(nextQA, nextQB, "purple", `Turn ${s2_turn}`, false, 7);
@@ -535,18 +676,20 @@
             let tbody = document.getElementById('tbody-s2');
             let newRow = document.createElement('tr');
             newRow.innerHTML = `
-                <td>${s2_turn}</td>
-                <td>${actor}</td>
-                <td class="${actor === 'Firm A Reacts' ? 'highlight' : ''}">${nextQA.toFixed(1)}</td>
-                <td class="${actor === 'Firm B Reacts' ? 'highlight' : ''}">${nextQB.toFixed(1)}</td>
-            `;
+                    <td>${s2_turn}</td>
+                    <td>${actor}</td>
+                    <td class="${actor === 'Firm A Reacts' ? 'highlight' : ''}">${nextQA.toFixed(1)}</td>
+                    <td class="${actor === 'Firm B Reacts' ? 'highlight' : ''}">${nextQB.toFixed(1)}</td>
+                `;
             tbody.appendChild(newRow);
             tbody.parentElement.parentElement.scrollTop = tbody.parentElement.parentElement.scrollHeight;
         }
 
         let graph3;
+
         function initStep3() {
-            graph3 = new CanvasGraph("canvas-s3", 110, 130, "Total Market Quantity (Q)", "Price & Cost ($)");
+            // Step 3 尺寸 840，scale=1.35 使文字视觉大小与 Step 2 相当
+            graph3 = new CanvasGraph("canvas-s3", 110, 130, "Total Market Quantity (Q)", "Price & Cost ($)", 2);
             updateStep3();
         }
 
@@ -562,8 +705,8 @@
 
             graph3.drawLine(0, DEMAND_A, 120, 0, "blue", 3);
             graph3.drawText("Demand", 105, 10, "blue");
-            
-            graph3.drawLine(0, MC, 110, MC, "red", 2, [6,4]);
+
+            graph3.drawLine(0, MC, 110, MC, "red", 2, [6, 4]);
             graph3.drawText("MC", 100, MC - 5, "red");
 
             if (showMono) {
@@ -579,23 +722,30 @@
             }
 
             let currentP = Math.max(0, DEMAND_A - currentQ);
-            
-            graph3.drawLine(currentQ, 0, currentQ, currentP, "#34495e", 2, [4,4]);
-            graph3.drawLine(0, currentP, currentQ, currentP, "#34495e", 2, [4,4]);
+
+            graph3.drawLine(currentQ, 0, currentQ, currentP, "#34495e", 2, [4, 4]);
+            graph3.drawLine(0, currentP, currentQ, currentP, "#34495e", 2, [4, 4]);
             graph3.drawPoint(currentQ, currentP, "black", "", false, 8);
 
-            graph3.fillPoly([{x:0, y:DEMAND_A}, {x:0, y:currentP}, {x:currentQ, y:currentP}], "rgba(46, 204, 113, 0.3)");
-            
+            graph3.fillPoly([{ x: 0, y: DEMAND_A }, { x: 0, y: currentP }, { x: currentQ, y: currentP }],
+                "rgba(46, 204, 113, 0.3)");
+
             if (currentP >= MC) {
-                graph3.fillPoly([{x:0, y:currentP}, {x:0, y:MC}, {x:currentQ, y:MC}, {x:currentQ, y:currentP}], "rgba(52, 152, 219, 0.3)");
+                graph3.fillPoly([{ x: 0, y: currentP }, { x: 0, y: MC }, { x: currentQ, y: MC }, { x: currentQ,
+                        y: currentP }],
+                    "rgba(52, 152, 219, 0.3)");
             } else {
-                graph3.fillPoly([{x:0, y:MC}, {x:0, y:currentP}, {x:currentQ, y:currentP}, {x:currentQ, y:MC}], "rgba(52, 152, 219, 0.3)");
+                graph3.fillPoly([{ x: 0, y: MC }, { x: 0, y: currentP }, { x: currentQ, y: currentP }, { x: currentQ,
+                        y: MC }],
+                    "rgba(52, 152, 219, 0.3)");
             }
 
             if (currentQ < 90) {
-                graph3.fillPoly([{x:currentQ, y:currentP}, {x:currentQ, y:MC}, {x:90, y:MC}], "rgba(231, 76, 60, 0.4)");
+                graph3.fillPoly([{ x: currentQ, y: currentP }, { x: currentQ, y: MC }, { x: 90, y: MC }],
+                    "rgba(231, 76, 60, 0.4)");
             } else if (currentQ > 90) {
-                graph3.fillPoly([{x:90, y:MC}, {x:currentQ, y:MC}, {x:currentQ, y:currentP}], "rgba(231, 76, 60, 0.4)");
+                graph3.fillPoly([{ x: 90, y: MC }, { x: currentQ, y: MC }, { x: currentQ, y: currentP }],
+                    "rgba(231, 76, 60, 0.4)");
             }
 
             let cs = 0.5 * currentQ * (DEMAND_A - currentP);
@@ -612,19 +762,18 @@
         function switchTab(tabIndex) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            
-            document.getElementById('step' + tabIndex).classList.add('active');
-            document.querySelectorAll('.tab-btn')[tabIndex-1].classList.add('active');
 
-            if(tabIndex === 1 && !graph1L) initStep1();
-            if(tabIndex === 2 && !graph2) initStep2();
-            if(tabIndex === 3 && !graph3) initStep3();
+            document.getElementById('step' + tabIndex).classList.add('active');
+            document.querySelectorAll('.tab-btn')[tabIndex - 1].classList.add('active');
+
+            if (tabIndex === 1 && !graph1L) initStep1();
+            if (tabIndex === 2 && !graph2) initStep2();
+            if (tabIndex === 3 && !graph3) initStep3();
         }
 
         window.onload = () => {
             initStep1();
         };
-
     </script>
 </body>
 </html>
