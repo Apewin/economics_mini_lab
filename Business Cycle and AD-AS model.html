@@ -3,125 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AP Macroeconomics Lab: Advanced Dynamic AS-AD Framework</title>
-    <script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <title>Business Cycles, AD-AS Model &amp; Production Possibilities</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <style>
-        :root {
-            --bg-color: #f8f9fa;
-            --panel-bg: #ffffff;
-            --primary-dark: #2c3e50;
-            --color-ad: #2980b9;
-            --color-sras: #d35400;
-            --color-lras: #27ae60;
-            --color-ppc: #8e44ad;
-            --color-actual: #e74c3c;
-            --color-ref: #b2bec3;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&family=Source+Sans+Pro:wght@400;600&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif;
-            background: var(--bg-color); color: var(--primary-dark);
-            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+            background: #f7f7f5;
+            font-family: 'Source Sans Pro', -apple-system, Arial, sans-serif;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            padding: 40px;
         }
 
-        header {
-            background: var(--primary-dark); color: white; padding: 10px 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        .chart-container {
+            background: #ffffff;
+            border: 1px solid #d4d4d0;
+            padding: 32px 36px;
+            max-width: 1200px;
+            width: 100%;
         }
 
-        h1 { margin: 0; font-size: 1.35rem; }
-        .version { font-size: 0.85rem; opacity: 0.7; }
-
-        .dashboard {
-            display: grid; 
-            grid-template-columns: 1.8fr repeat(5, 1fr);
-            background: #e9ecef; padding: 10px 20px; gap: 15px; border-bottom: 1px solid #dee2e6;
-            align-items: center;
+        .title-area {
+            border-bottom: 2px solid #1a2a3a;
+            padding-bottom: 14px;
+            margin-bottom: 18px;
         }
-        .stat-card {
-            background: white; padding: 8px 12px; border-radius: 6px;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); text-align: center;
-            min-width: 0;
-        }
-        .stat-label { font-size: 0.82rem; font-weight: 600; color: #7f8c8d; margin-bottom: 2px; text-transform: uppercase; }
-        .stat-value { font-size: 1.15rem; font-weight: 800; font-family: 'Consolas', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        .main-container {
-            flex: 1; display: flex; flex-direction: row; padding: 15px; gap: 15px; min-height: 0;
+        h2 {
+            font-family: 'Merriweather', Georgia, serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a2a3a;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #6b6b6b;
+            font-style: italic;
+        }
+
+        /* Status indicators */
+        .status-row {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .status-item {
+            text-align: center;
+        }
+
+        .status-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #555;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .status-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a2a3a;
+            font-family: 'Source Sans Pro', sans-serif;
+        }
+
+        .positive-gap { color: #b85c38; }
+        .negative-gap { color: #1a5276; }
+        .full-emp { color: #2e8b57; }
+
+        /* Charts grid */
+        .charts-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 18px;
         }
 
         .chart-box {
-            flex: 1; background: var(--panel-bg); border: 1px solid #ced4da;
-            border-radius: 8px; padding: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            display: flex; flex-direction: column; min-width: 0;
+            flex: 1;
+            min-width: 0;
         }
-        .chart-box h3 { margin: 0 0 8px 0; font-size: 1.05rem; text-align: center; border-bottom: 2px solid #eee; padding-bottom: 5px; }
-        .chart-wrapper { flex: 1; position: relative; min-height: 0; }
 
-        .control-panel {
-            background: white; padding: 15px 20px; border-top: 2px solid #dee2e6;
-            display: flex; flex-direction: column; gap: 5px;
+        .chart-box h3 {
+            font-family: 'Merriweather', Georgia, serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: #1a2a3a;
+            text-align: center;
+            margin-bottom: 6px;
         }
-        .slider-container { display: flex; align-items: center; gap: 15px; }
-        .slider-label { font-weight: 700; min-width: 180px; font-size: 1.05rem; }
-        input[type="range"] { flex: 1; cursor: pointer; accent-color: var(--primary-dark); height: 8px; }
 
-        .positive-gap { color: #e74c3c; }
-        .negative-gap { color: #2980b9; }
-        .full-emp { color: #27ae60; }
+        .chart-area {
+            width: 100%;
+            height: 380px;
+        }
+
+        /* Slider */
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .slider-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            white-space: nowrap;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            accent-color: #1a5276;
+            cursor: pointer;
+        }
+
+        .slider-value {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1a2a3a;
+            min-width: 36px;
+            text-align: right;
+            font-family: 'Source Sans Pro', sans-serif;
+        }
+
+        /* Source */
+        .source {
+            font-size: 10px;
+            color: #888;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 10px;
+            padding-top: 8px;
+            line-height: 1.6;
+        }
+
+        @media print {
+            body { background: #fff; padding: 0; }
+            .chart-container { border: none; padding: 0; }
+        }
     </style>
 </head>
 <body>
 
-<header>
-    <h1>AP Macroeconomics Interactive Lab: Endogenous Self-Correction Framework</h1>
-    <div class="version">Dynamic Engine v3.0 (Inline Canvas Labels)</div>
-</header>
+<div class="chart-container">
+    <div class="title-area">
+        <h2>Business Cycles, AD-AS Model &amp; Production Possibilities</h2>
+        <div class="subtitle">Interactive simulation of macroeconomic dynamics</div>
+    </div>
 
-<div class="dashboard">
-    <div class="stat-card"><div class="stat-label">Cycle Phase</div><div class="stat-value" id="dispPhase">-</div></div>
-    <div class="stat-card"><div class="stat-label">Real GDP (Y)</div><div class="stat-value" id="dispY">0</div></div>
-    <div class="stat-card"><div class="stat-label">Potential GDP (Yf)</div><div class="stat-value" id="dispYf">0</div></div>
-    <div class="stat-card"><div class="stat-label">Output Gap</div><div class="stat-value" id="dispGap">0</div></div>
-    <div class="stat-card"><div class="stat-label">Price Level (PL)</div><div class="stat-value" id="dispP">0</div></div>
-    <div class="stat-card"><div class="stat-label">Unemployment Rate</div><div class="stat-value" id="dispUnrate">0</div></div>
-</div>
-
-<div class="main-container">
-    <div class="chart-box">
-        <h3>1. Business Cycle Diagram</h3>
-        <div class="chart-wrapper">
-            <canvas id="cycleChart"></canvas>
+    <div class="status-row">
+        <div class="status-item">
+            <div class="status-label">Cycle Phase</div>
+            <div class="status-value" id="dispPhase">—</div>
+        </div>
+        <div class="status-item">
+            <div class="status-label">Real GDP (Y)</div>
+            <div class="status-value" id="dispY">0</div>
+        </div>
+        <div class="status-item">
+            <div class="status-label">Potential GDP (Yf)</div>
+            <div class="status-value" id="dispYf">0</div>
+        </div>
+        <div class="status-item">
+            <div class="status-label">Output Gap</div>
+            <div class="status-value" id="dispGap">0</div>
+        </div>
+        <div class="status-item">
+            <div class="status-label">Price Level (PL)</div>
+            <div class="status-value" id="dispP">0</div>
+        </div>
+        <div class="status-item">
+            <div class="status-label">Unemployment Rate</div>
+            <div class="status-value" id="dispUnrate">0</div>
         </div>
     </div>
 
-    <div class="chart-box">
-        <h3>2. AD-AS Model (Dynamic Self-Correction)</h3>
-        <div class="chart-wrapper">
-            <canvas id="adasChart"></canvas>
+    <div class="charts-row">
+        <div class="chart-box">
+            <h3>1. Business Cycle Diagram</h3>
+            <div class="chart-area" id="cycleChart"></div>
+        </div>
+        <div class="chart-box">
+            <h3>2. AD-AS Model</h3>
+            <div class="chart-area" id="adasChart"></div>
+        </div>
+        <div class="chart-box">
+            <h3>3. Production Possibilities Curve</h3>
+            <div class="chart-area" id="ppcChart"></div>
         </div>
     </div>
 
-    <div class="chart-box">
-        <h3>3. Production Possibilities Curve</h3>
-        <div class="chart-wrapper">
-            <canvas id="ppcChart"></canvas>
-        </div>
-    </div>
-</div>
-
-<div class="control-panel">
-    <div class="slider-container">
-        <span class="slider-label">⏱️ Time / Cycle Progress:</span>
+    <div class="slider-row">
+        <span class="slider-label">Time / Cycle Progress</span>
         <input type="range" id="timeSlider" min="0" max="100" step="0.5" value="0">
-        <span id="sliderVal" style="font-family: monospace; font-weight: bold; width: 40px;">0.0</span>
+        <span class="slider-value" id="sliderVal">0.0</span>
+    </div>
+
+    <div class="source">
+        <strong>Source:</strong> Original interactive model, <em>AP Macroeconomics Teaching Tools</em>;<br>
+        <em>Note: Drag the slider to simulate the business cycle.</em>
     </div>
 </div>
 
 <script>
-    let cycleChart, adasChart, ppcChart;
-    
+    // ============ ECONOMIC MODEL (unchanged) ============
     const config = {
         adSlope: 0.7,
         srasSlope: 0.5,
@@ -129,15 +223,15 @@
         trendSlope: 0.25,
         shockFreq: 0.13,
         shockAmp: 25,
-        correctionSpeed: 0.07, 
+        correctionSpeed: 0.07,
         nru: 5.0
     };
 
     const calculateEconomy = (targetT) => {
         let Yf = config.basePotential;
-        let srasIntercept = 40; 
+        let srasIntercept = 40;
         const dt = 0.1;
-        
+
         let Y = 100;
         let P = 100;
         let gap = 0;
@@ -145,9 +239,9 @@
 
         for (let t = 0; t <= targetT + 0.001; t += dt) {
             Yf = config.basePotential + config.trendSlope * t;
-            
+
             let adShock = config.shockAmp * Math.sin(config.shockFreq * t);
-            let adBaseIntercept = 40 + (config.adSlope + config.srasSlope) * Yf; 
+            let adBaseIntercept = 40 + (config.adSlope + config.srasSlope) * Yf;
             adIntercept = adBaseIntercept + adShock;
 
             Y = (adIntercept - srasIntercept) / (config.adSlope + config.srasSlope);
@@ -162,7 +256,7 @@
 
         let phase = "";
         let cosVal = Math.cos(config.shockFreq * targetT);
-        
+
         if (Math.abs(gap) < 1.5) {
             phase = "Full Employment";
         } else if (gap > 0) {
@@ -174,256 +268,392 @@
         return { Y, Yf, gap, P, unrate, phase, srasIntercept, adIntercept, t: targetT };
     };
 
-    function initCharts() {
-        const commonOpts = {
-            responsive: true, maintainAspectRatio: false, animation: false,
-            plugins: { legend: { display: false } },
-            scales: { 
-                x: { type: 'linear', ticks: { display: false }, grid: { display: false } }, 
-                y: { type: 'linear', ticks: { display: false }, grid: { display: false } } 
-            }
+    // ============ SHARED ECHARTS DEFAULTS ============
+    const C = {
+        deepBlue: '#1a5276',
+        ochre: '#b85c38',
+        green: '#2e8b57',
+        gray: '#bbb',
+        titleText: '#1a2a3a',
+        bodyText: '#333',
+        axisName: '#555',
+        subText: '#6b6b6b',
+        source: '#888',
+        gridLine: '#e8e8e8',
+        tooltipBg: '#1a2a3a'
+    };
+
+    function baseAxis(name) {
+        return {
+            type: 'value',
+            name: name,
+            nameTextStyle: { color: C.axisName, fontSize: 11, fontFamily: 'Source Sans Pro' },
+            axisLine: { lineStyle: { color: C.bodyText, width: 1 } },
+            axisLabel: { fontSize: 11, color: C.bodyText, fontFamily: 'Source Sans Pro' },
+            splitLine: { lineStyle: { color: C.gridLine, type: 'dashed' } }
         };
-
-        const cycleDataPoints = [];
-        const trendDataPoints = [];
-        for(let i = 0; i <= 100; i += 1) {
-            const eco = calculateEconomy(i);
-            cycleDataPoints.push({x: i, y: eco.Y});
-            trendDataPoints.push({x: i, y: eco.Yf});
-        }
-
-        cycleChart = new Chart(document.getElementById('cycleChart'), {
-            type: 'scatter',
-            data: { datasets: [
-                { label: 'Real GDP', data: cycleDataPoints, borderColor: '#34495e', borderWidth: 2.5, pointRadius: 0, showLine: true },
-                { label: 'Potential GDP', data: trendDataPoints, borderColor: '#27ae60', borderWidth: 2, borderDash: [6,4], pointRadius: 0, showLine: true },
-                { label: 'Current Position', data: [], backgroundColor: varColor('actual'), pointRadius: 8, pointHoverRadius: 8 }
-            ]},
-            options: {
-                ...commonOpts,
-                scales: {
-                    x: { type: 'linear', min: 0, max: 100, title: { display: true, text: 'Time Progress', font: { weight: 'bold' } } },
-                    y: { type: 'linear', min: 70, max: 180, title: { display: true, text: 'Real Output (Y)', font: { weight: 'bold' } } }
-                }
-            },
-            plugins: [{
-                id: 'cycleLabels',
-                afterDraw: (chart) => {
-                    if (!chart.ecoData) return;
-                    const ctx = chart.ctx;
-                    ctx.save();
-                    ctx.font = 'bold 12px "Segoe UI", Arial';
-                    
-                    const labelT = 75;
-                    const ecoLabel = calculateEconomy(labelT);
-                    let xPos = chart.scales.x.getPixelForValue(labelT);
-                    
-                    let yPos1 = chart.scales.y.getPixelForValue(ecoLabel.Y);
-                    ctx.fillStyle = '#34495e';
-                    ctx.textAlign = 'left';
-                    ctx.fillText('Real GDP', xPos, yPos1 - 8);
-
-                    let yPos2 = chart.scales.y.getPixelForValue(ecoLabel.Yf);
-                    ctx.fillStyle = '#27ae60';
-                    ctx.fillText('Potential GDP', xPos, yPos2 + 15);
-
-                    let curX = chart.scales.x.getPixelForValue(chart.ecoData.t);
-                    let curY = chart.scales.y.getPixelForValue(chart.ecoData.Y);
-                    ctx.fillStyle = '#e74c3c';
-                    if (chart.ecoData.t > 80) {
-                        ctx.textAlign = 'right';
-                        ctx.fillText('Current Position', curX - 10, curY - 5);
-                    } else {
-                        ctx.textAlign = 'left';
-                        ctx.fillText('Current Position', curX + 10, curY - 5);
-                    }
-                    ctx.restore();
-                }
-            }]
-        });
-
-        const initialSrasData = [];
-        const initialAdData = [];
-        for(let x = 60; x <= 180; x += 10) {
-            initialSrasData.push({ x: x, y: 40 + config.srasSlope * x });
-            initialAdData.push({ x: x, y: 160 - config.adSlope * x });
-        }
-
-        adasChart = new Chart(document.getElementById('adasChart'), {
-            type: 'scatter',
-            data: { datasets: [
-                { label: 'LRAS', borderColor: varColor('lras'), borderWidth: 3.5, pointRadius: 0, showLine: true, data: [] },
-                { label: 'Initial SRAS', borderColor: varColor('ref'), borderWidth: 1.5, borderDash: [4, 4], pointRadius: 0, showLine: true, data: initialSrasData },
-                { label: 'Initial AD', borderColor: varColor('ref'), borderWidth: 1.5, borderDash: [4, 4], pointRadius: 0, showLine: true, data: initialAdData },
-                { label: 'SRAS', borderColor: varColor('sras'), borderWidth: 2.5, pointRadius: 0, showLine: true, data: [] },
-                { label: 'AD', borderColor: varColor('ad'), borderWidth: 2.5, pointRadius: 0, showLine: true, data: [] },
-                { label: 'Macro Equilibrium', backgroundColor: '#2c3e50', pointRadius: 7, data: [] }
-            ]},
-            options: {
-                ...commonOpts,
-                scales: {
-                    x: { min: 60, max: 180, title: { display: true, text: 'Real GDP (Y)', font: { weight: 'bold' } } },
-                    y: { min: 40, max: 160, title: { display: true, text: 'Price Level (PL)', font: { weight: 'bold' } } }
-                }
-            },
-            plugins: [{
-                id: 'adasLabels',
-                afterDraw: (chart) => {
-                    if (!chart.ecoData) return;
-                    const ctx = chart.ctx;
-                    ctx.save();
-                    ctx.font = 'bold 12px "Segoe UI", Arial';
-
-                    let xLras = chart.scales.x.getPixelForValue(chart.ecoData.Yf);
-                    let yLras = chart.scales.y.getPixelForValue(150);
-                    ctx.fillStyle = '#27ae60';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('LRAS', xLras, yLras - 8);
-
-                    let xSras = chart.scales.x.getPixelForValue(165);
-                    let ySras = chart.scales.y.getPixelForValue(chart.ecoData.srasIntercept + config.srasSlope * 165);
-                    ctx.fillStyle = '#d35400';
-                    ctx.textAlign = 'right';
-                    ctx.fillText('SRAS', xSras - 5, ySras - 8);
-
-                    let xAd = chart.scales.x.getPixelForValue(70);
-                    let yAd = chart.scales.y.getPixelForValue(chart.ecoData.adIntercept - config.adSlope * 70);
-                    ctx.fillStyle = '#2980b9';
-                    ctx.textAlign = 'left';
-                    ctx.fillText('AD', xAd + 5, yAd - 8);
-
-                    let xCur = chart.scales.x.getPixelForValue(chart.ecoData.Y);
-                    let yCur = chart.scales.y.getPixelForValue(chart.ecoData.P);
-                    ctx.fillStyle = '#e74c3c';
-                    if (chart.ecoData.Y > 150) {
-                        ctx.textAlign = 'right';
-                        ctx.fillText('Current Position', xCur - 10, yCur - 5);
-                    } else {
-                        ctx.textAlign = 'left';
-                        ctx.fillText('Current Position', xCur + 10, yCur - 5);
-                    }
-                    ctx.restore();
-                }
-            }]
-        });
-
-        ppcChart = new Chart(document.getElementById('ppcChart'), {
-            type: 'scatter',
-            data: { datasets: [
-                { label: 'PPC Boundary', borderColor: varColor('ppc'), borderWidth: 3.5, pointRadius: 0, showLine: true, data: [] },
-                { label: 'Actual Production Point', backgroundColor: varColor('actual'), pointRadius: 7, data: [] }
-            ]},
-            options: {
-                ...commonOpts,
-                scales: {
-                    x: { min: 0, max: 200, title: { display: true, text: 'Capital Goods', font: { weight: 'bold' } } },
-                    y: { min: 0, max: 200, title: { display: true, text: 'Consumer Goods', font: { weight: 'bold' } } }
-                }
-            },
-            plugins: [{
-                id: 'ppcLabels',
-                afterDraw: (chart) => {
-                    if (!chart.ecoData) return;
-                    const ctx = chart.ctx;
-                    ctx.save();
-                    ctx.font = 'bold 12px "Segoe UI", Arial';
-
-                    const ppcRadius = chart.ecoData.Yf * 1.25;
-                    let angleX = ppcRadius * Math.cos(55 * Math.PI / 180);
-                    let angleY = ppcRadius * Math.sin(55 * Math.PI / 180);
-                    let xPpc = chart.scales.x.getPixelForValue(angleX);
-                    let yPpc = chart.scales.y.getPixelForValue(angleY);
-                    ctx.fillStyle = '#8e44ad';
-                    ctx.textAlign = 'left';
-                    ctx.fillText('PPC', xPpc + 8, yPpc - 8);
-
-                    const actRadius = chart.ecoData.Y * 1.25;
-                    const actX = actRadius * Math.cos(Math.PI / 4);
-                    const actY = actRadius * Math.sin(Math.PI / 4);
-                    let xCur = chart.scales.x.getPixelForValue(actX);
-                    let yCur = chart.scales.y.getPixelForValue(actY);
-                    ctx.fillStyle = '#e74c3c';
-                    if (actX > 140) {
-                        ctx.textAlign = 'right';
-                        ctx.fillText('Current Position', xCur - 10, yCur - 5);
-                    } else {
-                        ctx.textAlign = 'left';
-                        ctx.fillText('Current Position', xCur + 10, yCur - 5);
-                    }
-                    ctx.restore();
-                }
-            }]
-        });
     }
 
-    function updateModel() {
-        const t = parseFloat(document.getElementById('timeSlider').value);
-        document.getElementById('sliderVal').innerText = t.toFixed(1);
+    function baseTooltip() {
+        return {
+            trigger: 'item',
+            backgroundColor: C.tooltipBg,
+            borderColor: C.tooltipBg,
+            textStyle: { color: '#fff', fontSize: 12, fontFamily: 'Source Sans Pro' }
+        };
+    }
 
-        const eco = calculateEconomy(t);
+    function baseLegend() {
+        return {
+            top: 0,
+            right: 0,
+            textStyle: { fontSize: 11, color: C.bodyText, fontFamily: 'Source Sans Pro' },
+            itemGap: 16
+        };
+    }
 
-        cycleChart.ecoData = eco;
-        adasChart.ecoData = eco;
-        ppcChart.ecoData = eco;
+    // ============ INIT CHARTS ============
+    const animCfg = { animation: true, animationDurationUpdate: 80, animationEasingUpdate: 'linear' };
+    const cycleChart = echarts.init(document.getElementById('cycleChart'));
+    const adasChart = echarts.init(document.getElementById('adasChart'));
+    const ppcChart = echarts.init(document.getElementById('ppcChart'));
 
-        document.getElementById('dispY').innerText = eco.Y.toFixed(1);
-        document.getElementById('dispYf').innerText = eco.Yf.toFixed(1);
-        document.getElementById('dispUnrate').innerText = eco.unrate.toFixed(1) + '%';
-        document.getElementById('dispP').innerText = eco.P.toFixed(1);
-        document.getElementById('dispPhase').innerText = eco.phase;
-        
-        const gapEl = document.getElementById('dispGap');
-        gapEl.innerText = (eco.gap > 0 ? '+' : '') + eco.gap.toFixed(1);
-        if (Math.abs(eco.gap) < 1.5) { gapEl.className = "stat-value full-emp"; }
-        else if (eco.gap > 0) { gapEl.className = "stat-value positive-gap"; }
-        else { gapEl.className = "stat-value negative-gap"; }
+    // Pre-compute business cycle data
+    const cycleXData = [];
+    const cycleYData = [];
+    const trendYData = [];
+    for (let i = 0; i <= 100; i += 1) {
+        const eco = calculateEconomy(i);
+        cycleXData.push(i);
+        cycleYData.push(eco.Y);
+        trendYData.push(eco.Yf);
+    }
 
-        cycleChart.data.datasets[2].data = [{ x: t, y: eco.Y }];
-        cycleChart.update();
+    // Initial AD-AS data
+    const initSrasData = [];
+    const initAdData = [];
+    for (let x = 60; x <= 180; x += 5) {
+        initSrasData.push([x, 40 + config.srasSlope * x]);
+        initAdData.push([x, 160 - config.adSlope * x]);
+    }
 
-        adasChart.data.datasets[0].data = [{ x: eco.Yf, y: 0 }, { x: eco.Yf, y: 200 }];
-        
+    // ============ BUSINESS CYCLE OPTION ============
+    function getCycleOption(eco) {
+        const curT = eco ? eco.t : 0;
+        const curY = eco ? eco.Y : cycleYData[0];
+        return {
+            tooltip: baseTooltip(),
+            legend: baseLegend(),
+            grid: { left: 60, right: 30, top: 50, bottom: 50 },
+            xAxis: {
+                ...baseAxis('Time Progress'),
+                type: 'category',
+                data: cycleXData,
+                min: 0,
+                max: 100,
+                axisLabel: {
+                    fontSize: 11,
+                    color: C.bodyText,
+                    fontFamily: 'Source Sans Pro',
+                    interval: 19
+                }
+            },
+            yAxis: {
+                ...baseAxis('Real Output (Y)'),
+                min: 70,
+                max: 180
+            },
+            series: [
+                {
+                    name: 'Real GDP',
+                    type: 'line',
+                    data: cycleYData,
+                    symbol: 'none',
+                    lineStyle: { width: 2.5, color: C.deepBlue },
+                    itemStyle: { color: C.deepBlue }
+                },
+                {
+                    name: 'Potential GDP',
+                    type: 'line',
+                    data: trendYData,
+                    symbol: 'none',
+                    symbolSize: 0,
+                    lineStyle: { width: 2, color: C.green },
+                    itemStyle: { color: C.green }
+                },
+                {
+                    name: 'Current Position',
+                    type: 'scatter',
+                    data: [[curT, curY]],
+                    symbolSize: 12,
+                    itemStyle: { color: C.ochre, borderWidth: 2, borderColor: '#fff' },
+                    z: 10
+                }
+            ]
+        };
+    }
+
+    // ============ AD-AS OPTION ============
+    function getAdasOption(eco) {
+        if (!eco) {
+            return {
+                tooltip: baseTooltip(),
+                legend: baseLegend(),
+                grid: { left: 60, right: 30, top: 50, bottom: 50 },
+                xAxis: { ...baseAxis('Real GDP (Y)'), min: 60, max: 180 },
+                yAxis: { ...baseAxis('Price Level (PL)'), min: 40, max: 160 },
+                series: []
+            };
+        }
         const srasData = [];
-        for(let x = 60; x <= 180; x += 10) {
-            srasData.push({ x: x, y: eco.srasIntercept + config.srasSlope * x });
-        }
-        adasChart.data.datasets[3].data = srasData;
-
         const adData = [];
-        for(let x = 60; x <= 180; x += 10) {
-            adData.push({ x: x, y: eco.adIntercept - config.adSlope * x });
+        for (let x = 60; x <= 180; x += 5) {
+            srasData.push([x, eco.srasIntercept + config.srasSlope * x]);
+            adData.push([x, eco.adIntercept - config.adSlope * x]);
         }
-        adasChart.data.datasets[4].data = adData;
+        const lrasData = [[eco.Yf, 40], [eco.Yf, 160]];
+        return {
+            tooltip: baseTooltip(),
+            legend: baseLegend(),
+            grid: { left: 60, right: 30, top: 50, bottom: 50 },
+            xAxis: { ...baseAxis('Real GDP (Y)'), min: 60, max: 180 },
+            yAxis: { ...baseAxis('Price Level (PL)'), min: 40, max: 160 },
+            series: [
+                {
+                    name: 'LRAS',
+                    type: 'line',
+                    data: lrasData,
+                    symbol: 'none',
+                    symbolSize: 0,
+                    lineStyle: { width: 2.5, color: C.green },
+                    itemStyle: { color: C.green }
+                },
+                {
+                    name: 'SRAS',
+                    type: 'line',
+                    data: srasData,
+                    symbol: 'none',
+                    lineStyle: { width: 2.5, color: C.ochre },
+                    itemStyle: { color: C.ochre }
+                },
+                {
+                    name: 'AD',
+                    type: 'line',
+                    data: adData,
+                    symbol: 'none',
+                    lineStyle: { width: 2.5, color: C.deepBlue },
+                    itemStyle: { color: C.deepBlue }
+                },
+                {
+                    name: 'Equilibrium',
+                    type: 'scatter',
+                    data: [[eco.Y, eco.P]],
+                    symbolSize: 12,
+                    itemStyle: { color: C.titleText, borderWidth: 2, borderColor: '#fff' },
+                    z: 10
+                }
+            ]
+        };
+    }
 
-        adasChart.data.datasets[5].data = [{ x: eco.Y, y: eco.P }];
-        adasChart.update();
-
+    // ============ PPC OPTION ============
+    function getPpcOption(eco) {
+        if (!eco) {
+            return {
+                tooltip: baseTooltip(),
+                legend: baseLegend(),
+                grid: { left: 60, right: 30, top: 50, bottom: 50 },
+                xAxis: { ...baseAxis('Capital Goods'), min: 0, max: 200 },
+                yAxis: { ...baseAxis('Consumer Goods'), min: 0, max: 200 },
+                series: []
+            };
+        }
         const ppcRadius = eco.Yf * 1.25;
         const ppcData = [];
         const steps = 60;
         for (let i = 0; i <= steps; i++) {
-            let xVal = (ppcRadius * i) / steps;
-            let yVal = Math.sqrt(Math.max(0, Math.pow(ppcRadius, 2) - Math.pow(xVal, 2)));
-            ppcData.push({ x: xVal, y: yVal });
+            const xVal = (ppcRadius * i) / steps;
+            const yVal = Math.sqrt(Math.max(0, Math.pow(ppcRadius, 2) - Math.pow(xVal, 2)));
+            ppcData.push([xVal, yVal]);
         }
-        ppcChart.data.datasets[0].data = ppcData;
 
         const actRadius = eco.Y * 1.25;
         const actX = actRadius * Math.cos(Math.PI / 4);
         const actY = actRadius * Math.sin(Math.PI / 4);
-        ppcChart.data.datasets[1].data = [{ x: actX, y: actY }];
-        ppcChart.update();
+
+        return {
+            tooltip: baseTooltip(),
+            legend: baseLegend(),
+            grid: { left: 60, right: 30, top: 50, bottom: 50 },
+            xAxis: { ...baseAxis('Capital Goods'), min: 0, max: 200 },
+            yAxis: { ...baseAxis('Consumer Goods'), min: 0, max: 200 },
+            series: [
+                {
+                    name: 'PPC',
+                    type: 'line',
+                    data: ppcData,
+                    symbol: 'none',
+                    lineStyle: { width: 2.5, color: C.deepBlue },
+                    itemStyle: { color: C.deepBlue },
+                    smooth: false
+                },
+                {
+                    name: 'Actual Production',
+                    type: 'scatter',
+                    data: [[actX, actY]],
+                    symbolSize: 12,
+                    itemStyle: { color: C.ochre, borderWidth: 2, borderColor: '#fff' },
+                    z: 10
+                }
+            ]
+        };
     }
 
-    function varColor(name) {
-        return getComputedStyle(document.documentElement).getPropertyValue('--color-' + name).trim();
+    // ============ UPDATE ============
+    function updateModel() {
+        const t = parseFloat(document.getElementById('timeSlider').value);
+        document.getElementById('sliderVal').textContent = t.toFixed(1);
+
+        const eco = calculateEconomy(t);
+
+        // Status indicators
+        document.getElementById('dispY').textContent = eco.Y.toFixed(1);
+        document.getElementById('dispYf').textContent = eco.Yf.toFixed(1);
+        document.getElementById('dispUnrate').textContent = eco.unrate.toFixed(1) + '%';
+        document.getElementById('dispP').textContent = eco.P.toFixed(1);
+        document.getElementById('dispPhase').textContent = eco.phase;
+
+        const gapEl = document.getElementById('dispGap');
+        gapEl.textContent = (eco.gap > 0 ? '+' : '') + eco.gap.toFixed(1);
+        if (Math.abs(eco.gap) < 1.5) {
+            gapEl.className = 'status-value full-emp';
+        } else if (eco.gap > 0) {
+            gapEl.className = 'status-value positive-gap';
+        } else {
+            gapEl.className = 'status-value negative-gap';
+        }
+
+        // Update Business Cycle - only update scatter data
+        cycleChart.setOption({...animCfg,
+            series: [{}, {}, { data: [[eco.t, eco.Y]] }],
+            graphic: [
+                {
+                    type: 'text',
+                    left: cycleChart.convertToPixel({gridIndex: 0}, [99, cycleYData[99]])[0] - 60,
+                    top: cycleChart.convertToPixel({gridIndex: 0}, [99, cycleYData[99]])[1] - 14,
+                    style: { text: 'Real GDP', fontSize: 11, fontWeight: 'bold', fill: C.deepBlue, fontFamily: 'Source Sans Pro' }
+                },
+                {
+                    type: 'text',
+                    left: cycleChart.convertToPixel({gridIndex: 0}, [99, trendYData[99]])[0] - 85,
+                    top: cycleChart.convertToPixel({gridIndex: 0}, [99, trendYData[99]])[1] + 6,
+                    style: { text: 'Potential GDP', fontSize: 11, fontWeight: 'bold', fill: C.green, fontFamily: 'Source Sans Pro' }
+                },
+                {
+                    type: 'text',
+                    left: cycleChart.convertToPixel({gridIndex: 0}, [eco.t, eco.Y])[0] + (eco.t > 80 ? -90 : 14),
+                    top: cycleChart.convertToPixel({gridIndex: 0}, [eco.t, eco.Y])[1] + (eco.Y > 140 ? 14 : -14),
+                    style: { text: 'Current', fontSize: 11, fontWeight: 'bold', fill: C.ochre, fontFamily: 'Source Sans Pro' }
+                }
+            ]
+        });
+
+        // Update AD-AS - update lines, scatter, and labels
+        const srasData = [];
+        const adData = [];
+        for (let x = 60; x <= 180; x += 5) {
+            srasData.push([x, eco.srasIntercept + config.srasSlope * x]);
+            adData.push([x, eco.adIntercept - config.adSlope * x]);
+        }
+        const eqPixel = adasChart.convertToPixel({gridIndex: 0}, [eco.Y, eco.P]);
+        const lrasPixel = adasChart.convertToPixel({gridIndex: 0}, [eco.Yf, 150]);
+        const srasPixel = adasChart.convertToPixel({gridIndex: 0}, [170, eco.srasIntercept + config.srasSlope * 170]);
+        const adPixel = adasChart.convertToPixel({gridIndex: 0}, [70, eco.adIntercept - config.adSlope * 70]);
+
+        adasChart.setOption({...animCfg,
+            series: [
+                { data: [[eco.Yf, 40], [eco.Yf, 160]] },
+                { data: srasData },
+                { data: adData },
+                { data: [[eco.Y, eco.P]] }
+            ],
+            graphic: [
+                {
+                    type: 'text',
+                    left: lrasPixel[0] + 6, top: lrasPixel[1] - 16,
+                    style: { text: 'LRAS', fontSize: 11, fontWeight: 'bold', fill: C.green, fontFamily: 'Source Sans Pro' }
+                },
+                {
+                    type: 'text',
+                    left: srasPixel[0] - 45, top: srasPixel[1] - 14,
+                    style: { text: 'SRAS', fontSize: 11, fontWeight: 'bold', fill: C.ochre, fontFamily: 'Source Sans Pro' }
+                },
+                {
+                    type: 'text',
+                    left: adPixel[0] + 6, top: adPixel[1] - 14,
+                    style: { text: 'AD', fontSize: 11, fontWeight: 'bold', fill: C.deepBlue, fontFamily: 'Source Sans Pro' }
+                },
+                {
+                    type: 'text',
+                    left: eqPixel[0] + (eco.Y > 150 ? -80 : 14),
+                    top: eqPixel[1] + (eco.P > 120 ? 14 : -14),
+                    style: { text: 'Equilibrium', fontSize: 11, fontWeight: 'bold', fill: C.titleText, fontFamily: 'Source Sans Pro' }
+                }
+            ]
+        });
+
+        // Update PPC - update curve and scatter
+        const ppcRadius = eco.Yf * 1.25;
+        const ppcData = [];
+        const steps = 60;
+        for (let i = 0; i <= steps; i++) {
+            const xVal = (ppcRadius * i) / steps;
+            const yVal = Math.sqrt(Math.max(0, Math.pow(ppcRadius, 2) - Math.pow(xVal, 2)));
+            ppcData.push([xVal, yVal]);
+        }
+        const actRadius = eco.Y * 1.25;
+        const actX = actRadius * Math.cos(Math.PI / 4);
+        const actY = actRadius * Math.sin(Math.PI / 4);
+        const ppcPixel = ppcChart.convertToPixel({gridIndex: 0}, [ppcRadius * 0.4, ppcRadius * 0.92]);
+        const actPixel = ppcChart.convertToPixel({gridIndex: 0}, [actX, actY]);
+
+        ppcChart.setOption({...animCfg,
+            series: [
+                { data: ppcData },
+                { data: [[actX, actY]] }
+            ],
+            graphic: [
+                {
+                    type: 'text',
+                    left: ppcChart.convertToPixel({gridIndex: 0}, [ppcRadius * 0.3, Math.sqrt(Math.max(0, ppcRadius * ppcRadius - Math.pow(ppcRadius * 0.3, 2)))])[0] - 20,
+                    top: ppcChart.convertToPixel({gridIndex: 0}, [ppcRadius * 0.3, Math.sqrt(Math.max(0, ppcRadius * ppcRadius - Math.pow(ppcRadius * 0.3, 2)))])[1] - 14,
+                    style: { text: 'PPC', fontSize: 11, fontWeight: 'bold', fill: C.deepBlue, fontFamily: 'Source Sans Pro' }
+                },
+                {
+                    type: 'text',
+                    left: actPixel[0] + (actX > 140 ? -70 : 12),
+                    top: actPixel[1] - 14,
+                    style: { text: 'Actual', fontSize: 11, fontWeight: 'bold', fill: C.ochre, fontFamily: 'Source Sans Pro' }
+                }
+            ]
+        });
     }
 
-    window.onload = () => {
-        initCharts();
-        document.getElementById('timeSlider').addEventListener('input', updateModel);
-        updateModel();
-    };
+    // ============ INIT ============
+    const initEco = calculateEconomy(0);
+    cycleChart.setOption({...getCycleOption(initEco), ...animCfg});
+    adasChart.setOption({...getAdasOption(initEco), ...animCfg});
+    ppcChart.setOption({...getPpcOption(initEco), ...animCfg});
+    updateModel();
+
+    document.getElementById('timeSlider').addEventListener('input', updateModel);
+
+    // Responsive
+    window.addEventListener('resize', function() {
+        cycleChart.resize();
+        adasChart.resize();
+        ppcChart.resize();
+    });
 </script>
 </body>
 </html>
