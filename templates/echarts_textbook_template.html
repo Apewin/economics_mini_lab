@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<!--
+  ECharts 教科书风格图表模板
+  ============================================
+  已验证：配色、字体、symbol:none、graphic标签、动画、convertToPixel
+  子代理：复制此文件，替换 === CUSTOMIZE === 标记区域
+
+  使用方法：
+  1. 复制此文件为新文件名
+  2. 替换 <title> 和 <h2> 标题
+  3. 替换 calculateEconomy 或数据生成函数
+  4. 替换 initCharts() 中的图表配置
+  5. 替换 updateModel() 中的更新逻辑
+  6. 保留所有 CSS、动画配置、convertToPixel 模式不变
+
+  ⚠️ 关键模式（不要改动）：
+  - 折线用 symbol:'none'（密集数据点会形成伪虚线）
+  - 散点用 symbolSize:12（80+ 在教科书图中太大）
+  - graphic 标签用 convertToPixel({gridIndex:0}, [x,y]) 动态定位
+  - setOption 加 ...animCfg 实现平滑过渡
+  - convertToPixel 的 finder 必须是 {gridIndex:0}，不能是 {}
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><!-- === CUSTOMIZE: 页面标题 === -->Economics Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&family=Source+Sans+Pro:wght@400;600&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #f7f7f5;
+            font-family: 'Source Sans Pro', -apple-system, Arial, sans-serif;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .chart-container {
+            background: #ffffff;
+            border: 1px solid #d4d4d0;
+            padding: 32px 36px;
+            max-width: 880px;  /* 单图用 880px，多图可改 1200px */
+            width: 100%;
+        }
+
+        .title-area {
+            border-bottom: 2px solid #1a2a3a;
+            padding-bottom: 14px;
+            margin-bottom: 18px;
+        }
+
+        h2 {
+            font-family: 'Merriweather', Georgia, serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a2a3a;
+            line-height: 1.4;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #6b6b6b;
+            margin-top: 4px;
+            font-style: italic;
+        }
+
+        /* === Status indicators (optional, for interactive charts) === */
+        .status-row {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .status-item { text-align: center; }
+
+        .status-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #555;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .status-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a2a3a;
+            font-family: 'Source Sans Pro', sans-serif;
+        }
+
+        /* === Slider (optional) === */
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .slider-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            white-space: nowrap;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            accent-color: #1a5276;
+            cursor: pointer;
+        }
+
+        .slider-value {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1a2a3a;
+            min-width: 36px;
+            text-align: right;
+            font-family: 'Source Sans Pro', sans-serif;
+        }
+
+        /* === Chart area === */
+        .chart-area {
+            width: 100%;
+            height: 420px;
+        }
+
+        /* === Source === */
+        .source {
+            font-size: 10px;
+            color: #888;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 10px;
+            padding-top: 8px;
+            line-height: 1.6;
+        }
+
+        @media print {
+            body { background: #fff; padding: 0; }
+            .chart-container { border: none; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="chart-container">
+    <div class="title-area">
+        <!-- === CUSTOMIZE: 标题和副标题 === -->
+        <h2>Chart Title Here</h2>
+        <div class="subtitle">Subtitle or description here</div>
+    </div>
+
+    <!-- === CUSTOMIZE: 状态指标（可选，删除整个 status-row 如果不需要） === -->
+    <div class="status-row">
+        <div class="status-item">
+            <div class="status-label">Metric 1</div>
+            <div class="status-value" id="dispMetric1">0</div>
+        </div>
+        <div class="status-item">
+            <div class="status-label">Metric 2</div>
+            <div class="status-value" id="dispMetric2">0</div>
+        </div>
+    </div>
+
+    <!-- === CUSTOMIZE: 图表容器（可放多个，用 flex 排列） === -->
+    <div id="mainChart" class="chart-area"></div>
+
+    <!-- === CUSTOMIZE: 滑动条（可选） === -->
+    <div class="slider-row">
+        <span class="slider-label">Time / Progress</span>
+        <input type="range" id="timeSlider" min="0" max="100" step="0.5" value="0">
+        <span class="slider-value" id="sliderVal">0.0</span>
+    </div>
+
+    <div class="source">
+        <!-- === CUSTOMIZE: 数据来源 === -->
+        <strong>Source:</strong> Your source here, <em>Publication Name</em>;<br>
+        <em>Note: Interactive chart. Drag the slider to explore.</em>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// === CUSTOMIZE: 数据和计算逻辑 ===
+// ============================================================
+
+// 系列配色常量（不要修改）
+const C = {
+    deepBlue: '#1a5276',   // 系列1
+    ochre: '#b85c38',      // 系列2
+    green: '#2e8b57',      // 强调绿（参考线）
+    gray: '#bbb',          // 辅助线
+    titleText: '#1a2a3a',
+    bodyText: '#333',
+    axisName: '#555',
+    subText: '#6b6b6b',
+    source: '#888',
+    gridLine: '#e8e8e8',
+    tooltipBg: '#1a2a3a'
+};
+
+// 动画配置（关键：80ms 线性过渡，散点跟随曲线）
+const animCfg = {
+    animation: true,
+    animationDurationUpdate: 80,
+    animationEasingUpdate: 'linear'
+};
+
+// --- 轴配置工厂 ---
+function baseAxis(name) {
+    return {
+        type: 'value',
+        name: name,
+        nameTextStyle: { color: C.axisName, fontSize: 11, fontFamily: 'Source Sans Pro' },
+        axisLine: { lineStyle: { color: C.bodyText, width: 1 } },
+        axisLabel: { fontSize: 11, color: C.bodyText, fontFamily: 'Source Sans Pro' },
+        splitLine: { lineStyle: { color: C.gridLine, type: 'dashed' } }
+    };
+}
+
+function baseTooltip() {
+    return {
+        trigger: 'item',
+        backgroundColor: C.tooltipBg,
+        borderColor: C.tooltipBg,
+        textStyle: { color: '#fff', fontSize: 12, fontFamily: 'Source Sans Pro' }
+    };
+}
+
+function baseLegend() {
+    return {
+        top: 0, right: 0,
+        textStyle: { fontSize: 11, color: C.bodyText, fontFamily: 'Source Sans Pro' },
+        itemGap: 16
+    };
+}
+
+// === CUSTOMIZE: 你的数据生成函数 ===
+function calculateData(t) {
+    // 示例：正弦波 + 趋势
+    const Yf = 100 + 0.25 * t;
+    const Y = Yf + 25 * Math.sin(0.13 * t);
+    const gap = Y - Yf;
+    return { Y, Yf, gap, t };
+}
+
+// ============================================================
+// === 初始化图表 ===
+// ============================================================
+const chart = echarts.init(document.getElementById('mainChart'));
+
+// === CUSTOMIZE: 初始图表配置 ===
+function getChartOption(data) {
+    // 示例：折线图 + 散点
+    const lineData = [];
+    const trendData = [];
+    for (let i = 0; i <= 100; i++) {
+        const d = calculateData(i);
+        lineData.push([i, d.Y]);
+        trendData.push([i, d.Yf]);
+    }
+
+    return {
+        tooltip: baseTooltip(),
+        legend: baseLegend(),
+        grid: { left: 60, right: 30, top: 50, bottom: 50 },
+        xAxis: { ...baseAxis('Time'), min: 0, max: 100 },
+        yAxis: { ...baseAxis('Value'), min: 60, max: 150 },
+        series: [
+            {
+                name: 'Actual',
+                type: 'line',
+                data: lineData,
+                symbol: 'none',                    // ⚠️ 必须 none，否则伪虚线
+                lineStyle: { width: 2.5, color: C.deepBlue },
+                itemStyle: { color: C.deepBlue }
+            },
+            {
+                name: 'Potential',
+                type: 'line',
+                data: trendData,
+                symbol: 'none',                    // ⚠️ 必须 none
+                lineStyle: { width: 2, color: C.green },
+                itemStyle: { color: C.green }
+            },
+            {
+                name: 'Current',
+                type: 'scatter',
+                data: [[data.t, data.Y]],
+                symbolSize: 12,                    // ⚠️ 12-15，不要 80+
+                itemStyle: { color: C.ochre, borderWidth: 2, borderColor: '#fff' },
+                z: 10
+            }
+        ]
+    };
+}
+
+// 初始渲染
+const initD = calculateData(0);
+chart.setOption({...getChartOption(initD), ...animCfg});
+
+// ============================================================
+// === CUSTOMIZE: 更新逻辑（滑动条驱动） ===
+// ============================================================
+function updateModel() {
+    const t = parseFloat(document.getElementById('timeSlider').value);
+    document.getElementById('sliderVal').textContent = t.toFixed(1);
+
+    const data = calculateData(t);
+
+    // 更新状态指标
+    document.getElementById('dispMetric1').textContent = data.Y.toFixed(1);
+    document.getElementById('dispMetric2').textContent = data.Yf.toFixed(1);
+
+    // 更新图表数据（只更新变化的部分）
+    chart.setOption({...animCfg,
+        series: [
+            {},  // 折线数据不变
+            {},  // 趋势线不变
+            { data: [[data.t, data.Y]] }  // 只更新散点
+        ],
+        // graphic 标签：用 convertToPixel 动态定位
+        graphic: [
+            {
+                type: 'text',
+                // ⚠️ 必须用 {gridIndex:0}，不能用 {}
+                left: chart.convertToPixel({gridIndex:0}, [99, calculateData(99).Y])[0] - 60,
+                top: chart.convertToPixel({gridIndex:0}, [99, calculateData(99).Y])[1] - 14,
+                style: { text: 'Actual', fontSize: 11, fontWeight: 'bold', fill: C.deepBlue, fontFamily: 'Source Sans Pro' }
+            },
+            {
+                type: 'text',
+                left: chart.convertToPixel({gridIndex:0}, [99, calculateData(99).Yf])[0] - 60,
+                top: chart.convertToPixel({gridIndex:0}, [99, calculateData(99).Yf])[1] + 6,
+                style: { text: 'Potential', fontSize: 11, fontWeight: 'bold', fill: C.green, fontFamily: 'Source Sans Pro' }
+            },
+            {
+                type: 'text',
+                // ⚠️ Current 标签跟随散点，上下避让
+                left: chart.convertToPixel({gridIndex:0}, [data.t, data.Y])[0] + (data.t > 80 ? -90 : 14),
+                top: chart.convertToPixel({gridIndex:0}, [data.t, data.Y])[1] + (data.Y > 140 ? 14 : -14),
+                style: { text: 'Current', fontSize: 11, fontWeight: 'bold', fill: C.ochre, fontFamily: 'Source Sans Pro' }
+            }
+        ]
+    });
+}
+
+// 绑定滑动条
+document.getElementById('timeSlider').addEventListener('input', updateModel);
+updateModel();
+
+// 响应式
+window.addEventListener('resize', function() { chart.resize(); });
+</script>
+</body>
+</html>

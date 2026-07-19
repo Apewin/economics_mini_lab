@@ -1,410 +1,374 @@
 <!DOCTYPE html>
+<!--
+  Marginal Analysis — Econ Textbook Style
+  ============================================
+  Based on echarts_textbook_template.html
+  MB = 100 - Q, MC = 10 + Q, Optimal Q=45 P=55
+-->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Economics: Marginal Analysis Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marginal Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <style>
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background: #f8fafc; 
-            margin: 0; 
-            padding: 15px; 
-            color: #1a202c; 
-            box-sizing: border-box;
-            height: 100vh;
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&family=Source+Sans+Pro:wght@400;600&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #f7f7f5;
+            font-family: 'Source Sans Pro', -apple-system, Arial, sans-serif;
+            color: #333;
             display: flex;
-            overflow: hidden; /* Prevent body scroll to keep it a dashboard */
-        }
-        
-        .main-container { 
-            width: 100%;
-            max-width: 1920px; 
-            margin: auto; 
-            display: grid;
-            grid-template-columns: 1fr 1fr; 
-            gap: 25px;
-            height: 96vh;
-        }
-        
-        /* Left Panel - Interactive Definitions */
-        .left-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
             justify-content: center;
-        }
-        
-        details.def-box { 
-            background: #ffffff; 
-            padding: 25px 35px; 
-            border-left: 15px solid #2b6cb0; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-        }
-        
-        details.def-box summary { 
-            font-size: 50px; 
-            color: #2b6cb0; 
-            font-weight: bold;
-            cursor: pointer;
-            list-style: none;
-            position: relative;
-            padding-right: 50px;
-        }
-        
-        details.def-box summary::-webkit-details-marker { display: none; }
-
-        details.def-box p { 
-            font-size: 40px; 
-            margin: 15px 0 0 0; 
-            line-height: 1.3;
-            color: #4a5568;
-            border-top: 2px dashed #e2e8f0;
-            padding-top: 15px;
+            padding: 40px;
         }
 
-        details.def-box summary::after {
-            content: '+';
-            position: absolute;
-            right: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #cbd5e0;
-            font-size: 60px;
-        }
-        details.def-box[open] summary::after { content: '-'; color: #2b6cb0; }
-
-        /* Right Panel - Dynamic Visuals */
-        .right-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            height: 100%;
-        }
-        
         .chart-container {
             background: #ffffff;
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border: 1px solid #d4d4d0;
+            padding: 32px 36px;
+            max-width: 880px;
+            width: 100%;
+        }
+
+        .title-area {
+            border-bottom: 2px solid #1a2a3a;
+            padding-bottom: 14px;
+            margin-bottom: 18px;
+        }
+
+        h2 {
+            font-family: 'Merriweather', Georgia, serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a2a3a;
+            line-height: 1.4;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #6b6b6b;
+            margin-top: 4px;
+            font-style: italic;
+        }
+
+        .status-row {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .status-item { text-align: center; }
+
+        .status-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #555;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .status-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a2a3a;
+            font-family: 'Source Sans Pro', sans-serif;
+        }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .slider-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            white-space: nowrap;
+        }
+
+        input[type="range"] {
             flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            transition: flex 0.4s ease-in-out;
+            accent-color: #1a5276;
+            cursor: pointer;
         }
-        
-        canvas { 
-            max-width: 100%; 
-            max-height: 100%;
-            display: block;
+
+        .slider-value {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1a2a3a;
+            min-width: 36px;
+            text-align: right;
+            font-family: 'Source Sans Pro', sans-serif;
         }
-        
-        /* Controls Section */
-        .controls { 
-            padding: 20px 30px; 
-            background: #ffffff; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+
+        .chart-area {
+            width: 100%;
+            height: 420px;
         }
-        
-        .slider-row { text-align: center; }
-        .slider-row label { font-size: 40px; font-weight: bold; }
-        .q-display { font-size: 50px; font-weight: bold; color: #dd6b20; }
-        
-        input[type=range] { 
-            width: 98%; 
+
+        .source {
+            font-size: 10px;
+            color: #888;
+            border-top: 1px solid #e0e0e0;
             margin-top: 10px;
-            height: 15px;
-            cursor: pointer;
+            padding-top: 8px;
+            line-height: 1.6;
         }
 
-        .options-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 2px solid #f1f5f9;
-            padding-top: 15px;
+        @media print {
+            body { background: #fff; padding: 0; }
+            .chart-container { border: none; padding: 0; }
         }
-        
-        .toggle-group { font-size: 30px; display: flex; align-items: center; gap: 10px; cursor: pointer;}
-        .toggle-group input[type=checkbox] { width: 30px; height: 30px; }
-
-        .radio-group { display: flex; gap: 15px; }
-        .radio-label {
-            font-size: 28px;
-            background: #edf2f7;
-            padding: 8px 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            border: 3px solid transparent;
-            transition: 0.2s;
-        }
-        .radio-label input { display: none; }
-        .radio-label:has(input:checked) { background: #ebf8ff; border-color: #3182ce; color: #2b6cb0; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="main-container">
-    <div class="left-panel">
-        <details class="def-box">
-            <summary>Law of Diminishing Marginal Utility</summary>
-            <p>As a consumer consumes more units of a good, the marginal utility derived from each additional unit decreases.</p>
-        </details>
-        <details class="def-box">
-            <summary>Law of Diminishing Marginal Returns</summary>
-            <p>As more units of a variable input are added to fixed inputs, the marginal product of the variable input eventually decreases.</p>
-        </details>
-        <details class="def-box">
-            <summary>Law of Increasing Marginal Cost</summary>
-            <p>As output increases, the marginal cost of producing each additional unit eventually increases.</p>
-        </details>
-        <details class="def-box">
-            <summary>Law of Increasing Opportunity Cost</summary>
-            <p>As more of one good is produced, the opportunity cost of producing each additional unit increases.</p>
-        </details>
+<div class="chart-container">
+    <div class="title-area">
+        <h2>Marginal Analysis: Optimal Quantity Determination</h2>
+        <div class="subtitle">MB = 100 − Q, MC = 10 + Q — The optimal quantity occurs where MB = MC</div>
     </div>
 
-    <div class="right-panel">
-        <div class="chart-container" id="top-container">
-            <canvas id="canvasTop" width="1600"></canvas>
+    <div class="status-row">
+        <div class="status-item">
+            <div class="status-label">Quantity (Q)</div>
+            <div class="status-value" id="dispQ">0</div>
         </div>
-        <div class="chart-container" id="bot-container">
-            <canvas id="canvasBottom" width="1600" height="800"></canvas>
+        <div class="status-item">
+            <div class="status-label">Marginal Benefit</div>
+            <div class="status-value" id="dispMB">0</div>
         </div>
-        
-        <div class="controls">
-            <div class="slider-row">
-                <label>Quantity (Q): <span class="q-display" id="q-val">3.8</span></label><br>
-                <input type="range" id="q-slider" min="0.1" max="9.9" step="0.1" value="3.8">
-            </div>
-            
-            <div class="options-row">
-                <label class="toggle-group">
-                    <input type="checkbox" id="tangent-toggle" checked>
-                    Show Tangent Lines
-                </label>
-                
-                <div class="radio-group">
-                    <label class="radio-label">
-                        <input type="radio" name="viewMode" value="base" checked> Total Chart
-                    </label>
-                    <label class="radio-label">
-                        <input type="radio" name="viewMode" value="net"> Net
-                    </label>
-                    <label class="radio-label">
-                        <input type="radio" name="viewMode" value="marginal"> Marginal
-                    </label>
-                </div>
-            </div>
+        <div class="status-item">
+            <div class="status-label">Marginal Cost</div>
+            <div class="status-value" id="dispMC">0</div>
         </div>
+        <div class="status-item">
+            <div class="status-label">Net Benefit</div>
+            <div class="status-value" id="dispNB">0</div>
+        </div>
+    </div>
+
+    <div id="mainChart" class="chart-area"></div>
+
+    <div class="slider-row">
+        <span class="slider-label">Quantity (Q)</span>
+        <input type="range" id="qSlider" min="0" max="100" step="1" value="0">
+        <span class="slider-value" id="sliderVal">0</span>
+    </div>
+
+    <div class="source">
+        <strong>Source:</strong> Microeconomic theory, <em>Marginal Analysis Framework</em>;<br>
+        <em>Note: Drag the slider to explore. The optimal quantity Q* = 45 where MB = MC = 55.</em>
     </div>
 </div>
 
 <script>
-    const cTop = document.getElementById('canvasTop');
-    const ctxTop = cTop.getContext('2d');
-    const cBot = document.getElementById('canvasBottom');
-    const ctxBot = cBot.getContext('2d');
-    const topContainer = document.getElementById('top-container');
-    const botContainer = document.getElementById('bot-container');
-    
-    const slider = document.getElementById('q-slider');
-    const qValText = document.getElementById('q-val');
-    const tangentToggle = document.getElementById('tangent-toggle');
-    const radios = document.getElementsByName('viewMode');
+// ============================================================
+// Color constants (do not modify)
+// ============================================================
+const C = {
+    deepBlue: '#1a5276',
+    ochre: '#b85c38',
+    green: '#2e8b57',
+    gray: '#bbb',
+    titleText: '#1a2a3a',
+    bodyText: '#333',
+    axisName: '#555',
+    subText: '#6b6b6b',
+    source: '#888',
+    gridLine: '#e8e8e8',
+    tooltipBg: '#1a2a3a'
+};
 
-    // Economic Functions
-    const Q_MAX = 10;
-    const TB = (q) => 24 * Math.sqrt(q);
-    const TC = (q) => 0.8 * Math.pow(q, 2);
-    const MB = (q) => 12 / Math.sqrt(q);
-    const MC = (q) => 1.6 * q;
-    const NB = (q) => TB(q) - TC(q);
+// Animation config (critical: 80ms linear transition)
+const animCfg = {
+    animation: true,
+    animationDurationUpdate: 80,
+    animationEasingUpdate: 'linear'
+};
 
-    const padX = 150, padY = 120;
-    const canvasWidth = 1600;
-    
-    const Y_MAX_TOP = 85; 
-    const Y_MAX_MG = 22; 
-    const Y_MAX_NB = 40; 
+// ============================================================
+// Economic model
+// ============================================================
+function MB(Q) { return 100 - Q; }
+function MC(Q) { return 10 + Q; }
 
-    function mapX(q) { return padX + (q / Q_MAX) * (canvasWidth - padX * 2); }
-    function mapY(val, yMax, canvasH) { return canvasH - padY - (val / yMax) * (canvasH - padY * 2); }
+// Net Benefit from 0 to Q: ∫₀ᵍ (MB - MC) dQ = ∫₀ᵍ (90 - 2Q) dQ = 90Q - Q²
+function netBenefit(Q) { return 90 * Q - Q * Q; }
 
-    function drawAxes(ctx, yMax, canvasH, title, yLabel) {
-        ctx.clearRect(0, 0, canvasWidth, canvasH);
-        
-        // Grid
-        ctx.strokeStyle = '#e2e8f0';
-        ctx.lineWidth = 2;
-        for(let i=1; i<=10; i++) {
-            let x = mapX(i);
-            ctx.beginPath(); ctx.moveTo(x, padY); ctx.lineTo(x, canvasH - padY); ctx.stroke();
-        }
-        
-        // Axes
-        ctx.strokeStyle = '#1a202c';
-        ctx.lineWidth = 8;
-        ctx.beginPath();
-        ctx.moveTo(padX, padY - 40);
-        ctx.lineTo(padX, canvasH - padY);
-        ctx.lineTo(canvasWidth - padX + 50, canvasH - padY);
-        ctx.stroke();
+// Generate MB and MC line data
+const mbData = [];
+const mcData = [];
+for (let q = 0; q <= 100; q++) {
+    mbData.push([q, MB(q)]);
+    mcData.push([q, MC(q)]);
+}
 
-        // X and Y Axis Labels
-        ctx.fillStyle = '#1a202c';
-        ctx.font = 'bold 45px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('Quantity (Q)', canvasWidth / 2, canvasH - 30);
-        
-        ctx.save();
-        ctx.translate(55, canvasH / 2);
-        ctx.rotate(-Math.PI / 2);
-        ctx.fillText(yLabel, 0, 0);
-        ctx.restore();
+// ============================================================
+// Axis config factory
+// ============================================================
+function baseAxis(name) {
+    return {
+        type: 'value',
+        name: name,
+        nameTextStyle: { color: C.axisName, fontSize: 11, fontFamily: 'Source Sans Pro' },
+        axisLine: { lineStyle: { color: C.bodyText, width: 1 } },
+        axisLabel: { fontSize: 11, color: C.bodyText, fontFamily: 'Source Sans Pro' },
+        splitLine: { lineStyle: { color: C.gridLine, type: 'dashed' } }
+    };
+}
 
-        // Title
-        ctx.font = 'bold 55px sans-serif';
-        ctx.fillText(title, canvasWidth / 2, 70);
+function baseTooltip() {
+    return {
+        trigger: 'item',
+        backgroundColor: C.tooltipBg,
+        borderColor: C.tooltipBg,
+        textStyle: { color: '#fff', fontSize: 12, fontFamily: 'Source Sans Pro' }
+    };
+}
 
-        // Tick Numbers
-        ctx.font = '28px sans-serif';
-        for(let i=0; i<=10; i++) {
-            let x = mapX(i);
-            ctx.beginPath(); ctx.moveTo(x, canvasH-padY); ctx.lineTo(x, canvasH-padY+15); ctx.stroke();
-            ctx.fillText(i, x, canvasH-padY+50);
-        }
-    }
+function baseLegend() {
+    return {
+        top: 0, right: 0,
+        textStyle: { fontSize: 11, color: C.bodyText, fontFamily: 'Source Sans Pro' },
+        itemGap: 16
+    };
+}
 
-    function drawCurve(ctx, func, yMax, canvasH, color, label, offX, offY, startQ = 0) {
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 14; // Ultra thick curves
-        ctx.beginPath();
-        for(let q = startQ; q <= Q_MAX; q += 0.1) {
-            let x = mapX(q);
-            let y = mapY(func(q), yMax, canvasH);
-            if(q === startQ) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-        
-        ctx.fillStyle = color;
-        ctx.font = 'bold 45px sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText(label, mapX(9.7) + offX, mapY(func(9.7), yMax, canvasH) + offY);
-    }
+// ============================================================
+// Chart initialization
+// ============================================================
+const chart = echarts.init(document.getElementById('mainChart'));
 
-    function drawTangent(ctx, q, val, slope, yMax, canvasH, color) {
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 12; // Thick solid line
-        ctx.setLineDash([]); 
-        
-        let qSpan = 2.0; 
-        let q1 = Math.max(0, q - qSpan), q2 = Math.min(Q_MAX, q + qSpan);
-        let y1 = val + slope * (q1 - q), y2 = val + slope * (q2 - q);
+function getChartOption(Q) {
+    const mbVal = MB(Q);
+    const mcVal = MC(Q);
 
-        ctx.beginPath();
-        ctx.moveTo(mapX(q1), mapY(y1, yMax, canvasH));
-        ctx.lineTo(mapX(q2), mapY(y2, yMax, canvasH));
-        ctx.stroke();
-        
-        // Intersection point marker
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.arc(mapX(q), mapY(val, yMax, canvasH), 14, 0, Math.PI * 2);
-        ctx.fill();
-    }
+    return {
+        tooltip: baseTooltip(),
+        legend: baseLegend(),
+        grid: { left: 60, right: 30, top: 50, bottom: 50 },
+        xAxis: { ...baseAxis('Quantity (Q)'), min: 0, max: 100 },
+        yAxis: { ...baseAxis('Price / Marginal Value'), min: 0, max: 110 },
+        series: [
+            {
+                name: 'Marginal Benefit (MB)',
+                type: 'line',
+                data: mbData,
+                symbol: 'none',
+                lineStyle: { width: 2.5, color: C.deepBlue },
+                itemStyle: { color: C.deepBlue }
+            },
+            {
+                name: 'Marginal Cost (MC)',
+                type: 'line',
+                data: mcData,
+                symbol: 'none',
+                lineStyle: { width: 2.5, color: C.ochre },
+                itemStyle: { color: C.ochre }
+            },
+            {
+                name: 'Optimal (MB=MC)',
+                type: 'scatter',
+                data: [[45, 55]],
+                symbolSize: 12,
+                itemStyle: { color: C.titleText, borderWidth: 2, borderColor: '#fff' },
+                z: 10
+            },
+            {
+                name: 'Current MB',
+                type: 'scatter',
+                data: [[Q, mbVal]],
+                symbolSize: 10,
+                itemStyle: { color: C.deepBlue, borderWidth: 2, borderColor: '#fff' },
+                z: 10
+            },
+            {
+                name: 'Current MC',
+                type: 'scatter',
+                data: [[Q, mcVal]],
+                symbolSize: 10,
+                itemStyle: { color: C.ochre, borderWidth: 2, borderColor: '#fff' },
+                z: 10
+            }
+        ]
+    };
+}
 
-    function render() {
-        let q = parseFloat(slider.value);
-        qValText.innerText = q.toFixed(1);
-        let mode = document.querySelector('input[name="viewMode"]:checked').value;
-        let showT = tangentToggle.checked;
+// Initial render
+chart.setOption({...getChartOption(0), ...animCfg});
 
-        // DYNAMIC CANVAS SCALING
-        let hTop;
-        if(mode === 'base') {
-            botContainer.style.display = 'none';
-            topContainer.style.flex = '10'; // Dominate the view
-            // Vertical Golden Ratio: Height = Width * 1.618
-            // However, to keep it within common screen bounds, we use a slightly compressed 1.25 ratio
-            // But let's follow the user's intent: Height is 1.618 of Width for the "Portrait" feel.
-            hTop = canvasWidth * 1; 
-        } else {
-            botContainer.style.display = 'flex';
-            topContainer.style.flex = '1';
-            hTop = 900; // Landscape for dual view
-        }
-        cTop.height = hTop;
+// ============================================================
+// Update logic (slider-driven)
+// ============================================================
+function updateModel() {
+    const Q = parseInt(document.getElementById('qSlider').value);
+    document.getElementById('sliderVal').textContent = Q;
 
-        let x = mapX(q);
+    const mbVal = MB(Q);
+    const mcVal = MC(Q);
+    const nb = netBenefit(Q);
 
-        // DRAW TOP CHART (TOTAL)
-        drawAxes(ctxTop, Y_MAX_TOP, hTop, 'Total Benefit & Total Cost', 'Total Value ($)');
-        drawCurve(ctxTop, TB, Y_MAX_TOP, hTop, '#3182ce', 'TB', -70, -50);
-        drawCurve(ctxTop, TC, Y_MAX_TOP, hTop, '#e53e3e', 'TC', 15, 20);
+    // Update status indicators
+    document.getElementById('dispQ').textContent = Q;
+    document.getElementById('dispMB').textContent = mbVal.toFixed(1);
+    document.getElementById('dispMC').textContent = mcVal.toFixed(1);
 
-        let tbV = TB(q), tcV = TC(q);
-        // Golden Net Benefit Line
-        ctxTop.strokeStyle = '#D4AF37'; ctxTop.lineWidth = 30;
-        ctxTop.beginPath(); ctxTop.moveTo(x, mapY(tcV, Y_MAX_TOP, hTop)); ctxTop.lineTo(x, mapY(tbV, Y_MAX_TOP, hTop)); ctxTop.stroke();
+    // Net Benefit with color
+    const nbEl = document.getElementById('dispNB');
+    nbEl.textContent = nb.toFixed(0);
+    nbEl.style.color = nb >= 0 ? C.green : C.ochre;
 
-        // Cross-chart indicator
-        ctxTop.strokeStyle = 'rgba(0,0,0,0.1)'; ctxTop.setLineDash([15, 15]); ctxTop.lineWidth = 4;
-        ctxTop.beginPath(); ctxTop.moveTo(x, padY); ctxTop.lineTo(x, hTop - padY); ctxTop.stroke(); ctxTop.setLineDash([]);
+    // Update chart data (only change scatter series)
+    chart.setOption({...animCfg,
+        series: [
+            {},  // MB line — unchanged
+            {},  // MC line — unchanged
+            {},  // Optimal scatter — unchanged
+            { data: [[Q, mbVal]] },  // Current MB
+            { data: [[Q, mcVal]] }   // Current MC
+        ],
+        // Graphic labels: dynamic positioning via convertToPixel
+        graphic: [
+            {
+                type: 'text',
+                // MB label near left end of MB line
+                left: chart.convertToPixel({gridIndex:0}, [5, MB(5)])[0] - 40,
+                top: chart.convertToPixel({gridIndex:0}, [5, MB(5)])[1] - 16,
+                style: { text: 'MB', fontSize: 12, fontWeight: 'bold', fill: C.deepBlue, fontFamily: 'Source Sans Pro' }
+            },
+            {
+                type: 'text',
+                // MC label near right end of MC line
+                left: chart.convertToPixel({gridIndex:0}, [90, MC(90)])[0] + 8,
+                top: chart.convertToPixel({gridIndex:0}, [90, MC(90)])[1] - 16,
+                style: { text: 'MC', fontSize: 12, fontWeight: 'bold', fill: C.ochre, fontFamily: 'Source Sans Pro' }
+            },
+            {
+                type: 'text',
+                // Optimal label near equilibrium point
+                left: chart.convertToPixel({gridIndex:0}, [45, 55])[0] + 14,
+                top: chart.convertToPixel({gridIndex:0}, [45, 55])[1] + 14,
+                style: { text: 'Optimal (Q*=45)', fontSize: 11, fontWeight: 'bold', fill: C.titleText, fontFamily: 'Source Sans Pro' }
+            }
+        ]
+    });
+}
 
-        if(showT) {
-            // Lighter versions of primary colors for solid tangents
-            drawTangent(ctxTop, q, tbV, MB(q), Y_MAX_TOP, hTop, '#90cdf4'); // Light Blue
-            drawTangent(ctxTop, q, tcV, MC(q), Y_MAX_TOP, hTop, '#feb2b2'); // Light Red
-        }
+// Bind slider
+document.getElementById('qSlider').addEventListener('input', updateModel);
+updateModel();
 
-        // DRAW BOTTOM CHART
-        const hBot = cBot.height;
-        if(mode === 'marginal') {
-            drawAxes(ctxBot, Y_MAX_MG, hBot, 'Marginal Analysis', 'Marginal ($)');
-            drawCurve(ctxBot, MB, Y_MAX_MG, hBot, '#3182ce', 'MB', -70, -40, 0.4);
-            drawCurve(ctxBot, MC, Y_MAX_MG, hBot, '#e53e3e', 'MC', 20, 40);
-            
-            let mbV = MB(q), mcV = MC(q);
-            ctxBot.strokeStyle = mbV >= mcV ? '#38a169' : '#e53e3e';
-            ctxBot.lineWidth = 30;
-            ctxBot.beginPath(); ctxBot.moveTo(x, mapY(mcV, Y_MAX_MG, hBot)); ctxBot.lineTo(x, mapY(mbV, Y_MAX_MG, hBot)); ctxBot.stroke();
-
-            ctxBot.strokeStyle = 'rgba(0,0,0,0.1)'; ctxBot.setLineDash([15, 15]); ctxBot.lineWidth = 4;
-            ctxBot.beginPath(); ctxBot.moveTo(x, padY); ctxBot.lineTo(x, hBot - padY); ctxBot.stroke(); ctxBot.setLineDash([]);
-        } 
-        else if(mode === 'net') {
-            drawAxes(ctxBot, Y_MAX_NB, hBot, 'Net Benefit (Profit)', 'Value ($)');
-            drawCurve(ctxBot, NB, Y_MAX_NB, hBot, '#D4AF37', 'NB', -80, -40);
-            
-            let nbV = NB(q);
-            ctxBot.fillStyle = '#D4AF37';
-            ctxBot.beginPath(); ctxBot.arc(x, mapY(nbV, Y_MAX_NB, hBot), 20, 0, Math.PI * 2); ctxBot.fill();
-
-            ctxBot.strokeStyle = 'rgba(0,0,0,0.1)'; ctxBot.setLineDash([15, 15]); ctxBot.lineWidth = 4;
-            ctxBot.beginPath(); ctxBot.moveTo(x, padY); ctxBot.lineTo(x, hBot - padY); ctxBot.stroke(); ctxBot.setLineDash([]);
-            
-            // Highlight Global Maximum
-            let mQ = 3.832;
-            ctxBot.strokeStyle = '#38a169'; ctxBot.setLineDash([10, 10]); ctxBot.lineWidth = 3;
-            ctxBot.beginPath(); ctxBot.moveTo(mapX(mQ), mapY(NB(mQ), Y_MAX_NB, hBot)); ctxBot.lineTo(mapX(mQ), hBot - padY); ctxBot.stroke(); ctxBot.setLineDash([]);
-        }
-    }
-
-    slider.addEventListener('input', render);
-    tangentToggle.addEventListener('change', render);
-    radios.forEach(r => r.addEventListener('change', render));
-    
-    // Auto-expand the first law for a strong visual start
-    document.querySelector('details').open = true;
-    render(); 
+// Responsive
+window.addEventListener('resize', function() { chart.resize(); });
 </script>
 </body>
 </html>
