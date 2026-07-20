@@ -571,33 +571,8 @@
         }
 
         // Update Business Cycle - only update scatter data
-        const cycleAllData = cycleYData.map((y, i) => [i, y]);
-        const trendAllData = trendYData.map((y, i) => [i, y]);
-        const realGdpLabel = endLabelPos(cycleChart, cycleAllData, 14);
-        const potentialGdpLabel = endLabelPos(cycleChart, trendAllData, 14);
-        const currentLabel = labelPos(cycleChart, eco.t, eco.Y, cycleAllData, 18);
         cycleChart.setOption({...animCfg,
-            series: [{}, {}, { data: [[eco.t, eco.Y]] }],
-            graphic: [
-                {
-                    type: 'text',
-                    left: realGdpLabel.left,
-                    top: realGdpLabel.top,
-                    style: { text: 'Real GDP', fontSize: 11, fontWeight: 'bold', fill: C.deepBlue, fontFamily: 'Source Sans Pro' }
-                },
-                {
-                    type: 'text',
-                    left: potentialGdpLabel.left,
-                    top: potentialGdpLabel.top,
-                    style: { text: 'Potential GDP', fontSize: 11, fontWeight: 'bold', fill: C.green, fontFamily: 'Source Sans Pro' }
-                },
-                {
-                    type: 'text',
-                    left: currentLabel.left,
-                    top: currentLabel.top,
-                    style: { text: 'Current', fontSize: 11, fontWeight: 'bold', fill: C.ochre, fontFamily: 'Source Sans Pro' }
-                }
-            ]
+            series: [{}, {}, { data: [[eco.t, eco.Y]] }]
         });
 
         // Update AD-AS - update lines, scatter, and labels
@@ -612,11 +587,7 @@
         const srasPixel = adasChart.convertToPixel({gridIndex: 0}, [170, eco.srasIntercept + config.srasSlope * 170]);
         const adPixel = adasChart.convertToPixel({gridIndex: 0}, [70, eco.adIntercept - config.adSlope * 70]);
 
-        const srasLabel = midLabelPos(adasChart, srasData, 0.8, 24);
-        const adLabel = midLabelPos(adasChart, adData, 0.2, 24);
         const lrasData = [[eco.Yf, 40], [eco.Yf, 160]];
-        const lrasLabel = { left: lrasPixel[0] + 6, top: lrasPixel[1] - 20 };
-        const eqLabel = labelPos(adasChart, eco.Y, eco.P, srasData, 24);
 
         adasChart.setOption({...animCfg,
             series: [
@@ -624,28 +595,6 @@
                 { data: srasData },
                 { data: adData },
                 { data: [[eco.Y, eco.P]] }
-            ],
-            graphic: [
-                {
-                    type: 'text',
-                    left: lrasLabel.left, top: lrasLabel.top,
-                    style: { text: 'LRAS', fontSize: 11, fontWeight: 'bold', fill: C.green, fontFamily: 'Source Sans Pro' }
-                },
-                {
-                    type: 'text',
-                    left: srasLabel.left, top: srasLabel.top,
-                    style: { text: 'SRAS', fontSize: 11, fontWeight: 'bold', fill: C.ochre, fontFamily: 'Source Sans Pro' }
-                },
-                {
-                    type: 'text',
-                    left: adLabel.left, top: adLabel.top,
-                    style: { text: 'AD', fontSize: 11, fontWeight: 'bold', fill: C.deepBlue, fontFamily: 'Source Sans Pro' }
-                },
-                {
-                    type: 'text',
-                    left: eqLabel.left, top: eqLabel.top,
-                    style: { text: 'Equilibrium', fontSize: 11, fontWeight: 'bold', fill: C.titleText, fontFamily: 'Source Sans Pro' }
-                }
             ]
         });
 
@@ -664,25 +613,10 @@
         const ppcPixel = ppcChart.convertToPixel({gridIndex: 0}, [ppcRadius * 0.4, ppcRadius * 0.92]);
         const actPixel = ppcChart.convertToPixel({gridIndex: 0}, [actX, actY]);
 
-        const ppcLabel = midLabelPos(ppcChart, ppcData, 0.3, 24);
-        const actLabel = labelPos(ppcChart, actX, actY, ppcData, 24);
-
         ppcChart.setOption({...animCfg,
             series: [
                 { data: ppcData },
                 { data: [[actX, actY]] }
-            ],
-            graphic: [
-                {
-                    type: 'text',
-                    left: ppcLabel.left, top: ppcLabel.top,
-                    style: { text: 'PPC', fontSize: 11, fontWeight: 'bold', fill: C.deepBlue, fontFamily: 'Source Sans Pro' }
-                },
-                {
-                    type: 'text',
-                    left: actLabel.left, top: actLabel.top,
-                    style: { text: 'Actual', fontSize: 11, fontWeight: 'bold', fill: C.ochre, fontFamily: 'Source Sans Pro' }
-                }
             ]
         });
     }
