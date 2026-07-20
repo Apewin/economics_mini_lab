@@ -314,6 +314,43 @@
 
     // ============ INIT CHARTS ============
     const animCfg = { animation: true, animationDurationUpdate: 80, animationEasingUpdate: 'linear' };
+
+    // 标签定位函数：计算曲线斜率 → 垂直方向偏移 → 标签不重叠
+    function labelPos(chart, dataX, dataY, allData, offsetPx, preferSide) {
+        offsetPx = offsetPx || 16;
+        preferSide = preferSide || 'top';
+        var idx = 0, minDist = Infinity;
+        for (var i = 0; i < allData.length; i++) {
+            var d = Math.abs(allData[i][0] - dataX);
+            if (d < minDist) { minDist = d; idx = i; }
+        }
+        var dx, dy;
+        if (idx < allData.length - 1) {
+            dx = allData[idx + 1][0] - allData[idx][0];
+            dy = allData[idx + 1][1] - allData[idx][1];
+        } else if (idx > 0) {
+            dx = allData[idx][0] - allData[idx - 1][0];
+            dy = allData[idx][1] - allData[idx - 1][1];
+        } else { dx = 1; dy = 0; }
+        var len = Math.sqrt(dy * dy + dx * dx) || 1;
+        var nx = -dy / len, ny = dx / len;
+        if (ny > 0) { nx = -nx; ny = -ny; }
+        if (Math.abs(ny) < 0.01) { ny = preferSide === 'top' ? -1 : 1; nx = 0; }
+        var pixel = chart.convertToPixel({gridIndex: 0}, [dataX, dataY]);
+        return { left: pixel[0] + nx * offsetPx, top: pixel[1] + ny * offsetPx };
+    }
+    function endLabelPos(chart, allData, offsetPx) {
+        var last = allData[allData.length - 1];
+        var pos = labelPos(chart, last[0], last[1], allData, offsetPx, 'top');
+        pos.left += 8;
+        return pos;
+    }
+    function midLabelPos(chart, allData, ratio, offsetPx) {
+        var idx = Math.floor(allData.length * (ratio || 0.3));
+        idx = Math.max(0, Math.min(idx, allData.length - 1));
+        return labelPos(chart, allData[idx][0], allData[idx][1], allData, offsetPx, 'top');
+    }
+
     const cycleChart = echarts.init(document.getElementById('cycleChart'));
     const adasChart = echarts.init(document.getElementById('adasChart'));
     const ppcChart = echarts.init(document.getElementById('ppcChart'));
@@ -534,25 +571,30 @@
         }
 
         // Update Business Cycle - only update scatter data
+        const cycleAllData = cycleYData.map((y, i) => [i, y]);
+        const trendAllData = trendYData.map((y, i) => [i, y]);
+        const realGdpLabel = endLabelPos(cycleChart, cycleAllData, 18);
+        const potentialGdpLabel = endLabelPos(cycleChart, trendAllData, 18);
+        const currentLabel = labelPos(cycleChart, eco.t, eco.Y, cycleAllData, 18);
         cycleChart.setOption({...animCfg,
             series: [{}, {}, { data: [[eco.t, eco.Y]] }],
             graphic: [
                 {
                     type: 'text',
-                    left: cycleChart.convertToPixel({gridIndex: 0}, [99, cycleYData[99]])[0] - 60,
-                    top: cycleChart.convertToPixel({gridIndex: 0}, [99, cycleYData[99]])[1] - 14,
+                    left: realGdpLabel.left,
+                    top: realGdpLabel.top,
                     style: { text: 'Real GDP', fontSize: 11, fontWeight: 'bold', fill: C.deepBlue, fontFamily: 'Source Sans Pro' }
                 },
                 {
                     type: 'text',
-                    left: cycleChart.convertToPixel({gridIndex: 0}, [99, trendYData[99]])[0] - 85,
-                    top: cycleChart.convertToPixel({gridIndex: 0}, [99, trendYData[99]])[1] + 6,
+                    left: potentialGdpLabel.left,
+                    top: potentialGdpLabel.top,
                     style: { text: 'Potential GDP', fontSize: 11, fontWeight: 'bold', fill: C.green, fontFamily: 'Source Sans Pro' }
                 },
                 {
                     type: 'text',
-                    left: cycleChart.convertToPixel({gridIndex: 0}, [eco.t, eco.Y])[0] + (eco.t > 80 ? -90 : 14),
-                    top: cycleChart.convertToPixel({gridIndex: 0}, [eco.t, eco.Y])[1] + (eco.Y > 140 ? 14 : -14),
+                    left: currentLabel.left,
+                    top: currentLabel.top,
                     style: { text: 'Current', fontSize: 11, fontWeight: 'bold', fill: C.ochre, fontFamily: 'Source Sans Pro' }
                 }
             ]
@@ -570,9 +612,15 @@
         const srasPixel = adasChart.convertToPixel({gridIndex: 0}, [170, eco.srasIntercept + config.srasSlope * 170]);
         const adPixel = adasChart.convertToPixel({gridIndex: 0}, [70, eco.adIntercept - config.adSlope * 70]);
 
+        const srasLabel = midLabelPos(adasChart, srasData, 0.85, 18);
+        const adLabel = midLabelPos(adasChart, adData, 0.15, 18);
+        const lrasData = [[eco.Yf, 40], [eco.Yf, 160]];
+        const lrasLabel = { left: lrasPixel[0] + 6, top: lrasPixel[1] - 16 };
+        const eqLabel = labelPos(adasChart, eco.Y, eco.P, srasData, 18);
+
         adasChart.setOption({...animCfg,
             series: [
-                { data: [[eco.Yf, 40], [eco.Yf, 160]] },
+                { data: lrasData },
                 { data: srasData },
                 { data: adData },
                 { data: [[eco.Y, eco.P]] }
@@ -580,23 +628,22 @@
             graphic: [
                 {
                     type: 'text',
-                    left: lrasPixel[0] + 6, top: lrasPixel[1] - 16,
+                    left: lrasLabel.left, top: lrasLabel.top,
                     style: { text: 'LRAS', fontSize: 11, fontWeight: 'bold', fill: C.green, fontFamily: 'Source Sans Pro' }
                 },
                 {
                     type: 'text',
-                    left: srasPixel[0] - 45, top: srasPixel[1] - 14,
+                    left: srasLabel.left, top: srasLabel.top,
                     style: { text: 'SRAS', fontSize: 11, fontWeight: 'bold', fill: C.ochre, fontFamily: 'Source Sans Pro' }
                 },
                 {
                     type: 'text',
-                    left: adPixel[0] + 6, top: adPixel[1] - 14,
+                    left: adLabel.left, top: adLabel.top,
                     style: { text: 'AD', fontSize: 11, fontWeight: 'bold', fill: C.deepBlue, fontFamily: 'Source Sans Pro' }
                 },
                 {
                     type: 'text',
-                    left: eqPixel[0] + (eco.Y > 150 ? -80 : 14),
-                    top: eqPixel[1] + (eco.P > 120 ? 14 : -14),
+                    left: eqLabel.left, top: eqLabel.top,
                     style: { text: 'Equilibrium', fontSize: 11, fontWeight: 'bold', fill: C.titleText, fontFamily: 'Source Sans Pro' }
                 }
             ]
@@ -617,6 +664,9 @@
         const ppcPixel = ppcChart.convertToPixel({gridIndex: 0}, [ppcRadius * 0.4, ppcRadius * 0.92]);
         const actPixel = ppcChart.convertToPixel({gridIndex: 0}, [actX, actY]);
 
+        const ppcLabel = midLabelPos(ppcChart, ppcData, 0.3, 18);
+        const actLabel = labelPos(ppcChart, actX, actY, ppcData, 18);
+
         ppcChart.setOption({...animCfg,
             series: [
                 { data: ppcData },
@@ -625,14 +675,12 @@
             graphic: [
                 {
                     type: 'text',
-                    left: ppcChart.convertToPixel({gridIndex: 0}, [ppcRadius * 0.3, Math.sqrt(Math.max(0, ppcRadius * ppcRadius - Math.pow(ppcRadius * 0.3, 2)))])[0] - 20,
-                    top: ppcChart.convertToPixel({gridIndex: 0}, [ppcRadius * 0.3, Math.sqrt(Math.max(0, ppcRadius * ppcRadius - Math.pow(ppcRadius * 0.3, 2)))])[1] - 14,
+                    left: ppcLabel.left, top: ppcLabel.top,
                     style: { text: 'PPC', fontSize: 11, fontWeight: 'bold', fill: C.deepBlue, fontFamily: 'Source Sans Pro' }
                 },
                 {
                     type: 'text',
-                    left: actPixel[0] + (actX > 140 ? -70 : 12),
-                    top: actPixel[1] - 14,
+                    left: actLabel.left, top: actLabel.top,
                     style: { text: 'Actual', fontSize: 11, fontWeight: 'bold', fill: C.ochre, fontFamily: 'Source Sans Pro' }
                 }
             ]
