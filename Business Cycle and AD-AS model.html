@@ -381,7 +381,7 @@
         return {
             tooltip: baseTooltip(),
             legend: baseLegend(),
-            grid: { left: 60, right: 30, top: 50, bottom: 50 },
+            grid: { left: 60, right: 80, top: 50, bottom: 50 },
             xAxis: {
                 ...baseAxis('Time Progress'),
                 type: 'category',
@@ -407,7 +407,11 @@
                     data: cycleYData,
                     symbol: 'none',
                     lineStyle: { width: 2.5, color: C.deepBlue },
-                    itemStyle: { color: C.deepBlue }
+                    itemStyle: { color: C.deepBlue },
+                    endLabel: {
+                        show: true, formatter: '{a}', fontSize: 11, fontWeight: 'bold',
+                        color: C.deepBlue, fontFamily: 'Source Sans Pro', distance: 8
+                    }
                 },
                 {
                     name: 'Potential GDP',
@@ -416,7 +420,11 @@
                     symbol: 'none',
                     symbolSize: 0,
                     lineStyle: { width: 2, color: C.green },
-                    itemStyle: { color: C.green }
+                    itemStyle: { color: C.green },
+                    endLabel: {
+                        show: true, formatter: '{a}', fontSize: 11, fontWeight: 'bold',
+                        color: C.green, fontFamily: 'Source Sans Pro', distance: 8
+                    }
                 },
                 {
                     name: 'Current Position',
@@ -436,7 +444,7 @@
             return {
                 tooltip: baseTooltip(),
                 legend: baseLegend(),
-                grid: { left: 60, right: 30, top: 50, bottom: 50 },
+                grid: { left: 60, right: 80, top: 50, bottom: 50 },
                 xAxis: { ...baseAxis('Real GDP (Y)'), min: 60, max: 180 },
                 yAxis: { ...baseAxis('Price Level (PL)'), min: 40, max: 160 },
                 series: []
@@ -452,7 +460,7 @@
         return {
             tooltip: baseTooltip(),
             legend: baseLegend(),
-            grid: { left: 60, right: 30, top: 50, bottom: 50 },
+            grid: { left: 60, right: 80, top: 50, bottom: 50 },
             xAxis: { ...baseAxis('Real GDP (Y)'), min: 60, max: 180 },
             yAxis: { ...baseAxis('Price Level (PL)'), min: 40, max: 160 },
             series: [
@@ -463,7 +471,11 @@
                     symbol: 'none',
                     symbolSize: 0,
                     lineStyle: { width: 2.5, color: C.green },
-                    itemStyle: { color: C.green }
+                    itemStyle: { color: C.green },
+                    endLabel: {
+                        show: true, formatter: '{a}', fontSize: 11, fontWeight: 'bold',
+                        color: C.green, fontFamily: 'Source Sans Pro', distance: 8
+                    }
                 },
                 {
                     name: 'SRAS',
@@ -471,7 +483,11 @@
                     data: srasData,
                     symbol: 'none',
                     lineStyle: { width: 2.5, color: C.ochre },
-                    itemStyle: { color: C.ochre }
+                    itemStyle: { color: C.ochre },
+                    endLabel: {
+                        show: true, formatter: '{a}', fontSize: 11, fontWeight: 'bold',
+                        color: C.ochre, fontFamily: 'Source Sans Pro', distance: 8
+                    }
                 },
                 {
                     name: 'AD',
@@ -479,7 +495,11 @@
                     data: adData,
                     symbol: 'none',
                     lineStyle: { width: 2.5, color: C.deepBlue },
-                    itemStyle: { color: C.deepBlue }
+                    itemStyle: { color: C.deepBlue },
+                    endLabel: {
+                        show: true, formatter: '{a}', fontSize: 11, fontWeight: 'bold',
+                        color: C.deepBlue, fontFamily: 'Source Sans Pro', distance: 8
+                    }
                 },
                 {
                     name: 'Equilibrium',
@@ -499,7 +519,7 @@
             return {
                 tooltip: baseTooltip(),
                 legend: baseLegend(),
-                grid: { left: 60, right: 30, top: 50, bottom: 50 },
+                grid: { left: 60, right: 80, top: 50, bottom: 50 },
                 xAxis: { ...baseAxis('Capital Goods'), min: 0, max: 200 },
                 yAxis: { ...baseAxis('Consumer Goods'), min: 0, max: 200 },
                 series: []
@@ -521,7 +541,7 @@
         return {
             tooltip: baseTooltip(),
             legend: baseLegend(),
-            grid: { left: 60, right: 30, top: 50, bottom: 50 },
+            grid: { left: 60, right: 80, top: 50, bottom: 50 },
             xAxis: { ...baseAxis('Capital Goods'), min: 0, max: 200 },
             yAxis: { ...baseAxis('Consumer Goods'), min: 0, max: 200 },
             series: [
@@ -532,7 +552,11 @@
                     symbol: 'none',
                     lineStyle: { width: 2.5, color: C.deepBlue },
                     itemStyle: { color: C.deepBlue },
-                    smooth: false
+                    smooth: false,
+                    endLabel: {
+                        show: true, formatter: '{a}', fontSize: 11, fontWeight: 'bold',
+                        color: C.deepBlue, fontFamily: 'Source Sans Pro', distance: 8
+                    }
                 },
                 {
                     name: 'Actual Production',
