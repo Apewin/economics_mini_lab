@@ -5,147 +5,110 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Economics Teaching Tools</title>
     <style>
-        /* ===== Reset & Variables ===== */
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&family=Source+Sans+Pro:wght@400;600&display=swap');
+
+        /* ===== Reset ===== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        :root {
-            --bg: #f6f8fc;
-            --surface: #ffffff;
-            --primary: #1a3a5c;
-            --primary-light: #2a5a8c;
-            --accent: #c44536;
-            --text: #1e2a3a;
-            --text-secondary: #5a6a7a;
-            --shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-            --radius: 14px;
-            --transition: 0.25s ease;
-        }
-
+        /* ===== Body ===== */
         body {
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            padding: 2rem 1.5rem 0;
-            min-height: 100vh;
+            font-family: 'Source Sans Pro', -apple-system, 'Arial', sans-serif;
+            background: #f7f7f5;
+            color: #333;
+            padding: 40px;
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            justify-content: center;
         }
 
+        /* ===== Container ===== */
         .container {
-            max-width: 1300px;
+            max-width: 1000px;
             width: 100%;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
         }
 
         /* ===== Header ===== */
-        .header {
-            text-align: center;
-            margin-bottom: 1.8rem;
-            position: relative;
+        header {
+            margin-bottom: 1.6rem;
         }
 
-        .header h1 {
-            font-size: 2.6rem;
+        header h2 {
+            font-family: 'Merriweather', Georgia, serif;
+            font-size: 22px;
             font-weight: 700;
-            letter-spacing: -0.02em;
-            color: var(--primary);
+            color: #1a2a3a;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #1a2a3a;
+            margin-bottom: 6px;
         }
 
-        .header h1 span {
-            color: var(--accent);
+        header .subtitle {
+            font-size: 13px;
+            color: #6b6b6b;
+            letter-spacing: 0.02em;
         }
 
-        .header p {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            margin-top: 0.4rem;
-        }
-
-        /* ===== Intro description ===== */
+        /* ===== Intro ===== */
         .intro {
-            background: var(--surface);
-            padding: 1.6rem 2rem;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 2rem;
-            text-align: center;
-            max-width: 900px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .intro p {
-            font-size: 1.05rem;
-            line-height: 1.6;
-            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.7;
+            color: #555;
+            margin-bottom: 1.4rem;
         }
 
         .intro strong {
-            color: var(--primary);
+            color: #1a2a3a;
         }
 
         /* ===== Stats ===== */
         .stats {
-            display: flex;
-            justify-content: center;
-            gap: 2.5rem;
-            flex-wrap: wrap;
-            margin-bottom: 2.5rem;
-            background: var(--surface);
-            padding: 0.8rem 2rem;
-            border-radius: 60px;
-            box-shadow: var(--shadow);
-        }
-
-        .stats span {
-            font-weight: 500;
-            color: var(--text-secondary);
+            font-size: 13px;
+            color: #6b6b6b;
+            margin-bottom: 1.6rem;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e0e0e0;
         }
 
         .stats strong {
-            color: var(--primary);
-            font-weight: 700;
+            color: #1a5276;
         }
 
         /* ===== Search ===== */
         .search-wrap {
             position: relative;
             max-width: 480px;
-            margin: 0 auto 2.5rem;
+            margin: 0 auto 1.6rem;
         }
 
         .search-wrap input {
             width: 100%;
-            padding: 0.8rem 1.2rem 0.8rem 3rem;
-            border: 2px solid #dce3ed;
-            border-radius: 60px;
-            font-size: 1rem;
-            background: var(--surface);
-            transition: var(--transition);
+            padding: 8px 12px 8px 56px;
+            border: 1px solid #d4d4d0;
+            border-radius: 0;
+            font-size: 14px;
+            font-family: 'Source Sans Pro', sans-serif;
+            background: #fff;
+            color: #333;
             outline: none;
-            color: var(--text);
         }
 
         .search-wrap input:focus {
-            border-color: var(--primary-light);
-            box-shadow: 0 0 0 4px rgba(42, 90, 140, 0.12);
+            border-color: #1a5276;
         }
 
         .search-wrap::before {
-            content: "🔍";
+            content: "Search:";
             position: absolute;
-            left: 1.1rem;
+            left: 12px;
             top: 50%;
             transform: translateY(-50%);
-            font-size: 1.1rem;
-            opacity: 0.5;
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            pointer-events: none;
         }
 
         /* ===== Filter Buttons ===== */
@@ -153,30 +116,32 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 0.5rem 0.8rem;
-            margin-bottom: 2.2rem;
+            gap: 6px 10px;
+            margin-bottom: 1.8rem;
         }
 
         .filter-tags button {
-            padding: 0.4rem 1.4rem;
-            border: 2px solid #dce3ed;
-            border-radius: 40px;
-            background: transparent;
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: var(--text-secondary);
+            padding: 5px 16px;
+            border: 1px solid #d4d4d0;
+            border-radius: 0;
+            background: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: 'Source Sans Pro', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #555;
             cursor: pointer;
-            transition: var(--transition);
         }
 
         .filter-tags button:hover {
-            border-color: var(--primary-light);
-            color: var(--primary);
+            border-color: #1a5276;
+            color: #1a5276;
         }
 
         .filter-tags button.active {
-            background: var(--primary);
-            border-color: var(--primary);
+            background: #1a5276;
+            border-color: #1a5276;
             color: #fff;
         }
 
@@ -184,117 +149,134 @@
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1.5rem;
+            gap: 16px;
             margin-bottom: 2.5rem;
         }
 
         .card {
-            background: var(--surface);
-            border-radius: var(--radius);
-            padding: 1.6rem 1.8rem 1.8rem;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-            border: 1px solid rgba(0, 0, 0, 0.02);
+            background: #ffffff;
+            border: 1px solid #d4d4d0;
+            padding: 20px 24px;
             text-decoration: none;
-            color: var(--text);
+            color: #1a2a3a;
             display: flex;
             flex-direction: column;
-            position: relative;
         }
 
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
-            border-color: #dce3ed;
+            border-color: #1a5276;
         }
 
         .card .icon {
-            font-size: 1.8rem;
-            margin-bottom: 0.6rem;
+            font-size: 1.4rem;
+            margin-bottom: 4px;
         }
 
         .card h3 {
-            font-size: 1.05rem;
-            font-weight: 600;
+            font-family: 'Merriweather', Georgia, serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a2a3a;
             line-height: 1.3;
-            margin-bottom: 0.3rem;
+            margin-bottom: 4px;
+        }
+
+        .card .desc {
+            font-size: 13px;
+            color: #6b6b6b;
+            margin-top: 2px;
+            line-height: 1.4;
         }
 
         .card .badge {
             display: inline-block;
-            margin-top: 0.5rem;
-            font-size: 0.7rem;
+            margin-top: 10px;
+            font-size: 10px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.04em;
-            padding: 0.2rem 0.8rem;
-            border-radius: 40px;
-            background: #eef2f7;
-            color: var(--text-secondary);
+            padding: 2px 8px;
+            border: 1px solid #d4d4d0;
+            background: #f7f7f5;
+            color: #555;
             align-self: flex-start;
         }
 
+        .card .badge.fundamentals {
+            border-color: #b85c38;
+            color: #b85c38;
+        }
+
         .card .badge.micro {
-            background: #dbeafe;
-            color: #1a4a7a;
+            border-color: #1a5276;
+            color: #1a5276;
         }
+
         .card .badge.macro {
-            background: #fce8e4;
-            color: #a03a2a;
+            border-color: #2e8b57;
+            color: #2e8b57;
         }
+
         .card .badge.advanced {
-            background: #e4f0e7;
-            color: #2a6a4a;
+            border-color: #888;
+            color: #888;
         }
-		.card .badge.fundamentals {
-			background: #fef3c7;
-			color: #92400e;
-		}
 
         .card .arrow {
-            margin-top: 0.8rem;
-            font-size: 1.2rem;
+            margin-top: auto;
+            padding-top: 8px;
+            font-size: 12px;
             align-self: flex-end;
-            opacity: 0.3;
-            transition: var(--transition);
+            color: #bbb;
         }
 
         .card:hover .arrow {
-            opacity: 0.8;
-            transform: translateX(4px);
+            color: #1a5276;
         }
 
-        /* ===== Feedback Section (collapsible) ===== */
+        /* ===== Empty State ===== */
+        .empty {
+            text-align: center;
+            padding: 3rem 0;
+            color: #6b6b6b;
+            display: none;
+        }
+
+        .empty.show {
+            display: block;
+        }
+
+        /* ===== Feedback Section ===== */
         .feedback-section {
-            background: var(--surface);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            margin: 1.5rem 0 2.5rem;
+            background: #ffffff;
+            border: 1px solid #d4d4d0;
+            margin: 1rem 0 2rem;
         }
 
         .feedback-toggle {
             width: 100%;
             background: transparent;
             border: none;
-            padding: 1.2rem 2rem;
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--primary);
+            padding: 14px 24px;
+            font-family: 'Merriweather', Georgia, serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: #1a2a3a;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-radius: var(--radius);
-            transition: background 0.2s;
+            border-bottom: 1px solid #e0e0e0;
         }
 
         .feedback-toggle:hover {
-            background: #f0f4fa;
+            background: #f7f7f5;
         }
 
         .feedback-toggle .arrow-icon {
-            font-size: 1.4rem;
-            transition: transform 0.25s;
+            font-size: 12px;
+            color: #888;
+            transition: transform 0.2s;
         }
 
         .feedback-toggle .arrow-icon.open {
@@ -302,10 +284,10 @@
         }
 
         .feedback-content {
-            padding: 0 2rem 2rem;
+            padding: 0 24px 24px;
             display: none;
             flex-wrap: wrap;
-            gap: 2rem;
+            gap: 24px;
             align-items: flex-start;
         }
 
@@ -321,46 +303,48 @@
         .feedback-content .info-col {
             flex: 1;
             min-width: 200px;
-            border-left: 2px solid #eef2f7;
-            padding-left: 2rem;
+            border-left: 1px solid #e0e0e0;
+            padding-left: 24px;
         }
 
         .feedback-content h3 {
-            font-size: 1.2rem;
-            margin-bottom: 0.8rem;
-            color: var(--primary);
+            font-family: 'Merriweather', Georgia, serif;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #1a2a3a;
         }
 
         .feedback-content p {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            line-height: 1.5;
+            color: #555;
+            font-size: 13px;
+            line-height: 1.6;
         }
 
         .feedback-content form label {
             display: block;
-            font-weight: 500;
-            margin: 1rem 0 0.3rem;
-            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 12px 0 4px;
+            font-size: 13px;
+            color: #1a2a3a;
         }
 
         .feedback-content form input,
         .feedback-content form textarea {
             width: 100%;
-            padding: 0.7rem 1rem;
-            border: 2px solid #dce3ed;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-family: inherit;
-            transition: var(--transition);
-            background: var(--bg);
+            padding: 8px 12px;
+            border: 1px solid #d4d4d0;
+            border-radius: 0;
+            font-size: 14px;
+            font-family: 'Source Sans Pro', sans-serif;
+            background: #fff;
+            color: #333;
+            outline: none;
         }
 
         .feedback-content form input:focus,
         .feedback-content form textarea:focus {
-            border-color: var(--primary-light);
-            box-shadow: 0 0 0 4px rgba(42, 90, 140, 0.08);
-            outline: none;
+            border-color: #1a5276;
         }
 
         .feedback-content form textarea {
@@ -369,64 +353,46 @@
         }
 
         .feedback-content form button {
-            margin-top: 1.2rem;
-            background: var(--primary);
+            margin-top: 14px;
+            background: #1a5276;
             color: #fff;
-            border: none;
-            padding: 0.7rem 2rem;
-            border-radius: 40px;
-            font-size: 1rem;
+            border: 1px solid #1a5276;
+            border-radius: 0;
+            padding: 8px 24px;
+            font-size: 13px;
             font-weight: 600;
+            font-family: 'Source Sans Pro', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
             cursor: pointer;
-            transition: var(--transition);
         }
 
         .feedback-content form button:hover {
-            background: var(--primary-light);
-            transform: translateY(-2px);
+            background: #153e5c;
         }
 
         /* ===== Footer ===== */
-        .footer {
+        footer {
             text-align: center;
-            padding: 1.8rem 0 2.5rem;
-            border-top: 1px solid #dce3ed;
-            margin-top: 1.5rem;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
+            padding: 16px 0;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 1rem;
+            color: #888;
+            font-size: 12px;
         }
 
-        .footer strong {
-            color: var(--primary);
-        }
-
-        /* ===== Empty State ===== */
-        .empty {
-            text-align: center;
-            padding: 4rem 0;
-            color: var(--text-secondary);
-            display: none;
-        }
-
-        .empty.show {
-            display: block;
+        footer strong {
+            color: #1a2a3a;
         }
 
         /* ===== Responsive ===== */
         @media (max-width: 640px) {
             body {
-                padding: 1.2rem 1rem 0;
+                padding: 20px 16px;
             }
 
-            .header h1 {
-                font-size: 2rem;
-            }
-
-            .stats {
-                gap: 1.2rem;
-                padding: 0.6rem 1.2rem;
-                border-radius: 30px;
-                font-size: 0.9rem;
+            header h2 {
+                font-size: 18px;
             }
 
             .grid {
@@ -434,60 +400,21 @@
             }
 
             .filter-tags button {
-                font-size: 0.8rem;
-                padding: 0.3rem 1rem;
+                font-size: 11px;
+                padding: 4px 12px;
             }
 
             .feedback-content {
-                padding: 0 1.5rem 1.5rem;
                 flex-direction: column;
             }
 
             .feedback-content .info-col {
                 border-left: none;
                 padding-left: 0;
-                border-top: 2px solid #eef2f7;
-                padding-top: 1.5rem;
+                border-top: 1px solid #e0e0e0;
+                padding-top: 16px;
             }
         }
-
-        /* ===== Animation ===== */
-        .card {
-            animation: fadeUp 0.4s ease both;
-        }
-
-        @keyframes fadeUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .card:nth-child(1) { animation-delay: 0.02s; }
-        .card:nth-child(2) { animation-delay: 0.04s; }
-        .card:nth-child(3) { animation-delay: 0.06s; }
-        .card:nth-child(4) { animation-delay: 0.08s; }
-        .card:nth-child(5) { animation-delay: 0.10s; }
-        .card:nth-child(6) { animation-delay: 0.12s; }
-        .card:nth-child(7) { animation-delay: 0.14s; }
-        .card:nth-child(8) { animation-delay: 0.16s; }
-        .card:nth-child(9) { animation-delay: 0.18s; }
-        .card:nth-child(10) { animation-delay: 0.20s; }
-        .card:nth-child(11) { animation-delay: 0.22s; }
-        .card:nth-child(12) { animation-delay: 0.24s; }
-        .card:nth-child(13) { animation-delay: 0.26s; }
-        .card:nth-child(14) { animation-delay: 0.28s; }
-        .card:nth-child(15) { animation-delay: 0.30s; }
-        .card:nth-child(16) { animation-delay: 0.32s; }
-        .card:nth-child(17) { animation-delay: 0.34s; }
-        .card:nth-child(18) { animation-delay: 0.36s; }
-		.card:nth-child(19) { animation-delay: 0.38s; }
-		.card:nth-child(20) { animation-delay: 0.40s; }
-		.card:nth-child(21) { animation-delay: 0.42s; }
     </style>
 </head>
 <body>
@@ -495,24 +422,21 @@
 <div class="container">
 
     <!-- ===== Header ===== -->
-    <header class="header">
-        <h1>📚 Economics <span>Teaching&Learning Tools</span></h1>
-        <p>Interactive simulations · Visual derivations · Study aid</p>
+    <header>
+        <h2>Economics Teaching &amp; Learning Tools</h2>
+        <div class="subtitle">Interactive simulations · Visual derivations · Study aid</div>
     </header>
 
-    <!-- ===== Intro Description ===== -->
-    <div class="intro">
-        <p>
-            These interactive tools were built through <strong>vibe coding</strong>.
-            They are designed for <strong>IGCSE, IB, A‑Level, AP, and introductory university</strong> courses in economics.
-            I hope you find them useful to visualise core concepts, run thought experiments, and reinforce your understanding of key models.
-        </p>
-    </div>
+    <!-- ===== Intro ===== -->
+    <p class="intro">
+        These interactive tools were built through <strong>vibe coding</strong>.
+        They are designed for <strong>IGCSE, IB, A‑Level, AP, and introductory university</strong> courses in economics.
+        I hope you find them useful to visualise core concepts, run thought experiments, and reinforce your understanding of key models.
+    </p>
 
     <!-- ===== Stats ===== -->
     <div class="stats">
-        <span>📦 <strong id="countDisplay">18</strong> tools</span>
-        <span>🏷️ <strong>4</strong> categories</span>
+        <strong id="countDisplay">18</strong> tools available · 4 categories
     </div>
 
     <!-- ===== Search ===== -->
@@ -523,7 +447,7 @@
     <!-- ===== Filter Buttons ===== -->
     <div class="filter-tags" id="filterTags">
         <button class="active" data-filter="all">All</button>
-		<button data-filter="fundamentals">Fundamentals</button>
+        <button data-filter="fundamentals">Fundamentals</button>
         <button data-filter="micro">Micro Principles</button>
         <button data-filter="macro">Macro Principles</button>
         <button data-filter="advanced">Advanced</button>
@@ -531,17 +455,18 @@
 
     <!-- ===== Card Grid ===== -->
     <div class="grid" id="cardGrid"></div>
+    <div class="empty" id="emptyState">No tools match your search.</div>
 
-    <!-- ===== Feedback Section (collapsible) with Formspree ===== -->
+    <!-- ===== Feedback Section ===== -->
     <div class="feedback-section">
         <button class="feedback-toggle" id="feedbackToggle">
-            <span>💬 Feedback & Suggestions</span>
-            <span class="arrow-icon" id="feedbackArrow">▼</span>
+            <span>Feedback &amp; Suggestions</span>
+            <span class="arrow-icon" id="feedbackArrow">&#9660;</span>
         </button>
         <div class="feedback-content" id="feedbackContent">
             <div class="form-col">
-                <h3>💬 Feedback & Suggestions</h3>
-                <p style="margin-bottom:0.8rem;color:var(--text-secondary);font-size:0.95rem;">
+                <h3>Feedback &amp; Suggestions</h3>
+                <p style="margin-bottom:10px;">
                     Your comments help improve these tools. All submissions are sent privately to the author.
                 </p>
 
@@ -557,17 +482,17 @@
                     <input type="email" id="feedbackEmail" name="email" placeholder="alex@example.com" data-fs-field />
 
                     <label for="feedbackMessage">Message *</label>
-                    <textarea id="feedbackMessage" name="message" placeholder="What do you think? Suggestions for new tools? …" required data-fs-field></textarea>
+                    <textarea id="feedbackMessage" name="message" placeholder="What do you think? Suggestions for new tools?" required data-fs-field></textarea>
                     <span data-fs-error="message"></span>
 
                     <button type="submit" data-fs-submit-btn>Send feedback</button>
-                    <p style="margin-top:0.8rem;font-size:0.8rem;color:var(--text-secondary);">
+                    <p style="margin-top:8px;font-size:12px;color:#888;">
                         * Your data will not be shared.
                     </p>
                 </form>
             </div>
             <div class="info-col">
-                <h3>📬 How feedback helps</h3>
+                <h3>How feedback helps</h3>
                 <p>
                     Your suggestions guide future development. I read every message and use them to improve the tools.
                 </p>
@@ -576,9 +501,9 @@
     </div>
 
     <!-- ===== Footer ===== -->
-    <footer class="footer">
+    <footer>
         <p>
-            © Dr. Jia Teaching — all rights reserved.<br />
+            © <strong>Dr. Jia Teaching</strong> — all rights reserved.<br />
             These materials are for educational use only. Not for commercial redistribution.
         </p>
     </footer>
@@ -607,43 +532,41 @@
         { name: 'Monopoly & Regulation', file: 'Monopoly and regulation.html', icon: '🏛️', category: 'micro', desc: 'Monopoly and government regulation' },
         { name: 'Nash Equilibrium Location', file: 'Nash-Eq Location game.html', icon: '📍', category: 'advanced', desc: 'Nash equilibrium in location games' },
         { name: 'Price Control', file: 'Price Control.html', icon: '📏', category: 'micro', desc: 'Price ceilings and floors' },
-        { 
-		name: 'Production Possibility Curve', 
-		file: 'Production Possibility Curve.html', 
-		icon: '📈', 
-		category: 'fundamentals', 
-		desc: 'Production possibility curve/frontier and opportunity cost' 
-		},
-		{	
-		name: 'Supply & Demand Principles',
-		file: 'supply-demand/index.html',   // 确保路径正确
-		icon: '📊',
-		category: 'fundamentals',
-		desc: 'Interactive market analysis with dynamic graphing'
-		},
-		{
-		name: 'Macroeconomic Cycles & Crises',
-		file: 'Macroeconomic Cycles & Crises.html',
-		icon: '🌀',
-		category: 'advanced',
-		desc: 'Say, Marx & Keynes on economic cycles and crises'
-		},
-		// 在最后一个工具条目之后（`]` 之前）插入
-		{
-		name: 'Macro Integrated Model',
-		file: 'IGCSE-Macro-Integrated-Model.html',
-		icon: '📊',
-		category: 'advanced',
-		desc: 'IGCSE-level macroeconomics integrated: fiscal, monetary, supply-side & trade'
-		},
-		// 在 toolsData 数组的最后一个对象之后插入
-		{
-		name: 'Cournot Duopoly Simulation',
-		file: 'Nash-Eq Quantity Game.html',   // 如果文件在子文件夹，请改为 '文件夹名/文件名'
-		icon: '🎯',
-		category: 'advanced',
-		desc: 'Cournot quantity competition: best response, iteration & welfare'
-		}
+        {
+            name: 'Production Possibility Curve',
+            file: 'Production Possibility Curve.html',
+            icon: '📈',
+            category: 'fundamentals',
+            desc: 'Production possibility curve/frontier and opportunity cost'
+        },
+        {
+            name: 'Supply & Demand Principles',
+            file: 'supply-demand/index.html',
+            icon: '📊',
+            category: 'fundamentals',
+            desc: 'Interactive market analysis with dynamic graphing'
+        },
+        {
+            name: 'Macroeconomic Cycles & Crises',
+            file: 'Macroeconomic Cycles & Crises.html',
+            icon: '🌀',
+            category: 'advanced',
+            desc: 'Say, Marx & Keynes on economic cycles and crises'
+        },
+        {
+            name: 'Macro Integrated Model',
+            file: 'IGCSE-Macro-Integrated-Model.html',
+            icon: '📊',
+            category: 'advanced',
+            desc: 'IGCSE-level macroeconomics integrated: fiscal, monetary, supply-side & trade'
+        },
+        {
+            name: 'Cournot Duopoly Simulation',
+            file: 'Nash-Eq Quantity Game.html',
+            icon: '🎯',
+            category: 'advanced',
+            desc: 'Cournot quantity competition: best response, iteration & welfare'
+        }
     ];
 
     // ============================================================
@@ -687,16 +610,16 @@
             if (countDisplay) countDisplay.textContent = filtered.length;
 
             grid.innerHTML = filtered.map((tool, idx) => `
-                    <a href="${tool.file}" class="card" style="animation-delay: ${(idx * 0.02).toFixed(2)}s">
+                    <a href="${tool.file}" class="card">
                         <div class="icon">${tool.icon}</div>
                         <h3>${tool.name}</h3>
-                        <p style="font-size:0.85rem;color:var(--text-secondary);margin-top:0.2rem;">${tool.desc}</p>
+                        <p class="desc">${tool.desc}</p>
                         <span class="badge ${tool.category}">${tool.category}</span>
-                        <span class="arrow">→</span>
+                        <span class="arrow">&rarr;</span>
                     </a>
                 `).join('');
 
-            console.log('✅ Rendered', filtered.length, 'cards');
+            console.log('Rendered', filtered.length, 'cards');
         }
 
         // ----- Event listeners -----
@@ -726,8 +649,8 @@
                 const isOpen = content.classList.toggle('open');
                 arrow.classList.toggle('open', isOpen);
                 toggleBtn.querySelector('span:first-child').textContent = isOpen ?
-                    '💬 Feedback & Suggestions (hide)' :
-                    '💬 Feedback & Suggestions';
+                    'Feedback & Suggestions (hide)' :
+                    'Feedback & Suggestions';
             });
         }
 
@@ -742,24 +665,19 @@
         // ----- Initial render -----
         render();
 
-        console.log('📚 Economics Teaching Tools loaded.');
+        console.log('Economics Teaching Tools loaded.');
     });
 
     // ============================================================
     //  FORMSPREE – Vanilla JS (CDN) integration
-    //  Initializes the form with your endpoint ID
-    //  The library is loaded via CDN <script> tag below.
-    //  We call initForm after the library has loaded.
     // ============================================================
     window.formspree = window.formspree || function () {
         (formspree.q = formspree.q || []).push(arguments);
     };
 
-    // This will be executed when the @formspree/ajax library loads.
-    // The library automatically calls any queued initForm calls.
     window.formspree('initForm', {
         formElement: '#feedback-form',
-        formId: 'mykqbggl'   // Your Formspree form ID
+        formId: 'mykqbggl'
     });
 </script>
 
