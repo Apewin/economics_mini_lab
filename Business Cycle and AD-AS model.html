@@ -340,10 +340,10 @@
         return { left: pixel[0] + nx * offsetPx, top: pixel[1] + ny * offsetPx };
     }
     function endLabelPos(chart, allData, offsetPx) {
-        var last = allData[allData.length - 1];
-        var pos = labelPos(chart, last[0], last[1], allData, offsetPx, 'top');
-        pos.left += 8;
-        return pos;
+        var idx = Math.floor(allData.length * 0.65);
+        idx = Math.max(0, Math.min(idx, allData.length - 1));
+        var pt = allData[idx];
+        return labelPos(chart, pt[0], pt[1], allData, offsetPx, 'top');
     }
     function midLabelPos(chart, allData, ratio, offsetPx) {
         var idx = Math.floor(allData.length * (ratio || 0.3));
@@ -573,8 +573,8 @@
         // Update Business Cycle - only update scatter data
         const cycleAllData = cycleYData.map((y, i) => [i, y]);
         const trendAllData = trendYData.map((y, i) => [i, y]);
-        const realGdpLabel = endLabelPos(cycleChart, cycleAllData, 18);
-        const potentialGdpLabel = endLabelPos(cycleChart, trendAllData, 18);
+        const realGdpLabel = endLabelPos(cycleChart, cycleAllData, 14);
+        const potentialGdpLabel = endLabelPos(cycleChart, trendAllData, 14);
         const currentLabel = labelPos(cycleChart, eco.t, eco.Y, cycleAllData, 18);
         cycleChart.setOption({...animCfg,
             series: [{}, {}, { data: [[eco.t, eco.Y]] }],
@@ -612,11 +612,11 @@
         const srasPixel = adasChart.convertToPixel({gridIndex: 0}, [170, eco.srasIntercept + config.srasSlope * 170]);
         const adPixel = adasChart.convertToPixel({gridIndex: 0}, [70, eco.adIntercept - config.adSlope * 70]);
 
-        const srasLabel = midLabelPos(adasChart, srasData, 0.85, 18);
-        const adLabel = midLabelPos(adasChart, adData, 0.15, 18);
+        const srasLabel = midLabelPos(adasChart, srasData, 0.8, 24);
+        const adLabel = midLabelPos(adasChart, adData, 0.2, 24);
         const lrasData = [[eco.Yf, 40], [eco.Yf, 160]];
-        const lrasLabel = { left: lrasPixel[0] + 6, top: lrasPixel[1] - 16 };
-        const eqLabel = labelPos(adasChart, eco.Y, eco.P, srasData, 18);
+        const lrasLabel = { left: lrasPixel[0] + 6, top: lrasPixel[1] - 20 };
+        const eqLabel = labelPos(adasChart, eco.Y, eco.P, srasData, 24);
 
         adasChart.setOption({...animCfg,
             series: [
@@ -664,8 +664,8 @@
         const ppcPixel = ppcChart.convertToPixel({gridIndex: 0}, [ppcRadius * 0.4, ppcRadius * 0.92]);
         const actPixel = ppcChart.convertToPixel({gridIndex: 0}, [actX, actY]);
 
-        const ppcLabel = midLabelPos(ppcChart, ppcData, 0.3, 18);
-        const actLabel = labelPos(ppcChart, actX, actY, ppcData, 18);
+        const ppcLabel = midLabelPos(ppcChart, ppcData, 0.3, 24);
+        const actLabel = labelPos(ppcChart, actX, actY, ppcData, 24);
 
         ppcChart.setOption({...animCfg,
             series: [
