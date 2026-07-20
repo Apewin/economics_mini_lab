@@ -270,7 +270,7 @@ function getChartOption(data) {
     return {
         tooltip: baseTooltip(),
         legend: baseLegend(),
-        grid: { left: 60, right: 30, top: 50, bottom: 50 },
+        grid: { left: 60, right: 80, top: 50, bottom: 50 },
         xAxis: { ...baseAxis('Time'), min: 0, max: 100 },
         yAxis: { ...baseAxis('Value'), min: 60, max: 150 },
         series: [
@@ -280,7 +280,11 @@ function getChartOption(data) {
                 data: lineData,
                 symbol: 'none',                    // ⚠️ 必须 none，否则伪虚线
                 lineStyle: { width: 2.5, color: C.deepBlue },
-                itemStyle: { color: C.deepBlue }
+                itemStyle: { color: C.deepBlue },
+                endLabel: {                         // ✅ 曲线末端标签
+                    show: true, formatter: '{a}', fontSize: 11, fontWeight: 'bold',
+                    color: C.deepBlue, fontFamily: 'Source Sans Pro', distance: 8
+                }
             },
             {
                 name: 'Potential',
@@ -288,7 +292,11 @@ function getChartOption(data) {
                 data: trendData,
                 symbol: 'none',                    // ⚠️ 必须 none
                 lineStyle: { width: 2, color: C.green },
-                itemStyle: { color: C.green }
+                itemStyle: { color: C.green },
+                endLabel: {
+                    show: true, formatter: '{a}', fontSize: 11, fontWeight: 'bold',
+                    color: C.green, fontFamily: 'Source Sans Pro', distance: 8
+                }
             },
             {
                 name: 'Current',
