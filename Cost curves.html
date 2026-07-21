@@ -4,188 +4,280 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AP Economics - Interactive Cost Curves</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts: Merriweather (serif headings) + Source Sans Pro (body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+
     <style>
-        /* --- LAYOUT & THEME --- */
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&family=Source+Sans+Pro:wght@400;600&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            margin: 0; padding: 0;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            display: flex; height: 100vh;
-            background-color: #f0f2f5; color: #1a1a1a;
-            overflow: hidden;
-        }
-        .left-panel {
-            flex: 6.5; display: flex; flex-direction: column;
-            padding: 10px; box-sizing: border-box; background: #fff;
-            border-right: 1px solid #d1d9e0;
-        }
-        .right-panel {
-            flex: 3.5; padding: 15px; box-sizing: border-box;
-            background: #fafafa; overflow-y: auto;
+            background: #f7f7f5;
+            font-family: 'Source Sans Pro', -apple-system, Arial, sans-serif;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            padding: 40px;
         }
 
-        /* --- CHART SECTION --- */
         .chart-container {
-            flex-grow: 1; position: relative; min-height: 0;
+            background: #ffffff;
+            border: 1px solid #d4d4d0;
+            padding: 32px 36px;
+            max-width: 880px;
+            width: 100%;
         }
 
-        /* --- COMPACT CONTROLS SECTION --- */
+        .title-area {
+            border-bottom: 2px solid #1a2a3a;
+            padding-bottom: 14px;
+            margin-bottom: 18px;
+        }
+
+        h2 {
+            font-family: 'Merriweather', Georgia, serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a2a3a;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #6b6b6b;
+            font-style: italic;
+        }
+
+        /* ── Chart ──────────────────────────────────────────────── */
+        #costChart {
+            width: 100%;
+            height: 420px;
+        }
+
+        /* ── Controls ───────────────────────────────────────────── */
         .controls-container {
             display: grid;
-            grid-template-columns: repeat(4, 1fr); 
-            gap: 6px; padding: 8px;
-            background: #f8f9fa; border-radius: 6px;
-            border: 1px solid #dee2e6; margin-top: 5px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+            margin-top: 14px;
         }
-        .control-group { display: flex; flex-direction: column; }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
         .control-group label {
-            font-weight: 600; font-size: 0.8rem; color: #495057;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: #495057;
             margin-bottom: 2px;
         }
-        .control-group input[type="range"] { margin: 1px 0; cursor: pointer; }
-        
+
+        .control-group input[type="range"] {
+            margin: 1px 0;
+            cursor: pointer;
+            accent-color: #1a5276;
+        }
+
         .progress-row { grid-column: span 3; }
-        .sync-indicator { 
-            grid-column: span 1; font-size: 0.7rem; 
-            font-weight: bold; align-self: center; text-align: right;
+
+        .sync-indicator {
+            grid-column: span 1;
+            font-size: 0.7rem;
+            font-weight: bold;
+            align-self: center;
+            text-align: right;
         }
 
         .toggles {
-            grid-column: span 4; display: flex; gap: 12px;
-            justify-content: center; background: #fff;
-            padding: 4px; border-radius: 4px; border: 1px solid #ececec;
+            grid-column: span 4;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            background: #fff;
+            padding: 4px;
+            border-radius: 4px;
+            border: 1px solid #ececec;
         }
+
         .toggles label {
-            cursor: pointer; display: flex; align-items: center;
-            gap: 4px; font-size: 0.8rem; font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
         }
 
-        /* --- DATA TABLES --- */
-        h2 { margin: 0 0 8px 0; font-size: 1.2rem; color: #000; border-bottom: 2px solid #3498db; }
-        table { width: 100%; border-collapse: collapse; background: #fff; font-size: 1rem; }
-        th, td { border: 1px solid #e0e0e0; padding: 6px 4px; text-align: center; }
-        th { background-color: #2c3e50; color: white; font-size: 0.85rem; }
-        
-        .row-optimal { background-color: #e8f5e9; color: #2e7d32; font-weight: bold; }
-        .row-manual { background-color: #fff9c4; border: 2px solid #fbc02d; }
-        .row-shutdown { background-color: #ffebee; color: #c62828; font-size: 0.9rem; }
-        .profit-pos { color: #2e7d32; }
-        .profit-neg { color: #d32f2f; }
+        /* ── Tables ─────────────────────────────────────────────── */
+        .tables-section {
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px solid #e0e0e0;
+        }
 
-        /* --- COPYRIGHT STYLE --- */
-        .copyright-tag {
-            position: fixed; bottom: 5px; right: 10px;
-            font-size: 10px; color: #bbb; pointer-events: none;
-            z-index: 1000; letter-spacing: 0.5px;
+        .tables-section h3 {
+            font-family: 'Merriweather', Georgia, serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: #1a2a3a;
+            margin-bottom: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+        }
+
+        th, td {
+            border: 1px solid #e0e0e0;
+            padding: 5px 4px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #1a2a3a;
+            color: white;
+            font-size: 0.8rem;
+            font-family: 'Merriweather', Georgia, serif;
+        }
+
+        .row-optimal  { background-color: #f5f9f5; color: #3d6b4f; font-weight: bold; }
+        .row-manual   { background-color: #faf8f5; color: #6b5c3d; border: 2px solid #d4c5a0; }
+        .row-shutdown { background-color: #f9f5f5; color: #8b4545; font-size: 0.85rem; }
+        .profit-pos   { color: #3d6b4f; }
+        .profit-neg   { color: #8b4545; }
+
+        /* ── Source ─────────────────────────────────────────────── */
+        .source {
+            font-size: 10px;
+            color: #888;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 10px;
+            padding-top: 8px;
+            line-height: 1.6;
+        }
+
+        @media print {
+            body { background: #fff; padding: 0; }
+            .chart-container { border: none; padding: 0; }
         }
     </style>
 </head>
 <body>
 
-    <div class="left-panel">
-        <div class="chart-container">
-            <canvas id="costChart"></canvas>
+<div class="chart-container">
+    <div class="title-area">
+        <h2>AP Economics — Cost Curves</h2>
+        <div class="subtitle">Interactive simulation of short-run cost structures under perfect competition</div>
+    </div>
+
+    <div id="costChart"></div>
+
+    <div class="controls-container">
+        <div class="control-group">
+            <label>Price (P): <span id="valPrice">25</span></label>
+            <input type="range" id="inpPrice" min="0" max="60" value="25">
+        </div>
+        <div class="control-group">
+            <label>Manual Q: <span id="valManualQ">8</span></label>
+            <input type="range" id="inpManualQ" min="0" max="12" value="8" step="0.1">
+        </div>
+        <div class="control-group">
+            <label>Lump-sum Tax: <span id="valLumpTax">0</span></label>
+            <input type="range" id="inpLumpTax" min="0" max="50" value="0">
+        </div>
+        <div class="control-group">
+            <label>Per-unit Tax: <span id="valUnitTax">0</span></label>
+            <input type="range" id="inpUnitTax" min="0" max="15" value="0">
         </div>
 
-        <div class="controls-container">
-            <div class="control-group">
-                <label>Price (P): <span id="valPrice">25</span></label>
-                <input type="range" id="inpPrice" min="0" max="60" value="25">
-            </div>
-            <div class="control-group">
-                <label>Manual Q: <span id="valManualQ">8</span></label>
-                <input type="range" id="inpManualQ" min="0" max="12" value="8" step="0.1">
-            </div>
-            <div class="control-group">
-                <label>Lump-sum Tax: <span id="valLumpTax">0</span></label>
-                <input type="range" id="inpLumpTax" min="0" max="50" value="0">
-            </div>
-            <div class="control-group">
-                <label>Per-unit Tax: <span id="valUnitTax">0</span></label>
-                <input type="range" id="inpUnitTax" min="0" max="15" value="0">
-            </div>
-            
-            <div class="control-group progress-row">
-                <label>Draw Progress: <span id="valProgress">100</span>%</label>
-                <input type="range" id="inpProgress" min="0" max="12" value="12" step="0.1">
-            </div>
-            <div class="sync-indicator" id="syncStatus" style="color:#28a745;">Q: Auto-Synced</div>
+        <div class="control-group progress-row">
+            <label>Draw Progress: <span id="valProgress">100</span>%</label>
+            <input type="range" id="inpProgress" min="0" max="12" value="12" step="0.1">
+        </div>
+        <div class="sync-indicator" id="syncStatus" style="color:#28a745;">Q: Auto-Synced</div>
 
-            <div class="toggles">
-                <label><input type="checkbox" id="chkMC" checked> MC</label>
-                <label><input type="checkbox" id="chkATC" checked> ATC</label>
-                <label><input type="checkbox" id="chkAVC" checked> AVC</label>
-                <label><input type="checkbox" id="chkAFC" checked> AFC</label>
-                <label><input type="checkbox" id="chkMR" checked> D=MR</label>
-            </div>
+        <div class="toggles">
+            <label><input type="checkbox" id="chkMC" checked> MC</label>
+            <label><input type="checkbox" id="chkATC" checked> ATC</label>
+            <label><input type="checkbox" id="chkAVC" checked> AVC</label>
+            <label><input type="checkbox" id="chkAFC" checked> AFC</label>
+            <label><input type="checkbox" id="chkMR" checked> D=MR</label>
         </div>
     </div>
 
-    <div class="right-panel">
-        <h2>Market Analysis</h2>
+    <div class="tables-section">
+        <h3>Market Analysis</h3>
         <table>
             <thead>
-                <tr>
-                    <th>Scenario</th>
-                    <th>Q</th>
-                    <th>ATC</th>
-                    <th>Profit</th>
-                </tr>
+                <tr><th>Scenario</th><th>Q</th><th>ATC</th><th>Profit</th></tr>
             </thead>
             <tbody id="tableBody"></tbody>
         </table>
-        
-        <h2 style="margin-top: 15px; font-size: 1.1rem;">Financial Details</h2>
-        <table style="font-size: 0.8rem;">
+
+        <h3>Financial Details</h3>
+        <table>
             <thead>
-                <tr>
-                    <th>Scenario</th>
-                    <th>TR</th>
-                    <th>TC</th>
-                    <th>VC</th>
-                    <th>AVC</th>
-                </tr>
+                <tr><th>Scenario</th><th>TR</th><th>TC</th><th>VC</th><th>AVC</th></tr>
             </thead>
             <tbody id="tableBodyDetails"></tbody>
         </table>
-
-        <div style="margin-top: 15px; font-size: 0.8rem; color: #666; line-height: 1.4; background: #fffde7; padding: 10px; border-radius: 4px;">
-            <strong>Teaching Logic:</strong><br>
-            1. Adjust <b>Price</b> or <b>Taxes</b>: The system auto-calculates the best <b>Q</b>.<br>
-            2. Adjust <b>Manual Q</b>: Explore deviations from the optimum.
-        </div>
     </div>
 
-    <div class="copyright-tag">© 2026 Dr. Jia. All rights reserved. For teaching use only.</div>
+    <div class="source">
+        <strong>Source:</strong> Original interactive model, <em>AP Macroeconomics Teaching Tools</em>;<br>
+        <em>Note: Adjust Price or Taxes to auto-calculate optimal Q; use Manual Q to explore deviations.</em>
+    </div>
+</div>
 
 <script>
+    /* ================================================================
+       CONSTANTS & STATE
+       ================================================================ */
     const BASE_FC = 50;
-    const MAX_Q = 12;
+    const MAX_Q   = 12;
+    const STEP    = 0.1;
 
-    const inpPrice = document.getElementById('inpPrice');
-    const inpManualQ = document.getElementById('inpManualQ');
-    const inpLumpTax = document.getElementById('inpLumpTax');
-    const inpUnitTax = document.getElementById('inpUnitTax');
+    const inpPrice    = document.getElementById('inpPrice');
+    const inpManualQ  = document.getElementById('inpManualQ');
+    const inpLumpTax  = document.getElementById('inpLumpTax');
+    const inpUnitTax  = document.getElementById('inpUnitTax');
     const inpProgress = document.getElementById('inpProgress');
-    const syncStatus = document.getElementById('syncStatus');
-    const checkboxes = ['MC', 'ATC', 'AVC', 'AFC', 'MR'].map(id => document.getElementById('chk' + id));
+    const syncStatus  = document.getElementById('syncStatus');
+    const checkboxes  = ['MC','ATC','AVC','AFC','MR'].map(id => document.getElementById('chk'+id));
 
     let state = {
-        price: 25, manualQ: 8, lumpTax: 0, unitTax: 0, progress: 12,
-        showMC: true, showATC: true, showAVC: true, showAFC: true, showMR: true
+        price: 25, manualQ: 8, lumpTax: 0, unitTax: 0, progress: 12
     };
 
-    let costChart;
-
-    const calcFC = () => BASE_FC + state.lumpTax;
-    const calcVC = (q) => 0.5 * Math.pow(q, 3) - 5 * Math.pow(q, 2) + 20 * q + state.unitTax * q;
-    const calcTC = (q) => calcFC() + calcVC(q);
-    const calcMC = (q) => 1.5 * Math.pow(q, 2) - 10 * q + 20 + state.unitTax;
-    const calcATC = (q) => q <= 0 ? null : calcTC(q) / q;
-    const calcAVC = (q) => q <= 0 ? null : calcVC(q) / q;
+    /* ================================================================
+       COST FUNCTIONS
+       ================================================================ */
+    const calcFC  = ()     => BASE_FC + state.lumpTax;
+    const calcVC  = (q)    => 0.5*q*q*q - 5*q*q + 20*q + state.unitTax*q;
+    const calcTC  = (q)    => calcFC() + calcVC(q);
+    const calcMC  = (q)    => 1.5*q*q - 10*q + 20 + state.unitTax;
+    const calcATC = (q)    => q <= 0 ? null : calcTC(q) / q;
+    const calcAVC = (q)    => q <= 0 ? null : calcVC(q) / q;
 
     function findOptimalQ() {
-        const minAVCQ = 5; 
+        const minAVCQ = 5;
         if (state.price < calcAVC(minAVCQ)) return 0;
         const a = 1.5, b = -10, c = 20 + state.unitTax - state.price;
         const disc = b*b - 4*a*c;
@@ -193,141 +285,352 @@
         return Math.max(0, parseFloat(((-b + Math.sqrt(disc)) / (2*a)).toFixed(2)));
     }
 
-    function handleInputChange(e) {
-        state.price = parseFloat(inpPrice.value);
-        state.lumpTax = parseFloat(inpLumpTax.value);
-        state.unitTax = parseFloat(inpUnitTax.value);
-        state.progress = parseFloat(inpProgress.value);
-        
-        const optQ = findOptimalQ();
+    /* ================================================================
+       ECHARTS INIT — value x-axis for clean coordinate math
+       ================================================================ */
+    const chartDom = document.getElementById('costChart');
+    const myChart  = echarts.init(chartDom);
 
-        // LOGIC IMPROVEMENT:
-        // If the change came from Manual Q slider, use that value.
-        // If the change came from ANY OTHER slider, snap Manual Q to Optimal Q.
-        if (e && e.target.id === 'inpManualQ') {
-            state.manualQ = parseFloat(inpManualQ.value);
-            syncStatus.innerText = "Q: Manual Adjusted";
-            syncStatus.style.color = "#f39c12";
-        } else {
-            state.manualQ = optQ;
-            inpManualQ.value = optQ; // Visual slider follows
-            syncStatus.innerText = "Q: Auto-Synced";
-            syncStatus.style.color = "#28a745";
-        }
-
-        document.getElementById('valPrice').innerText = state.price;
-        document.getElementById('valManualQ').innerText = state.manualQ;
-        document.getElementById('valLumpTax').innerText = state.lumpTax;
-        document.getElementById('valUnitTax').innerText = state.unitTax;
-        document.getElementById('valProgress').innerText = Math.round((state.progress / MAX_Q) * 100);
-
-        refreshChart(optQ);
-        refreshTables(optQ);
-    }
-
-    function refreshChart(optQ) {
-        const labels = [], dMC = [], dATC = [], dAVC = [], dAFC = [], dMR = [];
-        for (let q = 0.1; q <= MAX_Q; q += 0.1) {
-            let rq = parseFloat(q.toFixed(1));
-            labels.push(rq);
+    /* Build [x, y] pair arrays up to progress cutoff */
+    function buildLineData(rawFn, visible) {
+        if (!visible) return [];
+        const d = [];
+        for (let q = STEP; q <= MAX_Q; q += STEP) {
+            const rq = parseFloat(q.toFixed(1));
             if (rq <= state.progress) {
-                dMC.push(calcMC(rq)); dATC.push(calcATC(rq));
-                dAVC.push(calcAVC(rq)); dAFC.push(calcFC()/rq);
-                dMR.push(state.price);
-            } else {
-                dMC.push(null); dATC.push(null); dAVC.push(null); dAFC.push(null); dMR.push(null);
+                const v = rawFn(rq);
+                if (v !== null && isFinite(v)) d.push([rq, parseFloat(v.toFixed(4))]);
             }
         }
-
-        costChart.data.labels = labels;
-        costChart.data.datasets[0].data = document.getElementById('chkMC').checked ? dMC : [];
-        costChart.data.datasets[1].data = document.getElementById('chkATC').checked ? dATC : [];
-        costChart.data.datasets[2].data = document.getElementById('chkAVC').checked ? dAVC : [];
-        costChart.data.datasets[3].data = document.getElementById('chkAFC').checked ? dAFC : [];
-        costChart.data.datasets[4].data = document.getElementById('chkMR').checked ? dMR : [];
-        costChart.data.datasets[5].data = (optQ > 0 && optQ <= state.progress) ? [{x: optQ, y: state.price}] : [];
-        costChart.update('none');
+        return d;
     }
 
+    /* Colour palette — textbook style */
+    const C = {
+        deepBlue:  '#1a5276',   // MC
+        ochre:     '#b85c38',   // ATC
+        green:     '#2e8b57',   // AVC
+        gray:      '#bbb',      // AFC
+        darkGreen: '#1a6b3a',   // D=MR
+        titleText: '#1a2a3a',
+        bodyText:  '#333',
+        axisName:  '#555',
+        subText:   '#6b6b6b',
+        source:    '#888',
+        gridLine:  '#e8e8e8'
+    };
+
+    /* ── base option builder ────────────────────────────────────── */
+    function getOption(optQ) {
+        const chk = id => document.getElementById('chk'+id).checked;
+
+        const mcData  = buildLineData(calcMC,        chk('MC'));
+        const atcData = buildLineData(calcATC,       chk('ATC'));
+        const avcData = buildLineData(calcAVC,       chk('AVC'));
+        const afcData = buildLineData(q => calcFC()/q, chk('AFC'));
+        const mrData  = buildLineData(() => state.price, chk('MR'));
+
+        /* Scatter point for optimal */
+        const scatterData = (optQ > 0 && optQ <= state.progress)
+            ? [[optQ, state.price]] : [];
+
+        /* Profit / loss band */
+        const showBand = chk('ATC') && state.manualQ > 0 && state.manualQ <= state.progress;
+        const bandATC  = showBand ? calcATC(state.manualQ) : null;
+        const bandP    = state.price;
+        const bandColor = showBand
+            ? ((bandP >= bandATC) ? 'rgba(46,139,87,0.25)' : 'rgba(187,187,187,0.35)')
+            : 'transparent';
+
+        return {
+            animation: false,
+            animationDurationUpdate: 0,
+
+            textStyle: {
+                fontFamily: "'Source Sans Pro', 'Segoe UI', system-ui, sans-serif"
+            },
+
+            legend: {
+                top: 0,
+                right: 0,
+                itemWidth: 14,
+                itemHeight: 10,
+                textStyle: { fontSize: 11, fontFamily: "'Source Sans Pro', sans-serif", color: C.bodyText },
+                itemGap: 16,
+                data: ['MC','ATC','AVC','AFC','D=MR','Max Profit']
+            },
+
+            grid: {
+                top: 50,
+                left: 60,
+                right: 80,
+                bottom: 50
+            },
+
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'cross' },
+                textStyle: { fontFamily: "'Source Sans Pro', sans-serif" },
+                formatter: function (params) {
+                    if (!params.length) return '';
+                    const q = params[0].value[0];
+                    let s = '<b>Q = ' + q + '</b><br/>';
+                    params.forEach(p => {
+                        if (p.seriesName.startsWith('_')) return;
+                        s += p.marker + ' ' + p.seriesName
+                           + ': <b>' + p.value[1].toFixed(2) + '</b><br/>';
+                    });
+                    return s;
+                }
+            },
+
+            xAxis: {
+                type: 'value',
+                min: 0,
+                max: MAX_Q,
+                name: 'Quantity (Q)',
+                nameLocation: 'middle',
+                nameGap: 30,
+                nameTextStyle: { fontWeight: 'bold', fontSize: 13, color: C.axisName },
+                axisLine: { lineStyle: { color: C.bodyText, width: 1 } },
+                axisLabel: {
+                    formatter: v => (v % 2 === 0 || v === 1) ? v : '',
+                    fontSize: 11,
+                    color: C.bodyText,
+                    fontFamily: "'Source Sans Pro', sans-serif"
+                },
+                splitLine: { show: false }
+            },
+
+            yAxis: {
+                type: 'value',
+                min: 0,
+                max: 80,
+                name: 'Price / Cost ($)',
+                nameLocation: 'middle',
+                nameGap: 42,
+                nameTextStyle: { fontWeight: 'bold', fontSize: 13, color: C.axisName },
+                axisLine: { lineStyle: { color: C.bodyText, width: 1 } },
+                axisLabel: { fontSize: 11, color: C.bodyText, fontFamily: "'Source Sans Pro', sans-serif" },
+                splitLine: { lineStyle: { type: 'dashed', color: C.gridLine } }
+            },
+
+            series: [
+                /* ── MC ─────────────────────────────────────── */
+                {
+                    name: 'MC',
+                    type: 'line',
+                    data: mcData,
+                    symbol: 'none',
+                    lineStyle: { width: 3, color: C.deepBlue },
+                    itemStyle: { color: C.deepBlue },
+                    smooth: 0.4,
+                    endLabel: {
+                        show: true,
+                        formatter: '{a}',
+                        fontFamily: "'Source Sans Pro', sans-serif",
+                        fontSize: 12,
+                        fontWeight: 'bold',
+                        color: C.deepBlue
+                    }
+                },
+                /* ── ATC ────────────────────────────────────── */
+                {
+                    name: 'ATC',
+                    type: 'line',
+                    data: atcData,
+                    symbol: 'none',
+                    lineStyle: { width: 3, color: C.ochre },
+                    itemStyle: { color: C.ochre },
+                    smooth: 0.4,
+                    endLabel: {
+                        show: true,
+                        formatter: '{a}',
+                        fontFamily: "'Source Sans Pro', sans-serif",
+                        fontSize: 12,
+                        fontWeight: 'bold',
+                        color: C.ochre
+                    }
+                },
+                /* ── AVC ────────────────────────────────────── */
+                {
+                    name: 'AVC',
+                    type: 'line',
+                    data: avcData,
+                    symbol: 'none',
+                    lineStyle: { width: 2, color: C.green },
+                    itemStyle: { color: C.green },
+                    smooth: 0.4,
+                    endLabel: {
+                        show: true,
+                        formatter: '{a}',
+                        fontFamily: "'Source Sans Pro', sans-serif",
+                        fontSize: 12,
+                        fontWeight: 'bold',
+                        color: C.green
+                    }
+                },
+                /* ── AFC ────────────────────────────────────── */
+                {
+                    name: 'AFC',
+                    type: 'line',
+                    data: afcData,
+                    symbol: 'none',
+                    lineStyle: { width: 1.5, color: C.gray, type: [6, 4] },
+                    itemStyle: { color: C.gray },
+                    endLabel: {
+                        show: true,
+                        formatter: '{a}',
+                        fontFamily: "'Source Sans Pro', sans-serif",
+                        fontSize: 12,
+                        fontWeight: 'bold',
+                        color: C.gray
+                    }
+                },
+                /* ── D=MR ───────────────────────────────────── */
+                {
+                    name: 'D=MR',
+                    type: 'line',
+                    data: mrData,
+                    symbol: 'none',
+                    lineStyle: { width: 3, color: C.darkGreen, type: [10, 5] },
+                    itemStyle: { color: C.darkGreen },
+                    endLabel: {
+                        show: true,
+                        formatter: '{a}',
+                        fontFamily: "'Source Sans Pro', sans-serif",
+                        fontSize: 12,
+                        fontWeight: 'bold',
+                        color: C.darkGreen
+                    }
+                },
+                /* ── Profit / loss shading (custom series) ──── */
+                {
+                    name: '_band',
+                    type: 'custom',
+                    data: showBand ? [[state.manualQ, 0]] : [],
+                    renderItem: function (params, api) {
+                        if (!showBand) return;
+                        var xLeft  = api.coord([0, 0])[0];
+                        var xRight = api.coord([state.manualQ, 0])[0];
+                        var yP  = api.coord([0, bandP])[1];
+                        var yA  = api.coord([0, bandATC])[1];
+                        var yTop = Math.min(yP, yA);
+                        var h    = Math.abs(yP - yA);
+
+                        return {
+                            type: 'rect',
+                            shape: { x: xLeft, y: yTop, width: xRight - xLeft, height: h },
+                            style: { fill: bandColor }
+                        };
+                    },
+                    silent: true,
+                    z: 1
+                },
+                /* ── Vertical dashed line at manual Q ────────── */
+                {
+                    name: '_vline',
+                    type: 'line',
+                    data: showBand
+                        ? [[state.manualQ, 0], [state.manualQ, 80]]
+                        : [],
+                    symbol: 'none',
+                    lineStyle: { type: [5, 5], color: 'rgba(0,0,0,0.2)', width: 1 },
+                    silent: true,
+                    z: 1
+                },
+                /* ── Max Profit scatter ─────────────────────── */
+                {
+                    name: 'Max Profit',
+                    type: 'scatter',
+                    data: scatterData,
+                    symbolSize: 12,
+                    itemStyle: { color: C.ochre },
+                    z: 10
+                }
+            ]
+        };
+    }
+
+    /* ================================================================
+       TABLES
+       ================================================================ */
     function refreshTables(optQ) {
         const rows = [
-            { name: 'Optimal', q: optQ, cls: 'row-optimal' },
-            { name: 'Manual', q: state.manualQ, cls: 'row-manual' },
-            { name: 'Shutdown', q: 0, cls: 'row-shutdown' }
+            { name: 'Optimal',  q: optQ,         cls: 'row-optimal' },
+            { name: 'Manual',   q: state.manualQ, cls: 'row-manual' },
+            { name: 'Shutdown',  q: 0,            cls: 'row-shutdown' }
         ];
 
         let htmlMain = '', htmlDet = '';
         rows.forEach(r => {
-            const tr = state.price * r.q;
-            const tc = calcTC(r.q);
+            const tr  = state.price * r.q;
+            const tc  = calcTC(r.q);
             const profit = tr - tc;
             const pClass = profit >= 0 ? 'profit-pos' : 'profit-neg';
-            
-            htmlMain += `<tr class="${r.cls}"><td>${r.name}</td><td>${r.q}</td><td>${r.q > 0 ? calcATC(r.q).toFixed(2) : '-'}</td><td class="${pClass}">${profit.toFixed(2)}</td></tr>`;
-            htmlDet += `<tr class="${r.cls}"><td>${r.name}</td><td>${tr.toFixed(2)}</td><td>${tc.toFixed(2)}</td><td>${calcVC(r.q).toFixed(2)}</td><td>${r.q > 0 ? calcAVC(r.q).toFixed(2) : '-'}</td></tr>`;
+
+            htmlMain += '<tr class="'+r.cls+'">'
+                + '<td>'+r.name+'</td><td>'+r.q+'</td>'
+                + '<td>'+(r.q > 0 ? calcATC(r.q).toFixed(2) : '-')+'</td>'
+                + '<td class="'+pClass+'">'+profit.toFixed(2)+'</td></tr>';
+            htmlDet  += '<tr class="'+r.cls+'">'
+                + '<td>'+r.name+'</td><td>'+tr.toFixed(2)+'</td><td>'+tc.toFixed(2)+'</td>'
+                + '<td>'+calcVC(r.q).toFixed(2)+'</td>'
+                + '<td>'+(r.q > 0 ? calcAVC(r.q).toFixed(2) : '-')+'</td></tr>';
         });
-        document.getElementById('tableBody').innerHTML = htmlMain;
+        document.getElementById('tableBody').innerHTML       = htmlMain;
         document.getElementById('tableBodyDetails').innerHTML = htmlDet;
     }
 
-    const profitLossPlugin = {
-        id: 'profitLossArea',
-        beforeDatasetsDraw(chart) {
-            if (!document.getElementById('chkATC').checked || state.manualQ <= 0 || state.manualQ > state.progress) return;
-            const ctx = chart.ctx, xa = chart.scales.x, ya = chart.scales.y;
-            const atc = calcATC(state.manualQ), p = state.price;
-            const x0 = xa.getPixelForValue(0.1), x1 = xa.getPixelForValue(state.manualQ);
-            const yp = ya.getPixelForValue(p), yaa = ya.getPixelForValue(atc);
+    /* ================================================================
+       INPUT HANDLER
+       ================================================================ */
+    function handleInputChange(e) {
+        state.price    = parseFloat(inpPrice.value);
+        state.lumpTax  = parseFloat(inpLumpTax.value);
+        state.unitTax  = parseFloat(inpUnitTax.value);
+        state.progress = parseFloat(inpProgress.value);
 
-            ctx.save();
-            ctx.fillStyle = p >= atc ? 'rgba(46, 125, 50, 0.25)' : 'rgba(120, 120, 120, 0.35)';
-            ctx.fillRect(x0, Math.min(yp, yaa), x1 - x0, Math.abs(yp - yaa));
-            
-            // Vertical dotted line for current Q
-            ctx.beginPath();
-            ctx.setLineDash([5, 5]);
-            ctx.moveTo(x1, ya.bottom); ctx.lineTo(x1, ya.top);
-            ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-            ctx.stroke();
-            ctx.restore();
+        const optQ = findOptimalQ();
+
+        if (e && e.target.id === 'inpManualQ') {
+            state.manualQ = parseFloat(inpManualQ.value);
+            syncStatus.innerText = 'Q: Manual Adjusted';
+            syncStatus.style.color = '#f39c12';
+        } else {
+            state.manualQ = optQ;
+            inpManualQ.value = optQ;
+            syncStatus.innerText = 'Q: Auto-Synced';
+            syncStatus.style.color = '#28a745';
         }
-    };
 
-    window.onload = () => {
-        const ctx = document.getElementById('costChart').getContext('2d');
-        Chart.register(profitLossPlugin);
-        costChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [
-                    { label: 'MC', borderColor: '#d32f2f', borderWidth: 3, pointRadius: 0, tension: 0.4 },
-                    { label: 'ATC', borderColor: '#1976d2', borderWidth: 3, pointRadius: 0, tension: 0.4 },
-                    { label: 'AVC', borderColor: '#7b1fa2', borderWidth: 2, pointRadius: 0, tension: 0.4 },
-                    { label: 'AFC', borderColor: '#f57c00', borderWidth: 1.5, pointRadius: 0, borderDash: [3,3] },
-                    { label: 'D=MR', borderColor: '#388e3c', borderWidth: 3, borderDash: [10,5], pointRadius: 0 },
-                    { type: 'scatter', label: 'Max Profit', backgroundColor: '#2e7d32', pointRadius: 7 }
-                ]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false, animation: false,
-                scales: {
-                    x: { type: 'linear', min: 0, max: MAX_Q, title: { display: true, text: 'Quantity (Q)', font: {weight: 'bold'} } },
-                    y: { min: 0, max: 80, title: { display: true, text: 'Price/Cost ($)', font: {weight: 'bold'} } }
-                },
-                plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: {size: 11} } } }
-            }
-        });
+        document.getElementById('valPrice').innerText    = state.price;
+        document.getElementById('valManualQ').innerText  = state.manualQ;
+        document.getElementById('valLumpTax').innerText  = state.lumpTax;
+        document.getElementById('valUnitTax').innerText  = state.unitTax;
+        document.getElementById('valProgress').innerText = Math.round((state.progress / MAX_Q) * 100);
 
-        [inpPrice, inpManualQ, inpLumpTax, inpUnitTax, inpProgress].forEach(el => {
-            el.addEventListener('input', handleInputChange);
-        });
-        checkboxes.forEach(el => {
-            el.addEventListener('change', handleInputChange);
-        });
+        myChart.setOption(getOption(optQ), { replaceMerge: ['series'] });
+        refreshTables(optQ);
+    }
 
-        handleInputChange();
-    };
+    /* ================================================================
+       EVENT LISTENERS
+       ================================================================ */
+    [inpPrice, inpManualQ, inpLumpTax, inpUnitTax, inpProgress].forEach(el => {
+        el.addEventListener('input', handleInputChange);
+    });
+    checkboxes.forEach(el => {
+        el.addEventListener('change', handleInputChange);
+    });
+
+    /* Responsive resize */
+    window.addEventListener('resize', () => myChart.resize());
+
+    /* ================================================================
+       BOOT
+       ================================================================ */
+    handleInputChange();
 </script>
 </body>
 </html>

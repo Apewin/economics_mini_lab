@@ -3,162 +3,225 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Externality & Policy Lab Pro</title>
+    <title>Externality & Policy Lab</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <style>
-        :root {
-            --primary: #0d6efd;
-            --success: #198754;
-            --danger: #dc3545;
-            --purple: #6f42c1;
-            --orange: #fd7e14; /* 新增橙色用于政策标记 */
-            --dark: #212529;
-            --gray: #f8f9fa;
-        }
-
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&family=Source+Sans+Pro:wght@400;600&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background-color: #ced4da;
-            margin: 0;
+            background: #f7f7f5;
+            font-family: 'Source Sans Pro', -apple-system, Arial, sans-serif;
+            color: #333;
             display: flex;
             justify-content: center;
-            align-items: center;
-            height: 100vh;
+            padding: 40px;
         }
-
-        #app-container {
+        .chart-container {
+            background: #ffffff;
+            border: 1px solid #d4d4d0;
+            padding: 32px 36px;
+            max-width: 880px;
+            width: 100%;
+        }
+        .title-area {
+            border-bottom: 2px solid #1a2a3a;
+            padding-bottom: 14px;
+            margin-bottom: 18px;
+        }
+        h2 {
+            font-family: 'Merriweather', Georgia, serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a2a3a;
+            margin-bottom: 4px;
+        }
+        .subtitle {
+            font-size: 12px;
+            color: #6b6b6b;
+            font-style: italic;
+        }
+        .controls {
             display: flex;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-            height: 780px;
-            width: 1250px;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #e0e0e0;
         }
-
-        #controls {
-            width: 360px;
-            padding: 30px;
-            background: var(--gray);
-            border-right: 1px solid #ddd;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+        .control-group {
+            flex: 1;
+            min-width: 200px;
         }
-
-        #chart-wrap {
-            flex-grow: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: white;
-            padding: 20px;
+        .control-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
         }
-
-        h2 { margin: 0 0 10px 0; font-size: 1.5rem; color: var(--dark); border-bottom: 2px solid #ddd; padding-bottom: 10px; }
-        .group { background: white; padding: 15px; border-radius: 8px; border: 1px solid #eee; }
-        label { display: block; font-weight: bold; margin-bottom: 10px; font-size: 0.9rem; }
-
         .toggle-btn {
             display: flex;
             background: #eee;
-            padding: 4px;
-            border-radius: 6px;
-            margin-bottom: 12px;
+            padding: 3px;
+            border-radius: 4px;
+            margin-bottom: 8px;
         }
         .toggle-btn input { display: none; }
         .toggle-btn label {
-            flex: 1; text-align: center; padding: 10px 0; margin: 0;
-            cursor: pointer; border-radius: 4px; transition: 0.2s;
-            font-size: 0.85rem; color: #666;
+            flex: 1; text-align: center; padding: 6px 0; margin: 0;
+            cursor: pointer; border-radius: 3px; transition: 0.2s;
+            font-size: 0.8rem; color: #666;
         }
         .toggle-btn input:checked + label {
-            background: white; color: var(--primary); font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: white; color: #1a5276; font-weight: bold;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-
-        input[type="range"] { width: 100%; cursor: pointer; }
-        .range-meta { display: flex; justify-content: space-between; font-size: 0.75rem; color: #888; margin-top: 4px; }
-        .val-tag { float: right; color: var(--primary); font-weight: bold; font-size: 1.1rem; }
-
-        #data-panel {
-            margin-top: auto;
-            background: var(--dark);
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .slider-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #555;
+            white-space: nowrap;
+            min-width: 80px;
+        }
+        input[type="range"] {
+            flex: 1;
+            accent-color: #1a5276;
+            cursor: pointer;
+        }
+        .slider-value {
+            font-size: 12px;
+            font-weight: 700;
+            color: #1a2a3a;
+            min-width: 20px;
+            text-align: right;
+        }
+        .range-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            color: #888;
+            margin-top: 2px;
+        }
+        .status-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+        .status-item {
+            text-align: center;
+        }
+        .status-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: #555;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+        .status-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a2a3a;
+        }
+        .efficiency-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 700;
             color: white;
-            padding: 18px;
-            border-radius: 8px;
         }
-        .efficiency-status {
-            margin-top: 12px; padding: 10px; border-radius: 4px;
-            text-align: center; font-weight: bold; font-size: 1rem;
+        #main { width: 100%; height: 606px; }
+        .source {
+            font-size: 10px;
+            color: #888;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 10px;
+            padding-top: 8px;
+            line-height: 1.6;
         }
-
-        canvas { max-width: 100%; height: auto; }
+        @media print {
+            body { background: #fff; padding: 0; }
+            .chart-container { border: none; padding: 0; }
+        }
     </style>
 </head>
 <body>
+<div class="chart-container">
+    <div class="title-area">
+        <h2>Externality & Policy Lab</h2>
+        <div class="subtitle">Interactive simulation of market failures and policy interventions</div>
+    </div>
 
-<div id="app-container">
-    <div id="controls">
-        <h2>Demo Controls</h2>
-
-        <div class="group">
-            <label>1. Externality Source</label>
+    <div class="controls">
+        <div class="control-group">
+            <div class="control-label">Externality Source</div>
             <div class="toggle-btn">
                 <input type="radio" name="extSrc" id="srcP" value="prod" checked>
                 <label for="srcP">Production</label>
                 <input type="radio" name="extSrc" id="srcC" value="cons">
                 <label for="srcC">Consumption</label>
             </div>
-            <label>Magnitude: <span id="eLab" class="val-tag">0</span></label>
-            <input type="range" id="eSlide" min="-40" max="40" value="0">
+            <div class="slider-row">
+                <span class="slider-label">Magnitude:</span>
+                <input type="range" id="eSlide" min="-40" max="40" value="0">
+                <span class="slider-value" id="eLab">0</span>
+            </div>
             <div class="range-meta"><span>Negative (Cost)</span><span>Positive (Benefit)</span></div>
         </div>
-
-        <div class="group">
-            <label>2. Policy Applied To</label>
+        <div class="control-group">
+            <div class="control-label">Policy Applied To</div>
             <div class="toggle-btn">
                 <input type="radio" name="polTar" id="tarP" value="prod" checked>
                 <label for="tarP">Producer</label>
                 <input type="radio" name="polTar" id="tarC" value="cons">
                 <label for="tarC">Consumer</label>
             </div>
-            <label>Tax / Subsidy: <span id="pLab" class="val-tag">0</span></label>
-            <input type="range" id="pSlide" min="-40" max="40" value="0">
+            <div class="slider-row">
+                <span class="slider-label">Tax / Subsidy:</span>
+                <input type="range" id="pSlide" min="-40" max="40" value="0">
+                <span class="slider-value" id="pLab">0</span>
+            </div>
             <div class="range-meta"><span>Tax (-)</span><span>Subsidy (+)</span></div>
         </div>
-
-        <div style="display: flex; align-items: center; gap: 12px; padding: 5px 10px;">
-            <input type="checkbox" id="dwlToggle" style="width:22px; height:22px; cursor:pointer;">
-            <label for="dwlToggle" style="margin:0; color:var(--danger); cursor:pointer; font-size: 1rem;">Show DWL Triangle</label>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+        <input type="checkbox" id="dwlToggle" style="width:18px; height:18px; cursor:pointer;">
+        <label for="dwlToggle" style="margin:0; color:#8b4545; cursor:pointer; font-size: 12px; font-weight: 600;">Show DWL Triangle</label>
+    </div>
+    <div class="status-row">
+        <div class="status-item">
+            <div class="status-label">Target Q</div>
+            <div class="status-value" id="targetQ">50.0</div>
         </div>
-
-        <div id="data-panel">
-            <div id="stats-content"></div>
-            <div id="eff-msg" class="efficiency-status"></div>
+        <div class="status-item">
+            <div class="status-label">Actual Q</div>
+            <div class="status-value" id="actualQ">50.0</div>
+        </div>
+        <div class="status-item">
+            <div class="status-label">Efficiency Gap</div>
+            <div class="status-value" id="effGap">0.0</div>
+        </div>
+        <div class="status-item">
+            <div class="status-label">Status</div>
+            <div class="status-value"><span id="effBadge" class="efficiency-badge" style="background:#2e8b57;">Efficient</span></div>
         </div>
     </div>
-
-    <div id="chart-wrap">
-        <canvas id="mainChart" width="850" height="750"></canvas>
+    <div id="main"></div>
+    <div class="source">
+        <strong>Source:</strong> Original interactive model, <em>AP Microeconomics Teaching Tools</em>;
+        <br><em>Note: Adjust externality magnitude and policy to observe market outcomes vs. social optimum.</em>
     </div>
 </div>
-
 <script>
-    const canvas = document.getElementById('mainChart');
-    const ctx = canvas.getContext('2d');
-    
-    const pad = { t: 70, r: 140, b: 70, l: 80 };
-    const w = canvas.width - pad.l - pad.r;
-    const h = canvas.height - pad.t - pad.b;
-
-    const qx = q => pad.l + (q / 100) * w;
-    const py = p => pad.t + h - (p / 120) * h;
-
-    const allInputs = document.querySelectorAll('input');
+    const chart = echarts.init(document.getElementById('main'));
 
     function render() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
         const eSrc = document.querySelector('input[name="extSrc"]:checked').value;
         const eVal = parseInt(document.getElementById('eSlide').value);
         const pTar = document.querySelector('input[name="polTar"]:checked').value;
@@ -169,7 +232,7 @@
         document.getElementById('pLab').innerText = pVal;
 
         // 基础偏移量：外部性导致的偏移
-        let mpc_base = (eSrc === 'prod') ? eVal : 0; 
+        let mpc_base = (eSrc === 'prod') ? eVal : 0;
         let mpb_base = (eSrc === 'cons') ? -eVal : 0;
 
         // 最终偏移量：外部性 + 政策导致的整体偏移
@@ -179,166 +242,455 @@
         const q_out = (100 + d_final - s_final) / 2;
         const p_out = q_out + s_final;
 
-        // 1. 坐标轴与网格
-        ctx.strokeStyle = "#f0f0f0"; ctx.lineWidth = 1;
-        for(let i=0; i<=100; i+=20) {
-            ctx.beginPath(); ctx.moveTo(qx(i), py(0)); ctx.lineTo(qx(i), py(120)); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(qx(0), py(i)); ctx.lineTo(qx(100), py(i)); ctx.stroke();
+        // 构建系列数据
+        const series = [];
+
+        // 1. MSC 曲线 (从 P=0 到 P=100)
+        const mscLabel = (eVal === 0 && eSrc === 'prod') ? 'MSC = MPC' : 'MSC';
+        series.push({
+            name: mscLabel,
+            type: 'line',
+            data: [[0, 0], [100, 100]],
+            lineStyle: { color: '#1a5276', width: 2.5 },
+            itemStyle: { color: '#1a5276' },
+            symbol: 'none',
+            label: {
+                show: true,
+                position: 'end',
+                formatter: mscLabel,
+                fontSize: 16,
+                fontWeight: 'bold',
+                color: '#1a5276'
+            }
+        });
+
+        // 2. MSB 曲线 (从 P=100 到 P=0)
+        const msbLabel = (eVal === 0 && eSrc === 'cons') ? 'MSB = MPB' : 'MSB';
+        series.push({
+            name: msbLabel,
+            type: 'line',
+            data: [[0, 100], [100, 0]],
+            lineStyle: { color: '#b85c38', width: 2.5 },
+            itemStyle: { color: '#b85c38' },
+            symbol: 'none',
+            label: {
+                show: true,
+                position: 'end',
+                formatter: msbLabel,
+                fontSize: 16,
+                fontWeight: 'bold',
+                color: '#b85c38'
+            }
+        });
+
+        // 3. MPC 曲线 (生产外部性时)
+        if (eVal !== 0 && eSrc === 'prod') {
+            series.push({
+                name: 'MPC',
+                type: 'line',
+                data: [[0, mpc_base], [100, 100 + mpc_base]],
+                lineStyle: { color: '#bbb', width: 2, type: [8, 6] },
+                itemStyle: { color: '#bbb' },
+                symbol: 'none',
+                label: {
+                    show: true,
+                    position: 'end',
+                    formatter: 'MPC',
+                    fontSize: 14,
+                    fontWeight: 'bold',
+                    color: '#bbb'
+                }
+            });
         }
-        ctx.strokeStyle = "#333"; ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, pad.t+h); ctx.lineTo(pad.l+w, pad.t+h); ctx.stroke();
-        ctx.fillStyle = "#000"; ctx.font = "bold 16px sans-serif";
-        ctx.fillText("Quantity", qx(95), py(0) + 40);
-        ctx.fillText("Price", pad.l - 60, pad.t - 20);
 
-        // 2. 绘制基础社会曲线
-        const msbLabel = (eVal === 0 && eSrc === 'cons') ? "MSB = MPB" : "MSB";
-        const mscLabel = (eVal === 0 && eSrc === 'prod') ? "MSC = MPC" : "MSC";
-        drawCurve(0, 0, 100, 100, varColor('--danger'), 5, mscLabel);
-        drawCurve(0, 100, 100, 0, varColor('--primary'), 5, msbLabel);
+        // 4. MPB 曲线 (消费外部性时)
+        if (eVal !== 0 && eSrc === 'cons') {
+            series.push({
+                name: 'MPB',
+                type: 'line',
+                data: [[0, 100 + mpb_base], [100, mpb_base]],
+                lineStyle: { color: '#bbb', width: 2, type: [8, 6] },
+                itemStyle: { color: '#bbb' },
+                symbol: 'none',
+                label: {
+                    show: true,
+                    position: 'end',
+                    formatter: 'MPB',
+                    fontSize: 14,
+                    fontWeight: 'bold',
+                    color: '#bbb'
+                }
+            });
+        }
 
-        // 3. 原始私人曲线 & 外部性 Gap
+        // 5. 政策调整曲线
+        if (pVal !== 0) {
+            if (pTar === 'prod') {
+                series.push({
+                    name: 'S + Policy',
+                    type: 'line',
+                    data: [[0, s_final], [100, 100 + s_final]],
+                    lineStyle: { color: '#6f42c1', width: 2, type: [4, 2] },
+                    itemStyle: { color: '#6f42c1' },
+                    symbol: 'none',
+                    label: {
+                        show: true,
+                        position: 'end',
+                        formatter: 'S + Policy',
+                        fontSize: 14,
+                        fontWeight: 'bold',
+                        color: '#6f42c1'
+                    }
+                });
+            } else {
+                series.push({
+                    name: 'D + Policy',
+                    type: 'line',
+                    data: [[0, 100 + d_final], [100, d_final]],
+                    lineStyle: { color: '#6f42c1', width: 2, type: [4, 2] },
+                    itemStyle: { color: '#6f42c1' },
+                    symbol: 'none',
+                    label: {
+                        show: true,
+                        position: 'end',
+                        formatter: 'D + Policy',
+                        fontSize: 14,
+                        fontWeight: 'bold',
+                        color: '#6f42c1'
+                    }
+                });
+            }
+        }
+
+        // 6. 外部性 Gap 标注
         if (eVal !== 0) {
             let isBenefit = eVal > 0;
-            let extColor = isBenefit ? varColor('--success') : "#6c757d";
-            let extText = isBenefit ? "External Benefit" : "External Cost";
+            let extColor = isBenefit ? '#198754' : '#6c757d';
+            let extText = isBenefit ? 'External Benefit' : 'External Cost';
 
             if (eSrc === 'prod') {
-                drawCurve(0, mpc_base, 100, 100 + mpc_base, "#adb5bd", 2, "MPC", [8, 6]);
-                drawGapMarker(15, 15, 15 + mpc_base, extColor, extText); // Q=15 (左侧) 画外部性
+                series.push({
+                    name: extText,
+                    type: 'line',
+                    data: [[15, 15], [15, 15 + mpc_base]],
+                    lineStyle: { color: extColor, width: 2, type: 'solid' },
+                    itemStyle: { color: extColor },
+                    symbol: 'none',
+                    label: {
+                        show: true,
+                        position: 'left',
+                        formatter: extText,
+                        fontSize: 13,
+                        fontWeight: 'bold',
+                        color: extColor
+                    }
+                });
+                // Gap 端点线
+                series.push({
+                    type: 'line',
+                    data: [[14, 15], [16, 15]],
+                    lineStyle: { color: extColor, width: 2 },
+                    itemStyle: { color: extColor },
+                    symbol: 'none'
+                });
+                series.push({
+                    type: 'line',
+                    data: [[14, 15 + mpc_base], [16, 15 + mpc_base]],
+                    lineStyle: { color: extColor, width: 2 },
+                    itemStyle: { color: extColor },
+                    symbol: 'none'
+                });
             }
             if (eSrc === 'cons') {
-                drawCurve(0, 100 + mpb_base, 100, mpb_base, "#adb5bd", 2, "MPB", [8, 6]);
-                drawGapMarker(15, 85, 85 + mpb_base, extColor, extText); 
+                series.push({
+                    name: extText,
+                    type: 'line',
+                    data: [[15, 85], [15, 85 + mpb_base]],
+                    lineStyle: { color: extColor, width: 2, type: 'solid' },
+                    itemStyle: { color: extColor },
+                    symbol: 'none',
+                    label: {
+                        show: true,
+                        position: 'left',
+                        formatter: extText,
+                        fontSize: 13,
+                        fontWeight: 'bold',
+                        color: extColor
+                    }
+                });
+                series.push({
+                    type: 'line',
+                    data: [[14, 85], [16, 85]],
+                    lineStyle: { color: extColor, width: 2 },
+                    itemStyle: { color: extColor },
+                    symbol: 'none'
+                });
+                series.push({
+                    type: 'line',
+                    data: [[14, 85 + mpb_base], [16, 85 + mpb_base]],
+                    lineStyle: { color: extColor, width: 2 },
+                    itemStyle: { color: extColor },
+                    symbol: 'none'
+                });
             }
         }
 
-        // 4. 政策调整后的最终曲线 & 政策 Gap
+        // 7. 政策 Gap 标注
         if (pVal !== 0) {
-            let polColor = varColor('--orange');
-            let polText = pVal > 0 ? "Subsidy Gap" : "Tax Gap";
+            let polColor = '#fd7e14';
+            let polText = pVal > 0 ? 'Subsidy Gap' : 'Tax Gap';
 
             if (pTar === 'prod') {
-                drawCurve(0, s_final, 100, 100 + s_final, varColor('--purple'), 3, "S + Policy", [4, 2]);
-                drawGapMarker(85, 85 + mpc_base, 85 + s_final, polColor, polText); // Q=85 (右侧) 画政策影响
+                series.push({
+                    name: polText,
+                    type: 'line',
+                    data: [[85, 85 + mpc_base], [85, 85 + s_final]],
+                    lineStyle: { color: polColor, width: 2, type: 'solid' },
+                    itemStyle: { color: polColor },
+                    symbol: 'none',
+                    label: {
+                        show: true,
+                        position: 'right',
+                        formatter: polText,
+                        fontSize: 13,
+                        fontWeight: 'bold',
+                        color: polColor
+                    }
+                });
+                series.push({
+                    type: 'line',
+                    data: [[84, 85 + mpc_base], [86, 85 + mpc_base]],
+                    lineStyle: { color: polColor, width: 2 },
+                    itemStyle: { color: polColor },
+                    symbol: 'none'
+                });
+                series.push({
+                    type: 'line',
+                    data: [[84, 85 + s_final], [86, 85 + s_final]],
+                    lineStyle: { color: polColor, width: 2 },
+                    itemStyle: { color: polColor },
+                    symbol: 'none'
+                });
             } else {
-                drawCurve(0, 100 + d_final, 100, d_final, varColor('--purple'), 3, "D + Policy", [4, 2]);
-                drawGapMarker(85, 15 + mpb_base, 15 + d_final, polColor, polText);
+                series.push({
+                    name: polText,
+                    type: 'line',
+                    data: [[85, 15 + mpb_base], [85, 15 + d_final]],
+                    lineStyle: { color: polColor, width: 2, type: 'solid' },
+                    itemStyle: { color: polColor },
+                    symbol: 'none',
+                    label: {
+                        show: true,
+                        position: 'right',
+                        formatter: polText,
+                        fontSize: 13,
+                        fontWeight: 'bold',
+                        color: polColor
+                    }
+                });
+                series.push({
+                    type: 'line',
+                    data: [[84, 15 + mpb_base], [86, 15 + mpb_base]],
+                    lineStyle: { color: polColor, width: 2 },
+                    itemStyle: { color: polColor },
+                    symbol: 'none'
+                });
+                series.push({
+                    type: 'line',
+                    data: [[84, 15 + d_final], [86, 15 + d_final]],
+                    lineStyle: { color: polColor, width: 2 },
+                    itemStyle: { color: polColor },
+                    symbol: 'none'
+                });
             }
         }
 
-        // 5. 均衡点
-        markPoint(50, 50, varColor('--success'), "Social Optimum");
-        markPoint(q_out, p_out, varColor('--purple'), "Market Outcome");
+        // 8. Social Optimum 点
+        // 只有当 Social Optimum 与 Market Outcome 不重合时才显示标签
+        const isOverlap = Math.abs(q_out - 50) < 0.5 && Math.abs(p_out - 50) < 0.5;
+        series.push({
+            name: 'Social Optimum',
+            type: 'scatter',
+            data: [[50, 50]],
+            symbolSize: 12,
+            itemStyle: { color: '#2e8b57' },
+            label: {
+                show: !isOverlap,
+                position: 'top',
+                formatter: 'Social Optimum',
+                fontSize: 14,
+                fontWeight: 'bold',
+                color: '#2e8b57',
+                offset: [0, -10]
+            }
+        });
+        // Social Optimum 参考线
+        series.push({
+            type: 'line',
+            data: [[50, 0], [50, 50]],
+            lineStyle: { color: '#198754', width: 2, type: [5, 5] },
+            itemStyle: { color: '#198754' },
+            symbol: 'none'
+        });
+        series.push({
+            type: 'line',
+            data: [[0, 50], [50, 50]],
+            lineStyle: { color: '#198754', width: 2, type: [5, 5] },
+            itemStyle: { color: '#198754' },
+            symbol: 'none'
+        });
 
-        // 6. DWL
-        if (showDWL && Math.abs(q_out - 50) > 0.5) {
-            ctx.beginPath();
-            ctx.fillStyle = "rgba(220, 53, 69, 0.25)";
-            ctx.moveTo(qx(50), py(50));
-            ctx.lineTo(qx(q_out), py(q_out)); 
-            ctx.lineTo(qx(q_out), py(100 - q_out)); 
-            ctx.closePath(); ctx.fill();
-            ctx.fillStyle = varColor('--danger'); ctx.font = "bold 26px sans-serif";
-            ctx.fillText("DWL", qx(q_out > 50 ? 55 : 30), py(50));
+        // 9. Market Outcome 点
+        if (q_out >= 0 && q_out <= 100) {
+            series.push({
+                name: 'Market Outcome',
+                type: 'scatter',
+                data: [[q_out, p_out]],
+                symbolSize: 12,
+                itemStyle: { color: '#5a3d7a' },
+                label: {
+                    show: true,
+                    position: 'top',
+                    formatter: 'Market Outcome',
+                    fontSize: 14,
+                    fontWeight: 'bold',
+                    color: '#5a3d7a',
+                    offset: [0, -10]
+                }
+            });
+            // Market Outcome 参考线
+            series.push({
+                type: 'line',
+                data: [[q_out, 0], [q_out, p_out]],
+                lineStyle: { color: '#5a3d7a', width: 2, type: [5, 5] },
+                itemStyle: { color: '#5a3d7a' },
+                symbol: 'none'
+            });
+            series.push({
+                type: 'line',
+                data: [[0, p_out], [q_out, p_out]],
+                lineStyle: { color: '#5a3d7a', width: 2, type: [5, 5] },
+                itemStyle: { color: '#5a3d7a' },
+                symbol: 'none'
+            });
+            // Q 标签
+            series.push({
+                type: 'scatter',
+                data: [[q_out, 0]],
+                symbolSize: 0,
+                label: {
+                    show: true,
+                    position: 'bottom',
+                    formatter: 'Q=' + q_out.toFixed(1),
+                    fontSize: 13,
+                    color: '#5a3d7a',
+                    fontWeight: 'bold',
+                    offset: [0, 5]
+                }
+            });
         }
 
+        // 10. DWL 三角形
+        if (showDWL && Math.abs(q_out - 50) > 0.5) {
+            const q1 = 50, p1 = 50;
+            const q2 = q_out, p2 = q_out;
+            const q3 = q_out, p3 = 100 - q_out;
+            series.push({
+                name: 'DWL',
+                type: 'line',
+                data: [[q1, p1], [q2, p2], [q3, p3], [q1, p1]],
+                lineStyle: { color: 'rgba(220, 53, 69, 0.6)', width: 2 },
+                itemStyle: { color: 'rgba(220, 53, 69, 0.6)' },
+                areaStyle: { color: 'rgba(220, 53, 69, 0.25)' },
+                symbol: 'none',
+                label: {
+                    show: true,
+                    position: 'inside',
+                    formatter: 'DWL',
+                    fontSize: 20,
+                    fontWeight: 'bold',
+                    color: '#1a5276'
+                }
+            });
+        }
+
+        // 11. Q=50 标签
+        series.push({
+            type: 'scatter',
+            data: [[50, 0]],
+            symbolSize: 0,
+            label: {
+                show: true,
+                position: 'bottom',
+                formatter: 'Q=50.0',
+                fontSize: 13,
+                color: '#198754',
+                fontWeight: 'bold',
+                offset: [0, 5]
+            }
+        });
+
+        const option = {
+            animation: false,
+            grid: {
+                top: 60,
+                right: 60,
+                bottom: 60,
+                left: 70
+            },
+            xAxis: {
+                type: 'value',
+                min: 0,
+                max: 100,
+                interval: 20,
+                name: 'Quantity',
+                nameLocation: 'center',
+                nameGap: 35,
+                nameTextStyle: { fontSize: 15, fontWeight: 'bold', color: '#000' },
+                axisLine: { lineStyle: { color: '#333', width: 2 } },
+                splitLine: { lineStyle: { color: '#f0f0f0' } }
+            },
+            yAxis: {
+                type: 'value',
+                min: 0,
+                max: 120,
+                interval: 20,
+                name: 'Price',
+                nameLocation: 'center',
+                nameGap: 45,
+                nameTextStyle: { fontSize: 15, fontWeight: 'bold', color: '#000' },
+                axisLine: { lineStyle: { color: '#333', width: 2 } },
+                splitLine: { lineStyle: { color: '#f0f0f0' } }
+            },
+            series: series
+        };
+
+        chart.setOption(option, true);
         updateStats(q_out);
     }
 
-    // --- 重构：通用的间距标注段函数 ---
-    function drawGapMarker(q, y1, y2, color, text) {
-        if (y1 === y2) return; // 如果没有间距就不画
-        
-        ctx.save();
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 2;
-        
-        // 主垂直线
-        ctx.beginPath();
-        ctx.moveTo(qx(q), py(y1));
-        ctx.lineTo(qx(q), py(y2));
-        ctx.stroke();
-
-        // 顶部与底部端点线 (横向短线)
-        ctx.beginPath(); ctx.moveTo(qx(q)-6, py(y1)); ctx.lineTo(qx(q)+6, py(y1)); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(qx(q)-6, py(y2)); ctx.lineTo(qx(q)+6, py(y2)); ctx.stroke();
-
-        // 文本标签处理：根据是在左边(Q=15)还是右边(Q=85)动态调整文字对齐，防止重叠
-        ctx.fillStyle = color;
-        ctx.font = "bold 15px sans-serif";
-        ctx.textBaseline = "middle";
-        
-        if (q > 50) {
-            ctx.textAlign = "right";
-            ctx.fillText(text, qx(q) - 12, py((y1 + y2) / 2));
-        } else {
-            ctx.textAlign = "left";
-            ctx.fillText(text, qx(q) + 12, py((y1 + y2) / 2));
-        }
-        ctx.restore();
-    }
-
-    function drawCurve(q1, p1, q2, p2, color, width, label, dash = []) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.setLineDash(dash);
-        ctx.strokeStyle = color;
-        ctx.lineWidth = width;
-        ctx.moveTo(qx(q1), py(p1));
-        ctx.lineTo(qx(q2), py(p2));
-        ctx.stroke();
-
-        let lx = q1 + (q2 - q1) * 0.92;
-        let ly = p1 + (p2 - p1) * 0.92;
-        ctx.fillStyle = color;
-        ctx.font = "bold 22px sans-serif";
-        ctx.fillText(label, qx(lx) + 12, py(ly));
-        ctx.restore();
-    }
-
-    function markPoint(q, p, color, label) {
-        if (q < 0 || q > 100) return;
-        ctx.setLineDash([5, 5]);
-        ctx.strokeStyle = color; ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(qx(q), py(p)); ctx.lineTo(qx(q), py(0));
-        ctx.moveTo(qx(q), py(p)); ctx.lineTo(qx(0), py(p));
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        ctx.beginPath(); ctx.arc(qx(q), py(p), 6, 0, Math.PI * 2);
-        ctx.fillStyle = color; ctx.fill();
-
-        ctx.font = "bold 18px sans-serif";
-        ctx.fillText(label, qx(q) + 12, py(p) - 15);
-        ctx.font = "14px monospace";
-        ctx.fillText("Q=" + q.toFixed(1), qx(q) - 20, py(0) + 25);
-    }
-
     function updateStats(q) {
-        const stats = document.getElementById('stats-content');
-        const msg = document.getElementById('eff-msg');
-        stats.innerHTML = `
-            <b>Target Q:</b> 50.0<br>
-            <b>Actual Q:</b> ${q.toFixed(1)}<br>
-            <b>Efficiency Gap:</b> ${Math.abs(q - 50).toFixed(1)}
-        `;
-
+        document.getElementById('targetQ').innerText = '50.0';
+        document.getElementById('actualQ').innerText = q.toFixed(1);
+        document.getElementById('effGap').innerText = Math.abs(q - 50).toFixed(1);
+        
+        const badge = document.getElementById('effBadge');
         if (Math.abs(q - 50) < 0.5) {
-            msg.innerText = "Efficiency Restored";
-            msg.style.background = varColor('--success');
+            badge.innerText = "Efficient";
+            badge.style.background = '#2e8b57';
+        } else if (q > 50) {
+            badge.innerText = "Overproduction";
+            badge.style.background = '#8b4545';
         } else {
-            msg.innerText = q > 50 ? "Overproduction" : "Underproduction";
-            msg.style.background = q > 50 ? varColor('--danger') : varColor('--purple');
+            badge.innerText = "Underproduction";
+            badge.style.background = '#6f42c1';
         }
     }
 
-    function varColor(name) {
-        return getComputedStyle(document.documentElement).getPropertyValue(name.replace('var(', '').replace(')', '')).trim();
-    }
+    // 绑定事件
+    document.querySelectorAll('input').forEach(input => input.addEventListener('input', render));
+    window.addEventListener('resize', () => chart.resize());
 
-    allInputs.forEach(input => input.addEventListener('input', render));
     render();
 </script>
 
