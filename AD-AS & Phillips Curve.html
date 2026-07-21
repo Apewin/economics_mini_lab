@@ -187,7 +187,37 @@
     font-size: 10px;
     font-weight: 600;
     color: #888;
-    padding: 0 194px 0 194px;
+    padding: 0 4px;
+  }
+
+  .timeline-segments {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+  }
+
+  .seg-btn {
+    flex: 1;
+    font-family: 'Source Sans Pro', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    color: #1a2a3a;
+    background: #fafaf8;
+    border: 1px solid #d4d4d0;
+    padding: 6px 10px;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .seg-btn:hover {
+    background: #eee;
+  }
+
+  .seg-btn.active {
+    background: #1a2a3a;
+    color: #fff;
+    border-color: #1a2a3a;
   }
 
   .source {
@@ -257,13 +287,17 @@
     </div>
     <div class="slider-row">
       <span class="slider-title">Macroeconomic Timeline:</span>
-      <input type="range" id="slider" min="0" max="2" step="0.02" value="0">
+      <div class="timeline-segments">
+        <button class="seg-btn active" data-step="0">1. Long-Run Equilibrium</button>
+        <button class="seg-btn" data-step="1">2. Short-Run Shock</button>
+        <button class="seg-btn" data-step="2">3. Self-Correction</button>
+      </div>
       <span class="slider-val" id="sliderVal">0.00</span>
     </div>
     <div class="timeline-ticks">
-      <span>1. Long-Run Equilibrium (t=0)</span>
-      <span>2. Short-Run Shock Impact (t=1)</span>
-      <span>3. Long-Run Self-Correction (t=2)</span>
+      <span>t = 0</span>
+      <span>t = 1</span>
+      <span>t = 2</span>
     </div>
   </div>
 
@@ -547,9 +581,9 @@ function pcOption(eco) {
 /* ============================================================
    Update loop
    ============================================================ */
-function update() {
+function update(step) {
   const shock = document.querySelector('input[name="shock"]:checked').value;
-  const s = parseFloat(document.getElementById('slider').value);
+  const s = typeof step === 'number' ? step : 0;
   document.getElementById('sliderVal').textContent = s.toFixed(2);
 
   const eco = calcEconomy(shock, s);
@@ -566,6 +600,12 @@ function update() {
   else if (s <= 1.0)  phaseEl.style.color = shock.includes('AD') ? C.series1 : C.series2;
   else                phaseEl.style.color = C.series2;
 
+  // Active button state
+  document.querySelectorAll('.seg-btn').forEach(btn => {
+    const bs = parseFloat(btn.dataset.step);
+    btn.classList.toggle('active', bs === s);
+  });
+
   // Charts
   ecADAS.setOption(adasOption(eco), { replaceMerge: ['series'] });
   ecPC.setOption(pcOption(eco), { replaceMerge: ['series'] });
@@ -574,13 +614,17 @@ function update() {
 /* ============================================================
    Init
    ============================================================ */
-update();
+update(0);
 
-document.getElementById('slider').addEventListener('input', update);
+document.querySelectorAll('.seg-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    update(parseFloat(btn.dataset.step));
+  });
+});
+
 document.querySelectorAll('input[name="shock"]').forEach(r => {
   r.addEventListener('change', () => {
-    document.getElementById('slider').value = 0;
-    update();
+    update(0);
   });
 });
 
