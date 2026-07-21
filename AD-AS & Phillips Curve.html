@@ -160,18 +160,60 @@
     align-items: center;
     gap: 14px;
   }
+
+  .slider-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .slider-stops {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 2px;
+  }
+
+  .stop {
+    font-size: 10px;
+    font-weight: 700;
+    color: #888;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.15s;
+  }
+
+  .stop:hover {
+    color: #1a2a3a;
+  }
+
+  .stop.active {
+    color: #1a2a3a;
+  }
+
+  .source {
+    font-size: 10px;
+    color: #888;
+    margin-top: 10px;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 8px;
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+
   .slider-title {
     font-weight: 700;
     font-size: 12px;
     color: #1a2a3a;
     min-width: 180px;
   }
+
   .slider-row input[type="range"] {
     flex: 1;
     cursor: pointer;
     accent-color: #1a2a3a;
     height: 6px;
   }
+
   .slider-val {
     font-family: 'Source Sans Pro', sans-serif;
     font-weight: 700;
@@ -257,13 +299,20 @@
     </div>
     <div class="slider-row">
       <span class="slider-title">Macroeconomic Timeline:</span>
-      <input type="range" id="slider" min="0" max="2" step="0.01" value="0">
+      <div class="slider-wrap">
+        <input type="range" id="slider" min="0" max="2" step="0.01" value="0">
+        <div class="slider-stops">
+          <span class="stop" data-step="0">Equilibrium</span>
+          <span class="stop" data-step="1">Shock Impact</span>
+          <span class="stop" data-step="2">Self-Correction</span>
+        </div>
+      </div>
       <span class="slider-val" id="sliderVal">0.00</span>
     </div>
     <div class="timeline-ticks">
-      <span>0%</span>
-      <span>50%</span>
-      <span>100%</span>
+      <span>Long-Run Equilibrium</span>
+      <span>Short-Run Shock Impact</span>
+      <span>Long-Run Self-Correction</span>
     </div>
   </div>
 
@@ -566,6 +615,12 @@ function update() {
   else if (s <= 1.0)  phaseEl.style.color = shock.includes('AD') ? C.series1 : C.series2;
   else                phaseEl.style.color = C.series2;
 
+  // Highlight active stop
+  document.querySelectorAll('.stop').forEach(st => {
+    const target = parseFloat(st.dataset.step);
+    st.classList.toggle('active', Math.abs(s - target) < 0.005);
+  });
+
   // Charts
   ecADAS.setOption(adasOption(eco), { replaceMerge: ['series'] });
   ecPC.setOption(pcOption(eco), { replaceMerge: ['series'] });
@@ -577,6 +632,13 @@ function update() {
 update();
 
 document.getElementById('slider').addEventListener('input', update);
+document.querySelectorAll('.stop').forEach(stop => {
+  stop.addEventListener('click', () => {
+    const step = parseFloat(stop.dataset.step);
+    document.getElementById('slider').value = step;
+    update();
+  });
+});
 document.querySelectorAll('input[name="shock"]').forEach(r => {
   r.addEventListener('change', () => {
     document.getElementById('slider').value = 0;
