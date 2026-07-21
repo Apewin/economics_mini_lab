@@ -626,12 +626,30 @@ function update() {
   ecPC.setOption(pcOption(eco), { replaceMerge: ['series'] });
 }
 
+function snapToNearestStop() {
+  const slider = document.getElementById('slider');
+  const current = parseFloat(slider.value);
+  const stops = [0, 1, 2];
+  let nearest = stops[0];
+  let minDist = Math.abs(current - nearest);
+  stops.forEach(stop => {
+    const dist = Math.abs(current - stop);
+    if (dist < minDist) {
+      minDist = dist;
+      nearest = stop;
+    }
+  });
+  slider.value = nearest;
+  update();
+}
+
 /* ============================================================
    Init
    ============================================================ */
 update();
 
 document.getElementById('slider').addEventListener('input', update);
+document.getElementById('slider').addEventListener('change', snapToNearestStop);
 document.querySelectorAll('.stop').forEach(stop => {
   stop.addEventListener('click', () => {
     const step = parseFloat(stop.dataset.step);
