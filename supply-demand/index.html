@@ -663,6 +663,9 @@
             positionLabels();
         });
 
+        // Also set handleCenterPx immediately for drag calculation
+        handleCenterPx = chart.convertToPixel({ gridIndex: 0 }, [5, 5]) || [0, 0];
+
         // Handle window resize
         window.addEventListener('resize', () => {
             chart.resize();
