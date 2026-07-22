@@ -753,23 +753,26 @@
         const eqPointData = showEq ? [[qEq, pEq]] : [];
         const eqLineData = showEq ? [[0, pEq], [qEq, pEq], [qEq, 0]] : [];
 
-        // Update P1 and Q1 labels
+        // Update P1/Q1 labels AND curves AND group position in ONE setOption call
+        // to prevent group position reset
+        const graphicUpdates = [];
         if (showEq) {
             const eqPixel = dataToPixel(qEq, pEq);
-            chart.setOption({
-                graphic: [
-                    { id: 'label-p1', invisible: false, position: [eqPixel[0] - 35, eqPixel[1] - 7] },
-                    { id: 'label-q1', invisible: false, position: [eqPixel[0] - 7, eqPixel[1] + 14] }
-                ]
-            });
+            graphicUpdates.push(
+                { id: 'label-p1', invisible: false, position: [eqPixel[0] - 35, eqPixel[1] - 7] },
+                { id: 'label-q1', invisible: false, position: [eqPixel[0] - 7, eqPixel[1] + 14] }
+            );
         } else {
-            chart.setOption({
-                graphic: [
-                    { id: 'label-p1', invisible: true },
-                    { id: 'label-q1', invisible: true }
-                ]
-            });
+            graphicUpdates.push(
+                { id: 'label-p1', invisible: true },
+                { id: 'label-q1', invisible: true }
+            );
         }
+        // Preserve group positions to prevent reset during drag
+        graphicUpdates.push(
+            { id: 'handleDGroup', x: dShift, y: 0 },
+            { id: 'handleSGroup', x: sShift, y: 0 }
+        );
 
         chart.setOption({
             series: [
@@ -780,7 +783,8 @@
                 { /* E0 */ },
                 { id: 'eqPoint', data: eqPointData },
                 { id: 'eqLines', data: eqLineData }
-            ]
+            ],
+            graphic: graphicUpdates
         });
     }
 
