@@ -570,7 +570,8 @@
                         draggable: true,
                         z: 20,
                         ondrag: function () {
-                            dShift = this.position ? this.position[0] : 0;
+                            // this.position = absolute pixel pos; subtract initial to get delta
+                            dShift = this.position ? this.position[0] - handleCenterPx[0] : 0;
                             updateCurvesFromShift();
                         },
                         children: [
@@ -597,7 +598,8 @@
                         draggable: true,
                         z: 20,
                         ondrag: function () {
-                            sShift = this.position ? this.position[0] : 0;
+                            // this.position = absolute pixel pos; subtract initial to get delta
+                            sShift = this.position ? this.position[0] - handleCenterPx[0] : 0;
                             updateCurvesFromShift();
                         },
                         children: [
@@ -683,14 +685,18 @@
         return chart.convertFromPixel({ gridIndex: 0 }, [px, py]);
     }
 
+    // Store initial handle pixel position for delta calculation
+    let handleCenterPx = [0, 0];
+
     /* Position handles at initial curve midpoint */
     function positionHandles() {
         if (!chart) return;
-        const center = dataToPixel(5, 5);
+        handleCenterPx = dataToPixel(5, 5);
+        // Position via group x/y only — do NOT set children (preserves ondrag)
         chart.setOption({
             graphic: [
-                { id: 'handleDGroup', x: 0, y: 0, children: [{ position: center }, { position: center }] },
-                { id: 'handleSGroup', x: 0, y: 0, children: [{ position: center }, { position: center }] }
+                { id: 'handleDGroup', x: handleCenterPx[0], y: handleCenterPx[1] },
+                { id: 'handleSGroup', x: handleCenterPx[0], y: handleCenterPx[1] }
             ]
         });
     }
@@ -722,13 +728,11 @@
     function updateCurvesFromShift() {
         if (!chart) return;
 
-        // dShift and sShift are pixel offsets from the initial handle position.
-        // Convert to data-space by anchoring at the handle's initial pixel location,
-        // applying the pixel offset, and then converting via convertFromPixel.
-        const initPx = dataToPixel(5, 5);                     // initial handle pixel pos
-        const initData = pixelToData(initPx[0], initPx[1]);   // round-trip for precision
-        const dShiftData = pixelToData(initPx[0] + dShift, initPx[1])[0] - initData[0];
-        const sShiftData = pixelToData(initPx[0] + sShift, initPx[1])[0] - initData[0];
+        // dShift and sShift are pixel DELTAs from the initial handle position.
+        // Convert to data-space by anchoring at handleCenterPx.
+        const initData = pixelToData(handleCenterPx[0], handleCenterPx[1]);
+        const dShiftData = pixelToData(handleCenterPx[0] + dShift, handleCenterPx[1])[0] - initData[0];
+        const sShiftData = pixelToData(handleCenterPx[0] + sShift, handleCenterPx[1])[0] - initData[0];
 
         // D1: P = 10 - (Q - dShiftData) = (10 + dShiftData) - Q
         // Two endpoints in data space: (1 + dShiftData, 9) and (9 + dShiftData, 1)
@@ -803,11 +807,10 @@
         if (!chart) return;
 
         // Reset handles, labels, and curves using direct setOption
-        const center = dataToPixel(5, 5);
         chart.setOption({
             graphic: [
-                { id: 'handleDGroup', x: 0, y: 0, children: [{ position: center }, { position: center }] },
-                { id: 'handleSGroup', x: 0, y: 0, children: [{ position: center }, { position: center }] },
+                { id: 'handleDGroup', x: handleCenterPx[0], y: handleCenterPx[1] },
+                { id: 'handleSGroup', x: handleCenterPx[0], y: handleCenterPx[1] },
                 { id: 'label-p1', invisible: true },
                 { id: 'label-q1', invisible: true }
             ],
