@@ -3,396 +3,685 @@
 <head>
     <meta charset="UTF-8">
     <title>AP Economics: PPC and Opportunity Cost</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f8f9fa; margin: 0; padding: 20px; color: #212529; }
-        .container { max-width: 1650px; margin: 0 auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        
-        /* Navigation & Titles */
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; }
-        .nav-group { display: flex; align-items: center; gap: 20px; }
-        #scenarioTitle { font-size: 1.4rem; font-weight: 800; color: #2b8a3e; min-width: 420px; text-align: center; }
-        button { padding: 12px 24px; cursor: pointer; background: #2b8a3e; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 15px; transition: 0.2s; }
-        button:hover { background: #237031; transform: translateY(-1px); }
-        button:disabled { background: #dee2e6; cursor: not-allowed; transform: none; color: #adb5bd; }
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Source+Sans+Pro:wght@400;600&display=swap');
 
-        /* Setup Prompt Box */
-        .prompt-box { background: #eef9f1; border-left: 5px solid #2b8a3e; padding: 15px 20px; margin-bottom: 25px; border-radius: 0 8px 8px 0; font-size: 1.1rem; line-height: 1.5; }
-        
-        /* Dashboard Layout: Table, PPC, OC */
-        .dashboard-grid { display: flex; gap: 20px; margin-bottom: 25px; align-items: flex-start; }
-        .table-wrapper { width: 320px; background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
-        .table-wrapper h3 { margin: 0 0 5px 0; font-size: 1.1rem; text-align: center; color: #495057; }
-        
-        table { width: 100%; border-collapse: collapse; text-align: center; font-size: 0.95rem; }
-        th, td { padding: 8px 10px; border-bottom: 1px solid #dee2e6; }
-        th { background: #f1f3f5; font-weight: 700; color: #495057; }
-        tr.active-row { background: #fff3bf !important; font-weight: bold; }
-        
-        .graph-wrapper { flex: 1; height: 460px; background: #fff; position: relative; border-radius: 8px; }
-        canvas { width: 100%; height: 100%; display: block; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        /* Control Panel */
-        .control-panel { background: #f1f3f5; padding: 25px; border-radius: 12px; border: 1px solid #e9ecef; }
-        .slider-row { display: flex; align-items: center; gap: 25px; margin-bottom: 20px; }
-        .slider-label { font-size: 1.15rem; font-weight: 700; min-width: 280px; color: #495057; }
-        input[type="range"] { flex: 1; cursor: pointer; height: 8px; }
-        
-        .visibility-row { display: flex; gap: 40px; align-items: center; }
-        .visibility-row b { font-size: 1.1rem; color: #212529; }
-        label { cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: 500; }
-        input[type="checkbox"] { width: 19px; height: 19px; cursor: pointer; }
+        body {
+            background: #f7f7f5;
+            font-family: 'Source Sans Pro', 'Segoe UI', Arial, sans-serif;
+            color: #333;
+            padding: 24px 16px;
+        }
+
+        .container {
+            max-width: 880px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 1px solid #d4d4d0;
+            padding: 28px 32px;
+        }
+
+        h2 {
+            font-family: 'Merriweather', 'Georgia', serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a2a3a;
+            border-bottom: 2px solid #1a2a3a;
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+        }
+
+        .scenario-nav {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .scenario-nav button {
+            padding: 8px 18px;
+            cursor: pointer;
+            background: #2e8b57;
+            color: #fff;
+            border: none;
+            font-family: 'Source Sans Pro', sans-serif;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .scenario-nav button:disabled {
+            background: #d4d4d0;
+            cursor: not-allowed;
+            color: #999;
+        }
+
+        .scenario-nav button:hover:not(:disabled) {
+            background: #236b45;
+        }
+
+        #scenarioTitle {
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            color: #2e8b57;
+            text-align: center;
+            flex: 1;
+        }
+
+        .prompt-box {
+            background: #eef9f1;
+            border-left: 4px solid #2e8b57;
+            padding: 12px 16px;
+            margin: 12px 0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .section-label {
+            font-family: 'Merriweather', 'Georgia', serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a2a3a;
+            margin: 20px 0 6px;
+        }
+
+        .chart-box {
+            width: 100%;
+            height: 400px;
+            margin: 16px 0;
+        }
+
+        .slider-section {
+            margin: 20px 0;
+            padding: 12px 0;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .slider-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a2a3a;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .slider-label span {
+            color: #2e8b57;
+            font-weight: 700;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+            height: 6px;
+            accent-color: #2e8b57;
+        }
+
+        .checkbox-section {
+            margin: 16px 0;
+            display: flex;
+            gap: 28px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .checkbox-section label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .checkbox-section input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: #2e8b57;
+        }
+
+        .table-section {
+            margin: 16px 0;
+        }
+
+        #revealTableBtn {
+            padding: 8px 18px;
+            cursor: pointer;
+            background: #2e8b57;
+            color: #fff;
+            border: none;
+            font-family: 'Source Sans Pro', sans-serif;
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        #revealTableBtn:hover {
+            background: #236b45;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        th, td {
+            padding: 7px 10px;
+            border: 1px solid #e0e0e0;
+        }
+
+        th {
+            background: #f5f5f3;
+            font-weight: 700;
+            color: #1a2a3a;
+            font-size: 12px;
+        }
+
+        tr.active-row {
+            background: #fff3bf;
+            font-weight: bold;
+        }
+
+        .source {
+            font-size: 10px;
+            color: #888;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 8px;
+            margin-top: 16px;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
-        <h2 style="margin:0; color:#2b8a3e;">Production Possibilities &amp; Opportunity Cost</h2>
-        <div class="nav-group">
-            <button id="prevBtn">« Previous Scenario</button>
-            <div id="scenarioTitle">Loading Scenario...</div>
-            <button id="nextBtn">Next Scenario »</button>
-        </div>
+    <h2>Production Possibilities &amp; Opportunity Cost</h2>
+
+    <div class="scenario-nav">
+        <button id="prevBtn">Previous Scenario</button>
+        <div id="scenarioTitle">Loading Scenario...</div>
+        <button id="nextBtn">Next Scenario</button>
     </div>
 
     <div id="promptBox" class="prompt-box">Loading constraints...</div>
 
-    <div class="dashboard-grid">
-        <!-- Matrix / Table -->
-        <div class="table-wrapper">
-            <h3>Production Schedule</h3>
-            <button id="revealTableBtn" style="padding: 8px; font-size: 14px;">Reveal Data Table</button>
-            <div id="tableContainer" style="display: none; max-height: 330px; overflow-y: auto;">
-                <table id="prodTable">
-                    <thead>
-                        <tr>
-                            <th>Hours (R)</th>
-                            <th>Rabbits</th>
-                            <th>Fish</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody"></tbody>
-                </table>
-            </div>
-        </div>
+    <div class="section-label">Production Possibility Curve</div>
+    <div id="ppcChart" class="chart-box"></div>
 
-        <!-- Graph 1: PPC -->
-        <div class="graph-wrapper"><canvas id="ppcCanvas"></canvas></div>
-        
-        <!-- Graph 2: Opportunity Cost Curve -->
-        <div class="graph-wrapper"><canvas id="ocCanvas"></canvas></div>
+    <div class="section-label">Opportunity Cost Curve</div>
+    <div id="ocChart" class="chart-box"></div>
+
+    <div class="slider-section">
+        <label class="slider-label">Time on Rabbits: <span id="hoursVal">0.0</span> / 8 hrs</label>
+        <input type="range" id="hourSlider" min="0" max="8" step="0.02" value="0">
     </div>
 
-    <!-- Controls Row -->
-    <div class="control-panel">
-        <div class="slider-row">
-            <span class="slider-label">Time on Rabbits: <span id="hoursVal" style="color:#2b8a3e;">0.0</span> / 8 hrs</span>
-            <input type="range" id="hourSlider" min="0" max="8" step="0.02" value="0">
-        </div>
-        <div class="visibility-row">
-            <b>DISPLAY GRAPHS:</b>
-            <label><input type="checkbox" id="checkPPC" checked> Show PPC Curve</label>
-            <label><input type="checkbox" id="checkOC" checked> Show Opportunity Cost Curve</label>
+    <div class="checkbox-section">
+        <label><input type="checkbox" id="checkPPC" checked> Show PPC Curve</label>
+        <label><input type="checkbox" id="checkOC" checked> Show Opportunity Cost Curve</label>
+    </div>
+
+    <div class="table-section">
+        <button id="revealTableBtn">Reveal Data Table</button>
+        <div id="tableContainer" style="display: none;">
+            <table id="prodTable">
+                <thead>
+                    <tr>
+                        <th>Hours on Rabbits</th>
+                        <th>Rabbits Produced</th>
+                        <th>Fish Produced</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
         </div>
     </div>
+
+    <div class="source">Interactive PPC &amp; Opportunity Cost Simulator — AP Economics Mini Lab</div>
 </div>
 
 <script>
-// Scenarios Data and Mathematical Models
+// ─── Color Palette ─────────────────────────────────────
+const C = {
+    deepBlue: '#1a5276',
+    ochre: '#b85c38',
+    green: '#2e8b57',
+    gray: '#bbb',
+    titleText: '#1a2a3a',
+    gridLine: '#e8e8e8',
+};
+
+// ─── Scenario Data ─────────────────────────────────────
 const scenarios = [
     {
         name: "1. Constant Opportunity Cost",
-        desc: "<b>Context:</b> A hunter has <b>8 hours</b> a day. He can uniformly catch <b>10 rabbits per hour</b> OR <b>10 fish per hour</b> at any time. Notice how the trade-off remains constant regardless of how many hours are spent on either task.",
+        desc: "A hunter has 8 hours. 10 rabbits/hour OR 10 fish/hour at any time.",
         rFunc: h => 10 * h,
         fFunc: h => 10 * (8 - h),
-        ocFunc: h => 1.0, 
+        ocFunc: h => 1.0,
         rLim: [0, 90], fLim: [0, 90], ocLim: [0, 5],
         yAxisLabel: "Fish Produced"
     },
     {
         name: "2. Increasing Opportunity Cost",
-        desc: "<b>Context:</b> The law of diminishing returns applies. Each consecutive hour spent hunting rabbits yields 1 less than the hour before (Hour 1=10, Hour 2=9, Hour 3=8...). The same rule applies to fish. Observe how switching resources becomes increasingly costly.",
+        desc: "Diminishing returns: each hour yields 1 less than the previous.",
         rFunc: h => 10.5 * h - 0.5 * h * h,
         fFunc: h => 10.5 * (8 - h) - 0.5 * (8 - h) * (8 - h),
-        ocFunc: h => (2.5 + h) / (10.5 - h), 
+        ocFunc: h => (2.5 + h) / (10.5 - h),
         rLim: [0, 60], fLim: [0, 60], ocLim: [0, 5],
         yAxisLabel: "Fish Produced"
     },
     {
         name: "3. Decreasing Opportunity Cost",
-        desc: "<b>Context:</b> Economies of scale and specialization. The hunter becomes highly efficient over time. Hour 1 yields 2 items, Hour 2 yields 4 items, Hour 3 yields 6 items, etc. Observe the shape when specialization creates increasing marginal returns.",
+        desc: "Economies of scale: each hour yields more than the previous.",
         rFunc: h => h * h + h,
         fFunc: h => (8 - h) * (8 - h) + (8 - h),
-        ocFunc: h => (17 - 2 * h) / (2 * h + 1), 
+        ocFunc: h => (17 - 2 * h) / (2 * h + 1),
         rLim: [0, 80], fLim: [0, 80], ocLim: [0, 18],
         yAxisLabel: "Fish Produced"
     }
 ];
 
 let currentIdx = 0;
-let currentHours = 0; 
-let isTableRevealed = false;
+let currentHours = 0;
+let ppcChart = null;
+let ocChart = null;
 
-const canvases = {
-    ppc: document.getElementById('ppcCanvas'),
-    oc: document.getElementById('ocCanvas')
-};
-
+// ─── Initialize ────────────────────────────────────────
 function init() {
-    window.addEventListener('resize', () => { resize(); render(); });
-    
-    document.getElementById('prevBtn').onclick = () => { if(currentIdx > 0) loadScenario(currentIdx - 1); };
-    document.getElementById('nextBtn').onclick = () => { if(currentIdx < scenarios.length - 1) loadScenario(currentIdx + 1); };
-    
-    document.getElementById('revealTableBtn').onclick = () => {
-        isTableRevealed = true;
-        document.getElementById('tableContainer').style.display = "block";
-        document.getElementById('revealTableBtn').style.display = "none";
+    ppcChart = echarts.init(document.getElementById('ppcChart'));
+    ocChart = echarts.init(document.getElementById('ocChart'));
+
+    window.addEventListener('resize', () => {
+        ppcChart.resize();
+        ocChart.resize();
+    });
+
+    document.getElementById('prevBtn').onclick = () => {
+        if (currentIdx > 0) loadScenario(currentIdx - 1);
+    };
+    document.getElementById('nextBtn').onclick = () => {
+        if (currentIdx < scenarios.length - 1) loadScenario(currentIdx + 1);
     };
 
-    document.getElementById('hourSlider').oninput = function() {
+    document.getElementById('revealTableBtn').onclick = () => {
+        document.getElementById('tableContainer').style.display = 'block';
+        document.getElementById('revealTableBtn').style.display = 'none';
+    };
+
+    document.getElementById('hourSlider').oninput = function () {
         currentHours = parseFloat(this.value);
         document.getElementById('hoursVal').innerText = currentHours.toFixed(1);
         highlightTableRow(Math.round(currentHours));
         render();
     };
 
-    document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.onchange = render);
+    document.getElementById('checkPPC').onchange = render;
+    document.getElementById('checkOC').onchange = render;
 
-    resize();
     loadScenario(0);
 }
 
-function resize() {
-    for (let k in canvases) {
-        canvases[k].width = canvases[k].offsetWidth;
-        canvases[k].height = canvases[k].offsetHeight;
-    }
-}
-
+// ─── Load Scenario ─────────────────────────────────────
 function loadScenario(idx) {
     currentIdx = idx;
     const s = scenarios[idx];
-    
+
     document.getElementById('scenarioTitle').innerText = s.name;
-    document.getElementById('promptBox').innerHTML = s.desc;
+    document.getElementById('promptBox').innerText = s.desc;
     document.getElementById('prevBtn').disabled = idx === 0;
     document.getElementById('nextBtn').disabled = idx === scenarios.length - 1;
-    
+
     document.getElementById('hourSlider').value = 0;
     currentHours = 0;
-    document.getElementById('hoursVal').innerText = "0.0";
-    
-    isTableRevealed = false;
-    document.getElementById('tableContainer').style.display = "none";
-    document.getElementById('revealTableBtn').style.display = "block";
+    document.getElementById('hoursVal').innerText = '0.0';
+
+    document.getElementById('tableContainer').style.display = 'none';
+    document.getElementById('revealTableBtn').style.display = '';
 
     generateTable(s);
     highlightTableRow(0);
     render();
 }
 
+// ─── Generate Data Table ───────────────────────────────
 function generateTable(s) {
     const tbody = document.getElementById('tableBody');
-    tbody.innerHTML = "";
+    tbody.innerHTML = '';
     for (let h = 0; h <= 8; h++) {
         const tr = document.createElement('tr');
-        tr.id = `row-${h}`;
-        tr.innerHTML = `
-            <td>${h} hr</td>
-            <td>${Math.round(s.rFunc(h))}</td>
-            <td>${Math.round(s.fFunc(h))}</td>
-        `;
+        tr.id = 'row-' + h;
+        tr.innerHTML =
+            '<td>' + h + ' hr</td>' +
+            '<td>' + Math.round(s.rFunc(h)) + '</td>' +
+            '<td>' + Math.round(s.fFunc(h)) + '</td>';
         tbody.appendChild(tr);
     }
 }
 
 function highlightTableRow(hourInt) {
-    for(let h=0; h<=8; h++) {
-        const row = document.getElementById(`row-${h}`);
-        if(row) row.classList.remove('active-row');
+    for (let h = 0; h <= 8; h++) {
+        const row = document.getElementById('row-' + h);
+        if (row) row.classList.remove('active-row');
     }
-    const targetRow = document.getElementById(`row-${hourInt}`);
-    if(targetRow) targetRow.classList.add('active-row');
+    const target = document.getElementById('row-' + hourInt);
+    if (target) target.classList.add('active-row');
 }
 
+// ─── Render Both Charts ────────────────────────────────
 function render() {
     const sc = scenarios[currentIdx];
     const showPPC = document.getElementById('checkPPC').checked;
     const showOC = document.getElementById('checkOC').checked;
 
-    drawPPC(sc, showPPC);
-    drawOpportunityCost(sc, showOC);
+    renderPPC(sc, showPPC);
+    renderOC(sc, showOC);
 }
 
-function drawPPC(sc, isVisible) {
-    const canvas = canvases.ppc;
-    const ctx = canvas.getContext('2d');
-    const W = canvas.width;
-    const H = canvas.height;
-    const pad = 65;
-
-    ctx.clearRect(0, 0, W, H);
-
-    const [xMin, xMax] = sc.rLim;
-    const [yMin, yMax] = sc.fLim;
-
-    // Mapping functions
-    const mX = r => pad + (r / xMax) * (W - 2 * pad);
-    const mY = f => H - pad - (f / yMax) * (H - 2 * pad);
-
-    // 1. Draw Clean Axes Always
-    ctx.strokeStyle = '#343a40';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(pad, mY(0)); ctx.lineTo(W - pad, mY(0)); // X Axis
-    ctx.moveTo(mX(0), pad); ctx.lineTo(mX(0), H - pad); // Y Axis
-    ctx.stroke();
-
-    ctx.fillStyle = '#343a40';
-    ctx.font = 'bold 15px Arial';
-    ctx.fillText(sc.yAxisLabel, pad, pad - 25);
-    ctx.fillText("Rabbits Produced", W - pad - 60, mY(0) + 35);
-    ctx.font = '13px Arial';
-    ctx.fillText(yMax, mX(0) + 12, pad + 5);
-    ctx.fillText(xMax, W - pad - 10, mY(0) - 10);
-    ctx.fillText("0", mX(0) - 15, mY(0) + 15);
-
-    if (!isVisible) return;
-
-    const currentR = sc.rFunc(currentHours);
-    const currentF = sc.fFunc(currentHours);
-    const cx = mX(currentR);
-    const cy = mY(currentF);
-
-    // 2. Draw Dynamic PPC Curve (Only up to currentHours)
-    ctx.strokeStyle = '#007aff';
-    ctx.lineWidth = 4;
-    ctx.lineJoin = 'round';
-    ctx.beginPath();
-    for (let h = 0; h <= currentHours; h += 0.05) {
-        if (h === 0) ctx.moveTo(mX(sc.rFunc(h)), mY(sc.fFunc(h)));
-        else ctx.lineTo(mX(sc.rFunc(h)), mY(sc.fFunc(h)));
+// ─── PPC Chart ─────────────────────────────────────────
+function renderPPC(sc, isVisible) {
+    // Full PPC curve data (100 points, h=0 to 8)
+    const ppcData = [];
+    for (let h = 0; h <= 8; h += 0.08) {
+        ppcData.push([sc.rFunc(h), sc.fFunc(h)]);
     }
-    // Ensures the line connects exactly to the final fractional value without tiny gaps
-    if (currentHours > 0) ctx.lineTo(cx, cy);
-    ctx.stroke();
 
-    // 3. Draw True Mathematical Tangent Vector
-    const OC = sc.ocFunc(currentHours); 
-    
-    // We calculate extending points in physical (R, F) coordinate space first
-    const deltaR = xMax * 0.15; // Extend tangent 15% of the graph width
-    const rStart = currentR - deltaR;
-    const rEnd = currentR + deltaR;
-    
-    // Physical line equation: F_tan = F_current - OC * (R - R_current)
-    const fStart = currentF - OC * (rStart - currentR);
-    const fEnd = currentF - OC * (rEnd - currentR);
+    // Active point
+    const activeR = sc.rFunc(currentHours);
+    const activeF = sc.fFunc(currentHours);
 
-    // Save context, clip to axes bounds, draw tangent, restore context
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(pad, pad, W - 2*pad, H - 2*pad);
-    ctx.clip();
+    // Tangent line calculation
+    const OC = sc.ocFunc(currentHours);
+    const deltaR = sc.rLim[1] * 0.15;
+    const rStart = activeR - deltaR;
+    const rEnd = activeR + deltaR;
+    const fStart = activeF - OC * (rStart - activeR);
+    const fEnd = activeF - OC * (rEnd - activeR);
 
-    ctx.strokeStyle = '#e63946';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([6, 4]);
-    ctx.beginPath();
-    ctx.moveTo(mX(rStart), mY(fStart));
-    ctx.lineTo(mX(rEnd), mY(fEnd));
-    ctx.stroke();
-    
-    ctx.restore(); // Remove clipping mask
+    const series = [];
 
-    // 4. Draw Axis Target Trackers
-    ctx.strokeStyle = 'rgba(0,0,0,0.15)';
-    ctx.setLineDash([3, 3]);
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy); ctx.lineTo(mX(0), cy);
-    ctx.moveTo(cx, cy); ctx.lineTo(cx, mY(0));
-    ctx.stroke();
-    ctx.setLineDash([]);
+    if (isVisible) {
+        // PPC curve
+        series.push({
+            type: 'line',
+            data: ppcData,
+            symbol: 'none',
+            smooth: true,
+            lineStyle: { color: C.deepBlue, width: 3 },
+            animation: false,
+            z: 2
+        });
 
-    // 5. Active Position Dot
-    ctx.fillStyle = '#e63946';
-    ctx.beginPath(); ctx.arc(cx, cy, 6, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.stroke();
-}
+        // Tangent line (markLine)
+        series.push({
+            type: 'line',
+            data: [],
+            symbol: 'none',
+            animation: false,
+            z: 3,
+            markLine: {
+                silent: true,
+                animation: false,
+                symbol: 'none',
+                lineStyle: { color: '#e63946', width: 1.5, type: 'dashed' },
+                data: [[
+                    { coord: [rStart, fStart] },
+                    { coord: [rEnd, fEnd] }
+                ]]
+            }
+        });
 
-function drawOpportunityCost(sc, isVisible) {
-    const canvas = canvases.oc;
-    const ctx = canvas.getContext('2d');
-    const W = canvas.width;
-    const H = canvas.height;
-    const pad = 65;
+        // Active point scatter
+        series.push({
+            type: 'scatter',
+            data: [[activeR, activeF]],
+            symbolSize: 12,
+            itemStyle: { color: C.green, borderColor: '#fff', borderWidth: 2 },
+            animation: false,
+            z: 10
+        });
 
-    ctx.clearRect(0, 0, W, H);
-
-    const [xMin, xMax] = sc.rLim;
-    const [yMin, yMax] = sc.ocLim;
-
-    const mX = r => pad + (r / xMax) * (W - 2 * pad);
-    const mY = oc => H - pad - (oc / yMax) * (H - 2 * pad);
-
-    // 1. Draw Clean Axes Always
-    ctx.strokeStyle = '#343a40';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(pad, mY(0)); ctx.lineTo(W - pad, mY(0)); // X Axis
-    ctx.moveTo(mX(0), pad); ctx.lineTo(mX(0), H - pad); // Y Axis
-    ctx.stroke();
-
-    ctx.fillStyle = '#343a40';
-    ctx.font = 'bold 15px Arial';
-    ctx.fillText("Opportunity Cost of Rabbit (in Fish)", pad, pad - 25);
-    ctx.fillText("Rabbits Produced", W - pad - 60, mY(0) + 35);
-    ctx.font = '13px Arial';
-    ctx.fillText(yMax, mX(0) + 12, pad + 5);
-    ctx.fillText(xMax, W - pad - 10, mY(0) - 10);
-    ctx.fillText("0", mX(0) - 15, mY(0) + 15);
-
-    if (!isVisible) return;
-
-    const currentR = sc.rFunc(currentHours);
-    const currentOC = sc.ocFunc(currentHours);
-    const cx = mX(currentR);
-    const cy = mY(currentOC);
-
-    // 2. Plot the Marginal OC Curve (Only up to currentHours)
-    ctx.strokeStyle = '#f59f00';
-    ctx.lineWidth = 4;
-    ctx.lineJoin = 'round';
-    ctx.beginPath();
-    for (let h = 0; h <= currentHours; h += 0.05) {
-        let rCoord = sc.rFunc(h);
-        let ocCoord = sc.ocFunc(h);
-        if (h === 0) ctx.moveTo(mX(rCoord), mY(ocCoord));
-        else ctx.lineTo(mX(rCoord), mY(ocCoord));
+        // Reference lines (horizontal & vertical dashed)
+        series.push({
+            type: 'line',
+            data: [],
+            symbol: 'none',
+            animation: false,
+            z: 1,
+            markLine: {
+                silent: true,
+                animation: false,
+                symbol: 'none',
+                lineStyle: { color: C.gray, width: 1, type: 'dashed' },
+                data: [
+                    [
+                        { coord: [0, activeF] },
+                        { coord: [activeR, activeF] }
+                    ],
+                    [
+                        { coord: [activeR, 0] },
+                        { coord: [activeR, activeF] }
+                    ]
+                ]
+            }
+        });
     }
-    // Ensures perfect connection to the final point
-    if (currentHours > 0) ctx.lineTo(cx, cy);
-    ctx.stroke();
 
-    // 3. Axis Target Trackers
-    ctx.strokeStyle = 'rgba(0,0,0,0.15)';
-    ctx.setLineDash([3, 3]);
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy); ctx.lineTo(mX(0), cy);
-    ctx.moveTo(cx, cy); ctx.lineTo(cx, mY(0));
-    ctx.stroke();
-    ctx.setLineDash([]);
+    const option = {
+        animation: false,
+        grid: { left: 60, right: 40, top: 40, bottom: 50 },
+        xAxis: {
+            type: 'value',
+            min: sc.rLim[0],
+            max: sc.rLim[1],
+            show: false
+        },
+        yAxis: {
+            type: 'value',
+            min: sc.fLim[0],
+            max: sc.fLim[1],
+            show: false
+        },
+        series: series,
+        graphic: [
+            {
+                type: 'text',
+                left: 'center',
+                top: 8,
+                style: {
+                    text: sc.yAxisLabel,
+                    font: '600 13px Source Sans Pro, sans-serif',
+                    fill: C.titleText
+                }
+            },
+            {
+                type: 'text',
+                right: 40,
+                bottom: 10,
+                style: {
+                    text: 'Rabbits Produced',
+                    font: '600 13px Source Sans Pro, sans-serif',
+                    fill: C.titleText
+                }
+            },
+            {
+                type: 'text',
+                left: 8,
+                top: 28,
+                style: {
+                    text: String(sc.fLim[1]),
+                    font: '12px Source Sans Pro, sans-serif',
+                    fill: '#666'
+                }
+            },
+            {
+                type: 'text',
+                right: 45,
+                bottom: 30,
+                style: {
+                    text: String(sc.rLim[1]),
+                    font: '12px Source Sans Pro, sans-serif',
+                    fill: '#666'
+                }
+            },
+            {
+                type: 'text',
+                left: 6,
+                bottom: 30,
+                style: {
+                    text: '0',
+                    font: '12px Source Sans Pro, sans-serif',
+                    fill: '#666'
+                }
+            }
+        ]
+    };
 
-    // 4. Highlighted Dynamic Target Dot
-    ctx.fillStyle = '#e63946';
-    ctx.beginPath(); ctx.arc(cx, cy, 6, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.stroke();
+    ppcChart.setOption(option, true);
 }
 
-window.onload = () => setTimeout(init, 150);
+// ─── OC Chart ──────────────────────────────────────────
+function renderOC(sc, isVisible) {
+    // Full OC curve data
+    const ocData = [];
+    for (let h = 0; h <= 8; h += 0.08) {
+        ocData.push([sc.rFunc(h), sc.ocFunc(h)]);
+    }
+
+    const activeR = sc.rFunc(currentHours);
+    const activeOC = sc.ocFunc(currentHours);
+
+    const series = [];
+
+    if (isVisible) {
+        // OC curve
+        series.push({
+            type: 'line',
+            data: ocData,
+            symbol: 'none',
+            smooth: true,
+            lineStyle: { color: C.ochre, width: 3 },
+            animation: false,
+            z: 2
+        });
+
+        // Active point
+        series.push({
+            type: 'scatter',
+            data: [[activeR, activeOC]],
+            symbolSize: 12,
+            itemStyle: { color: C.green, borderColor: '#fff', borderWidth: 2 },
+            animation: false,
+            z: 10
+        });
+
+        // Reference lines
+        series.push({
+            type: 'line',
+            data: [],
+            symbol: 'none',
+            animation: false,
+            z: 1,
+            markLine: {
+                silent: true,
+                animation: false,
+                symbol: 'none',
+                lineStyle: { color: C.gray, width: 1, type: 'dashed' },
+                data: [
+                    [
+                        { coord: [0, activeOC] },
+                        { coord: [activeR, activeOC] }
+                    ],
+                    [
+                        { coord: [activeR, 0] },
+                        { coord: [activeR, activeOC] }
+                    ]
+                ]
+            }
+        });
+    }
+
+    const option = {
+        animation: false,
+        grid: { left: 60, right: 40, top: 40, bottom: 50 },
+        xAxis: {
+            type: 'value',
+            min: sc.rLim[0],
+            max: sc.rLim[1],
+            show: false
+        },
+        yAxis: {
+            type: 'value',
+            min: sc.ocLim[0],
+            max: sc.ocLim[1],
+            show: false
+        },
+        series: series,
+        graphic: [
+            {
+                type: 'text',
+                left: 'center',
+                top: 8,
+                style: {
+                    text: 'Opportunity Cost of Rabbit (in Fish)',
+                    font: '600 13px Source Sans Pro, sans-serif',
+                    fill: C.titleText
+                }
+            },
+            {
+                type: 'text',
+                right: 40,
+                bottom: 10,
+                style: {
+                    text: 'Rabbits Produced',
+                    font: '600 13px Source Sans Pro, sans-serif',
+                    fill: C.titleText
+                }
+            },
+            {
+                type: 'text',
+                left: 8,
+                top: 28,
+                style: {
+                    text: String(sc.ocLim[1]),
+                    font: '12px Source Sans Pro, sans-serif',
+                    fill: '#666'
+                }
+            },
+            {
+                type: 'text',
+                right: 45,
+                bottom: 30,
+                style: {
+                    text: String(sc.rLim[1]),
+                    font: '12px Source Sans Pro, sans-serif',
+                    fill: '#666'
+                }
+            },
+            {
+                type: 'text',
+                left: 6,
+                bottom: 30,
+                style: {
+                    text: '0',
+                    font: '12px Source Sans Pro, sans-serif',
+                    fill: '#666'
+                }
+            }
+        ]
+    };
+
+    ocChart.setOption(option, true);
+}
+
+// ─── Start ─────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', init);
 </script>
 
 </body>
