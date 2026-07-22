@@ -4,256 +4,608 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monopolistic Competition - Long-Run Lab</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; display: flex; height: 100vh; background: #f0f2f5; color: #1a202c; overflow: hidden; }
-        .left-panel { flex: 7; display: flex; flex-direction: column; padding: 15px; background: #fff; border-right: 1px solid #cbd5e0; box-sizing: border-box; }
-        .right-panel { flex: 3; padding: 20px; background: #f8fafc; overflow-y: auto; box-sizing: border-box; }
+        body {
+            background: #f7f7f5;
+            font-family: 'Source Sans Pro', 'Segoe UI', system-ui, sans-serif;
+            color: #333;
+            padding: 24px 16px;
+            margin: 0;
+        }
 
-        .chart-container { flex-grow: 1; position: relative; min-height: 0; }
+        .container {
+            max-width: 880px;
+            margin: 0 auto;
+            background: #fff;
+            border: 1px solid #d4d4d0;
+            padding: 28px 32px;
+        }
 
-        .controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #edf2f7; padding: 15px; border-radius: 12px; margin-top: 10px; border: 1px solid #e2e8f0; }
-        .control-group { display: flex; flex-direction: column; }
-        .control-group label { font-size: 0.8rem; font-weight: 800; margin-bottom: 4px; color: #4a5568; text-transform: uppercase; }
-        input[type="range"] { width: 100%; cursor: pointer; }
+        h2 {
+            font-family: 'Merriweather', 'Georgia', serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a2a3a;
+            border-bottom: 2px solid #1a2a3a;
+            padding-bottom: 8px;
+            margin: 0 0 12px 0;
+        }
 
-        .toggles { grid-column: span 2; display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; padding: 8px; background: #fff; border-radius: 8px; border: 1px solid #e2e8f0; }
-        .toggles label { cursor: pointer; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+        .chart-box {
+            width: 100%;
+            height: 420px;
+            margin: 16px 0;
+        }
 
-        h2 { margin: 0 0 12px 0; font-size: 1.3rem; color: #2d3748; border-left: 5px solid #4299e1; padding-left: 10px; }
-        .stat-box { background: #fff; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .stat-row { display: flex; justify-content: space-between; margin: 6px 0; font-size: 0.95rem; }
-        .val { font-weight: bold; color: #3182ce; }
-        
-        .status-banner { padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; margin-top: 5px; font-size: 0.9rem; transition: all 0.3s ease; }
-        .status-profit { background: #c6f6d5; color: #22543d; border: 2px solid #9ae6b4; }
-        .status-loss { background: #fed7d7; color: #822727; border: 2px solid #feb2b2; }
-        .status-lr { background: #ebf8ff; color: #2a4365; border: 2px solid #4299e1; box-shadow: 0 0 10px rgba(66, 153, 225, 0.3); }
+        /* Controls */
+        .controls-section {
+            margin-top: 16px;
+        }
 
-        .copyright { position: fixed; bottom: 8px; right: 15px; font-size: 10px; color: #a0aec0; }
+        .slider-group {
+            margin-bottom: 12px;
+        }
+
+        .slider-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a2a3a;
+            margin-bottom: 4px;
+        }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .slider-row input[type="range"] {
+            flex: 1;
+            cursor: pointer;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #d4d4d0;
+            border-radius: 0;
+            outline: none;
+        }
+
+        .slider-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #1a5276;
+            border: 2px solid #fff;
+            border-radius: 0;
+            cursor: pointer;
+        }
+
+        .slider-val {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a5276;
+            min-width: 48px;
+            text-align: right;
+        }
+
+        .toggles {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 12px;
+            padding: 10px 0;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .toggles label {
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #333;
+        }
+
+        .toggles input[type="checkbox"] {
+            cursor: pointer;
+            accent-color: #1a5276;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            margin-top: 16px;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 16px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .stat-group h3 {
+            font-family: 'Merriweather', 'Georgia', serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: #1a2a3a;
+            margin: 0 0 6px 0;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin: 4px 0;
+        }
+
+        .stat-label {
+            color: #555;
+        }
+
+        .stat-val {
+            font-weight: 600;
+        }
+
+        .status-banner {
+            padding: 10px 14px;
+            font-weight: 700;
+            text-align: center;
+            font-size: 13px;
+            margin-top: 8px;
+            border: 1px solid;
+        }
+
+        .status-profit {
+            background: rgba(61, 107, 79, 0.08);
+            color: #3d6b4f;
+            border-color: rgba(61, 107, 79, 0.3);
+        }
+
+        .status-loss {
+            background: rgba(139, 69, 69, 0.08);
+            color: #8b4545;
+            border-color: rgba(139, 69, 69, 0.3);
+        }
+
+        .status-lr {
+            background: rgba(26, 82, 118, 0.08);
+            color: #1a5276;
+            border-color: rgba(26, 82, 118, 0.3);
+        }
+
+        /* Hint */
+        .hint {
+            margin-top: 12px;
+            font-size: 12px;
+            color: #888;
+            line-height: 1.5;
+        }
+
+        /* Source */
+        .source {
+            font-size: 10px;
+            color: #888;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 8px;
+            margin-top: 16px;
+        }
+
+        /* Legend */
+        .legend-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin: 8px 0 4px 0;
+            font-size: 12px;
+            color: #555;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend-line {
+            width: 20px;
+            height: 0;
+            border-top: 2.5px solid;
+            display: inline-block;
+        }
+
+        .legend-line.dashed {
+            border-top-style: dashed;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            background: #1a2a3a;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 1px #1a2a3a;
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
 
-<div class="left-panel">
-    <div class="chart-container">
-        <canvas id="mcChart"></canvas>
+<div class="container">
+    <h2>Monopolistic Competition — Long-Run Equilibrium Lab</h2>
+
+    <!-- Custom Legend -->
+    <div class="legend-strip">
+        <span class="legend-item"><span class="legend-line" style="border-color:#1a5276;"></span> Demand (D)</span>
+        <span class="legend-item"><span class="legend-line dashed" style="border-color:#bbb;"></span> Marginal Revenue (MR)</span>
+        <span class="legend-item"><span class="legend-line" style="border-color:#b85c38;"></span> Marginal Cost (MC)</span>
+        <span class="legend-item"><span class="legend-line" style="border-color:#5a3d7a;"></span> Avg Total Cost (ATC)</span>
+        <span class="legend-item"><span class="legend-dot"></span> Equilibrium</span>
     </div>
 
-    <div class="controls-grid">
-        <div class="control-group">
-            <label>Demand Shift (Long-Run Entry/Exit):</label>
-            <input type="range" id="inpDShift" min="15" max="55" step="0.1" value="34">
+    <div id="chartBox" class="chart-box"></div>
+
+    <div class="controls-section">
+        <div class="slider-group">
+            <label>Demand Shift (Long-Run Entry / Exit)</label>
+            <div class="slider-row">
+                <input type="range" id="inpDShift" min="15" max="55" step="0.1" value="34">
+                <span class="slider-val" id="valDShift">34.0</span>
+            </div>
         </div>
-        <div class="control-group">
-            <label>Cost Level (Fixed Cost):</label>
-            <input type="range" id="inpFC" min="15" max="100" step="1" value="48">
+        <div class="slider-group">
+            <label>Fixed Cost</label>
+            <div class="slider-row">
+                <input type="range" id="inpFC" min="15" max="100" step="1" value="48">
+                <span class="slider-val" id="valFC">48</span>
+            </div>
         </div>
         <div class="toggles">
             <label><input type="checkbox" id="showProfit" checked> Economic Profit</label>
-            <label><input type="checkbox" id="showDWL"> Allocative Eff. (DWL)</label>
-            <label><input type="checkbox" id="showEC"> Productive Eff. (Cap. Gap)</label>
+            <label><input type="checkbox" id="showDWL"> Allocative Efficiency / DWL</label>
+            <label><input type="checkbox" id="showEC"> Productive Efficiency / Capacity Gap</label>
         </div>
     </div>
+
+    <div class="dashboard">
+        <div class="dashboard-grid">
+            <div class="stat-group">
+                <h3>Market Report</h3>
+                <div class="stat-row"><span class="stat-label">Price (P<sub>e</sub>)</span><span class="stat-val" id="lblP">$0.00</span></div>
+                <div class="stat-row"><span class="stat-label">Quantity (Q<sub>e</sub>)</span><span class="stat-val" id="lblQ">0.00</span></div>
+                <div class="stat-row"><span class="stat-label">ATC at Q<sub>e</sub></span><span class="stat-val" id="lblATC">$0.00</span></div>
+            </div>
+            <div class="stat-group">
+                <h3>Financials &amp; Gaps</h3>
+                <div class="stat-row"><span class="stat-label">Total Profit</span><span class="stat-val" id="lblProfit">$0.00</span></div>
+                <div class="stat-row"><span class="stat-label">DWL Area</span><span class="stat-val" id="lblDWL">$0.00</span></div>
+                <div class="stat-row"><span class="stat-label">Excess Capacity</span><span class="stat-val" id="lblEC">0.00 units</span></div>
+            </div>
+        </div>
+        <div id="statusBanner" class="status-banner status-lr">Determining market state…</div>
+        <div class="hint">The Demand Shift slider will snap when you are within 1% of the zero-profit equilibrium.</div>
+    </div>
+
+    <div class="source">© 2026 Economics Visualization — Dr. Jia Edition · Textbook interactive built with Apache ECharts</div>
 </div>
-
-<div class="right-panel">
-    <h2>Market Report</h2>
-    <div class="stat-box">
-        <div class="stat-row">Price (Pₑ): <span class="val" id="lblP">$0.00</span></div>
-        <div class="stat-row">Quantity (Qₑ): <span class="val" id="lblQ">0.00</span></div>
-        <div class="stat-row">ATC at Qₑ: <span class="val" id="lblATC">$0.00</span></div>
-    </div>
-
-    <h2>Financials & Gaps</h2>
-    <div class="stat-box">
-        <div class="stat-row">Total Profit: <span class="val" id="lblProfit">$0.00</span></div>
-        <div class="stat-row">DWL Area: <span class="val" id="lblDWL">$0.00</span></div>
-        <div class="stat-row">Excess Capacity: <span class="val" id="lblEC">0.00 units</span></div>
-    </div>
-
-    <h2>Firm Status</h2>
-    <div id="statusBanner" class="status-banner">Determining market state...</div>
-
-    <div style="margin-top: 15px; font-size: 0.8rem; color: #718096; background: #fff; padding: 10px; border-radius: 8px; border: 1px dashed #cbd5e0;">
-        <b>Hint:</b> The "Demand Shift" slider will <b>snap</b> when you are within 1% of the zero-profit equilibrium.
-    </div>
-</div>
-
-<div class="copyright">© 2026 Economics Visualization. Dr. Jia Edition.</div>
 
 <script>
-    let chart;
-    const ctx = document.getElementById('mcChart').getContext('2d');
+(function () {
+    /* ── colour palette ────────────────────────────────────────────── */
+    const C = {
+        deepBlue:   '#1a5276',
+        ochre:      '#b85c38',
+        darkPurple: '#5a3d7a',
+        gray:       '#bbb',
+        green:      '#3d6b4f',
+        red:        '#8b4545',
+        titleText:  '#1a2a3a',
+        gridLine:   '#e8e8e8',
+        profit:     'rgba(61,107,79,0.2)',
+        loss:       'rgba(139,69,69,0.2)',
+        dwl:        'rgba(184,92,56,0.3)'
+    };
 
-    function update() {
-        let a = parseFloat(document.getElementById('inpDShift').value);
-        const fc = parseFloat(document.getElementById('inpFC').value);
+    /* ── DOM refs ──────────────────────────────────────────────────── */
+    const elChart     = document.getElementById('chartBox');
+    const elDShift    = document.getElementById('inpDShift');
+    const elFC        = document.getElementById('inpFC');
+    const elValDS     = document.getElementById('valDShift');
+    const elValFC     = document.getElementById('valFC');
+    const elShowP     = document.getElementById('showProfit');
+    const elShowDWL   = document.getElementById('showDWL');
+    const elShowEC    = document.getElementById('showEC');
 
-        /* MATHEMATICAL SNAP LOGIC:
-           Long-run equilibrium occurs when P = ATC and MR = MC.
-           Given: P = a - 2Q, MR = a - 4Q, MC = 2Q + 10, ATC = Q + 10 + FC/Q
-           Equilibrium Q_e = (a - 10) / 6
-           Set P(Q_e) = ATC(Q_e) => 3(Q_e)^2 = FC => Q_lr = sqrt(FC/3)
-           Target a_lr = 6 * Q_lr + 10
-        */
-        const q_lr_target = Math.sqrt(fc / 3);
-        const a_lr_target = 6 * q_lr_target + 10;
+    /* ── ECharts init ──────────────────────────────────────────────── */
+    const myChart = echarts.init(elChart, null, { renderer: 'canvas' });
 
-        // Snapping: if within 1.2 units of the target 'a', snap to it.
-        if (Math.abs(a - a_lr_target) < 1.2) {
-            a = a_lr_target;
+    /* ── data generation helpers ───────────────────────────────────── */
+    const Q_MIN = 0.2, Q_MAX = 15, Q_STEP = 0.15;
+
+    function genCurve(fn) {
+        const d = [];
+        for (let q = Q_MIN; q <= Q_MAX; q = +(q + Q_STEP).toFixed(4)) {
+            d.push([q, fn(q)]);
+        }
+        return d;
+    }
+
+    /* ── axis label graphics ───────────────────────────────────────── */
+    function axisLabels() {
+        return [
+            {
+                type: 'text', left: 'center', bottom: 4,
+                style: { text: 'Quantity (Units)', fill: '#555', font: '600 12px "Source Sans Pro", sans-serif' }
+            },
+            {
+                type: 'text', top: 'center', left: 6,
+                style: { text: 'Price / Cost ($)', fill: '#555', font: '600 12px "Source Sans Pro", sans-serif',
+                         textRotation: -Math.PI / 2 }
+            }
+        ];
+    }
+
+    /* ── initial option ────────────────────────────────────────────── */
+    function buildOption(a, fc, q_e, p_e, atc_e, q_soc, q_prod) {
+        /* Compute max y for axis */
+        let yMax = 60;
+        // extend yMax if curves go higher
+        const yAtQmax = a - 2 * Q_MAX;
+        if (a > 0) yMax = Math.max(yMax, a + 4);
+
+        const series = [
+            {   // D
+                name: 'Demand (D)',
+                type: 'line', symbol: 'none', lineStyle: { width: 2.5, color: C.deepBlue },
+                data: genCurve(q => a - 2 * q), z: 5, animation: false
+            },
+            {   // MR
+                name: 'Marginal Revenue (MR)',
+                type: 'line', symbol: 'none',
+                lineStyle: { width: 2, color: C.gray, type: 'dashed' },
+                data: genCurve(q => a - 4 * q), z: 5, animation: false
+            },
+            {   // MC
+                name: 'Marginal Cost (MC)',
+                type: 'line', symbol: 'none',
+                lineStyle: { width: 2.5, color: C.ochre },
+                data: genCurve(q => 2 * q + 10), z: 5, animation: false
+            },
+            {   // ATC
+                name: 'Avg Total Cost (ATC)',
+                type: 'line', symbol: 'none',
+                lineStyle: { width: 2.5, color: C.darkPurple },
+                data: genCurve(q => q + 10 + fc / q), z: 5, animation: false
+            },
+            {   // Equilibrium scatter
+                name: 'Equilibrium',
+                type: 'scatter', symbolSize: 12,
+                itemStyle: { color: '#1a2a3a', borderColor: '#fff', borderWidth: 2 },
+                data: q_e > 0 ? [[q_e, p_e]] : [], z: 20, animation: false
+            },
+            {   // Alloc efficiency vertical
+                name: 'Alloc. Efficient Q',
+                type: 'line', symbol: 'none',
+                lineStyle: { width: 1.5, color: C.ochre, type: 'dashed' },
+                data: elShowDWL.checked && q_soc > q_e ? [[q_soc, 0], [q_soc, a - 2 * q_soc]] : [],
+                z: 4, animation: false
+            },
+            {   // Prod efficiency vertical
+                name: 'Prod. Efficient Q',
+                type: 'line', symbol: 'none',
+                lineStyle: { width: 1.5, color: C.darkPurple, type: 'dashed' },
+                data: elShowEC.checked && q_prod > q_e ? [[q_prod, 0], [q_prod, 2 * q_prod + 10]] : [],
+                z: 4, animation: false
+            }
+        ];
+
+        /* Dashed reference lines from equilibrium to axes */
+        const markLines = [];
+        if (q_e > 0 && p_e > 0) {
+            const refLines = [];
+            // horizontal to y-axis
+            refLines.push([
+                { coord: [0, p_e], lineStyle: { color: '#999', type: 'dashed', width: 1 } },
+                { coord: [q_e, p_e] }
+            ]);
+            // vertical to x-axis
+            refLines.push([
+                { coord: [q_e, 0], lineStyle: { color: '#999', type: 'dashed', width: 1 } },
+                { coord: [q_e, p_e] }
+            ]);
+            // Add as markLine on equilibrium scatter
+            series[4].markLine = {
+                silent: true, symbol: 'none', animation: false,
+                lineStyle: { color: '#999', type: 'dashed', width: 1 },
+                data: refLines
+            };
         }
 
-        const q_e = (a - 10) / 6;
-        const p_e = a - 2 * q_e;
-        const atc_e = q_e + 10 + (fc / q_e);
+        return {
+            animation: false,
+            grid: { left: 60, right: 40, top: 40, bottom: 50 },
+            xAxis: {
+                type: 'value', min: 0, max: 15,
+                show: false,
+                splitLine: { show: true, lineStyle: { color: C.gridLine } }
+            },
+            yAxis: {
+                type: 'value', min: 0, max: yMax,
+                show: false,
+                splitLine: { show: true, lineStyle: { color: C.gridLine } }
+            },
+            series: series,
+            graphic: { elements: axisLabels() }
+        };
+    }
+
+    /* ── pixel conversion helper ───────────────────────────────────── */
+    function toPixel(dataPts) {
+        return dataPts
+            .map(p => myChart.convertToPixel({ gridIndex: 0 }, p))
+            .filter(p => p && !isNaN(p[0]) && !isNaN(p[1]));
+    }
+
+    /* ── main update ───────────────────────────────────────────────── */
+    function update() {
+        let a  = parseFloat(elDShift.value);
+        const fc = parseFloat(elFC.value);
+
+        /* slider display */
+        elValDS.textContent = a.toFixed(1);
+        elValFC.textContent = fc;
+
+        /* ── snap logic ────────────────────────────────────────────── */
+        const q_lr_target  = Math.sqrt(fc / 3);
+        const a_lr_target  = 6 * q_lr_target + 10;
+        if (Math.abs(a - a_lr_target) < 1.2) {
+            a = a_lr_target;
+            elDShift.value  = a;
+            elValDS.textContent = a.toFixed(1);
+        }
+
+        /* ── economics ─────────────────────────────────────────────── */
+        const q_e    = (a - 10) / 6;
+        const p_e    = a - 2 * q_e;
+        const atc_e  = q_e + 10 + fc / q_e;
         const profit = (p_e - atc_e) * q_e;
 
-        // Efficiency points
-        const q_soc = (a - 10) / 4; // P = MC
-        const q_prod = Math.sqrt(fc); // Min ATC (MC = ATC)
-        const dwl = 0.5 * (p_e - (2 * q_e + 10)) * (q_soc - q_e);
+        const q_soc     = (a - 10) / 4;
+        const q_prod    = Math.sqrt(fc);
+        const mc_at_qe  = 2 * q_e + 10;
+        const p_soc     = a - 2 * q_soc;
+        const dwl       = 0.5 * (p_e - mc_at_qe) * (q_soc - q_e);
+        const excessCap = Math.max(0, q_prod - q_e);
 
-        // Update Labels
-        document.getElementById('lblP').innerText = "$" + p_e.toFixed(2);
-        document.getElementById('lblQ').innerText = q_e.toFixed(2);
-        document.getElementById('lblATC').innerText = "$" + atc_e.toFixed(2);
-        document.getElementById('lblProfit').innerText = "$" + profit.toFixed(2);
-        document.getElementById('lblProfit').style.color = Math.abs(profit) < 0.1 ? "#2b6cb0" : (profit > 0 ? "#2f855a" : "#c53030");
-        document.getElementById('lblDWL').innerText = "$" + Math.max(0, dwl).toFixed(2);
-        document.getElementById('lblEC').innerText = Math.max(0, q_prod - q_e).toFixed(2);
+        /* ── dashboard ─────────────────────────────────────────────── */
+        document.getElementById('lblP').textContent     = '$' + p_e.toFixed(2);
+        document.getElementById('lblQ').textContent      = q_e.toFixed(2);
+        document.getElementById('lblATC').textContent    = '$' + atc_e.toFixed(2);
+        document.getElementById('lblDWL').textContent    = '$' + Math.max(0, dwl).toFixed(2);
+        document.getElementById('lblEC').textContent     = excessCap.toFixed(2) + ' units';
+
+        const profitEl = document.getElementById('lblProfit');
+        profitEl.textContent = '$' + profit.toFixed(2);
+        profitEl.style.color = Math.abs(profit) < 0.1 ? C.deepBlue : (profit > 0 ? C.green : C.red);
 
         const banner = document.getElementById('statusBanner');
         if (Math.abs(profit) < 0.1) {
-            banner.innerText = "LONG-RUN EQUILIBRIUM: Zero Economic Profit (Normal Profit). Entry/Exit stops.";
-            banner.className = "status-banner status-lr";
+            banner.textContent = 'LONG-RUN EQUILIBRIUM — Zero Economic Profit (Normal Profit). Entry/Exit stops.';
+            banner.className   = 'status-banner status-lr';
         } else if (profit > 0) {
-            banner.innerText = "SHORT-RUN: Supernormal Profit. Expect new firms to enter (Demand shifts left).";
-            banner.className = "status-banner status-profit";
+            banner.textContent = 'SHORT-RUN — Supernormal Profit. Expect new firms to enter (Demand shifts left).';
+            banner.className   = 'status-banner status-profit';
         } else {
-            banner.innerText = "SHORT-RUN: Economic Loss. Expect firms to exit (Demand shifts right).";
-            banner.className = "status-banner status-loss";
+            banner.textContent = 'SHORT-RUN — Economic Loss. Expect firms to exit (Demand shifts right).';
+            banner.className   = 'status-banner status-loss';
         }
 
-        renderChart(a, fc, q_e, p_e, atc_e, q_soc, q_prod);
+        /* ── chart option ──────────────────────────────────────────── */
+        const option = buildOption(a, fc, q_e, p_e, atc_e, q_soc, q_prod);
+        myChart.setOption(option, { replaceMerge: ['series'] });
+
+        /* ── graphic overlays (profit/loss rect, DWL triangle, ex-cap) */
+        const graphicElements = axisLabels(); // keep axis labels
+
+        const showProfit = elShowP.checked;
+        const showDWL    = elShowDWL.checked;
+        const showEC     = elShowEC.checked;
+
+        /* Profit / Loss rectangle */
+        if (showProfit && q_e > 0) {
+            const color = p_e >= atc_e ? C.profit : C.loss;
+            const pts = toPixel([[0, p_e], [q_e, p_e], [q_e, atc_e], [0, atc_e]]);
+            if (pts.length === 4) {
+                graphicElements.push({
+                    type: 'polygon',
+                    shape: { points: pts },
+                    style: { fill: color },
+                    z: 100
+                });
+            }
+        }
+
+        /* DWL triangle */
+        if (showDWL && q_soc > q_e) {
+            const mc_at_qe2 = 2 * q_e + 10;
+            const pts = toPixel([[q_e, p_e], [q_soc, a - 2 * q_soc], [q_e, mc_at_qe2]]);
+            if (pts.length === 3) {
+                graphicElements.push({
+                    type: 'polygon',
+                    shape: { points: pts },
+                    style: { fill: C.dwl },
+                    z: 100
+                });
+            }
+        }
+
+        /* Excess capacity indicator */
+        if (showEC && q_prod > q_e) {
+            const yLine = 4;
+            const pLeft  = toPixel([[q_e, yLine]]);
+            const pRight = toPixel([[q_prod, yLine]]);
+            if (pLeft.length && pRight.length) {
+                const lx = pLeft[0][0], ly = pLeft[0][1];
+                const rx = pRight[0][0];
+                /* horizontal bar */
+                graphicElements.push({
+                    type: 'line',
+                    shape: { x1: lx, y1: ly, x2: rx, y2: ly },
+                    style: { stroke: C.darkPurple, lineWidth: 2 },
+                    z: 100
+                });
+                /* tick at left */
+                graphicElements.push({
+                    type: 'line',
+                    shape: { x1: lx, y1: ly - 6, x2: lx, y2: ly + 6 },
+                    style: { stroke: C.darkPurple, lineWidth: 2 },
+                    z: 100
+                });
+                /* tick at right */
+                graphicElements.push({
+                    type: 'line',
+                    shape: { x1: rx, y1: ly - 6, x2: rx, y2: ly + 6 },
+                    style: { stroke: C.darkPurple, lineWidth: 2 },
+                    z: 100
+                });
+                /* label */
+                graphicElements.push({
+                    type: 'text',
+                    x: (lx + rx) / 2,
+                    y: ly - 14,
+                    style: {
+                        text: 'Excess Capacity',
+                        fill: C.darkPurple,
+                        font: '600 11px "Source Sans Pro", sans-serif',
+                        textAlign: 'center'
+                    },
+                    z: 100
+                });
+            }
+        }
+
+        myChart.setOption({ graphic: { elements: graphicElements } }, { replaceMerge: ['graphic'] });
     }
 
-    function renderChart(a, fc, q_e, p_e, atc_e, q_soc, q_prod) {
-        const dD = [], dMR = [], dMC = [], dATC = [];
-        for (let q = 0.2; q <= 15; q += 0.2) {
-            dD.push({x: q, y: a - 2 * q});
-            dMR.push({x: q, y: a - 4 * q});
-            dMC.push({x: q, y: 2 * q + 10});
-            dATC.push({x: q, y: q + 10 + fc / q});
-        }
+    /* ── event wiring ──────────────────────────────────────────────── */
+    elDShift.addEventListener('input', update);
+    elFC.addEventListener('input', update);
+    elShowP.addEventListener('change', update);
+    elShowDWL.addEventListener('change', update);
+    elShowEC.addEventListener('change', update);
+    window.addEventListener('resize', () => { myChart.resize(); update(); });
 
-        chart.data.datasets[0].data = dD;
-        chart.data.datasets[1].data = dMR;
-        chart.data.datasets[2].data = dMC;
-        chart.data.datasets[3].data = dATC;
-        chart.data.datasets[4].data = [{x: q_e, y: p_e}];
-
-        // Toggle lines for Socially Optimal and Productive Efficiency
-        const showDWL = document.getElementById('showDWL').checked;
-        const showEC = document.getElementById('showEC').checked;
-        chart.data.datasets[5].data = showDWL ? [{x: q_soc, y: 0}, {x: q_soc, y: (a - 2 * q_soc)}] : [];
-        chart.data.datasets[6].data = showEC ? [{x: q_prod, y: 0}, {x: q_prod, y: (2 * q_prod + 10)}] : [];
-
-        chart.options.plugins.shading = {
-            q_e, p_e, atc_e, q_soc, q_prod, a,
-            showProfit: document.getElementById('showProfit').checked,
-            showDWL, showEC
-        };
-        chart.update('none');
-    }
-
-    const shadingPlugin = {
-        id: 'shading',
-        beforeDatasetsDraw(chart, args, options) {
-            const {ctx, scales: {x, y}} = chart;
-            const {q_e, p_e, atc_e, q_soc, q_prod, a, showProfit, showDWL, showEC} = options;
-
-            const drawArea = (pts, color) => {
-                ctx.save(); ctx.fillStyle = color; ctx.beginPath();
-                ctx.moveTo(x.getPixelForValue(pts[0].x), y.getPixelForValue(pts[0].y));
-                pts.forEach(p => ctx.lineTo(x.getPixelForValue(p.x), y.getPixelForValue(p.y)));
-                ctx.closePath(); ctx.fill(); ctx.restore();
-            };
-
-            // 1. PROJECTION LINES (Dashed coordinates)
-            ctx.save();
-            ctx.strokeStyle = '#718096';
-            ctx.setLineDash([4, 4]);
-            ctx.beginPath();
-            // Line to Y-axis (Price)
-            ctx.moveTo(x.getPixelForValue(q_e), y.getPixelForValue(p_e));
-            ctx.lineTo(x.getPixelForValue(0), y.getPixelForValue(p_e));
-            // Line to X-axis (Quantity)
-            ctx.moveTo(x.getPixelForValue(q_e), y.getPixelForValue(p_e));
-            ctx.lineTo(x.getPixelForValue(q_e), y.getPixelForValue(0));
-            ctx.stroke();
-            ctx.restore();
-
-            // 2. PROFIT/LOSS AREA
-            if (showProfit && q_e > 0) {
-                const color = p_e >= atc_e ? 'rgba(72, 187, 120, 0.25)' : 'rgba(245, 101, 101, 0.25)';
-                drawArea([{x:0, y:p_e}, {x:q_e, y:p_e}, {x:q_e, y:atc_e}, {x:0, y:atc_e}], color);
-            }
-
-            // 3. DWL TRIANGLE
-            if (showDWL && q_soc > q_e) {
-                const mc_at_qe = 2 * q_e + 10;
-                drawArea([{x:q_e, y:p_e}, {x:q_soc, y:a - 2 * q_soc}, {x:q_e, y:mc_at_qe}], 'rgba(237, 137, 54, 0.4)');
-            }
-
-            // 4. EXCESS CAPACITY INDICATOR
-            if (showEC && q_prod > q_e) {
-                const yLine = 4;
-                ctx.save();
-                ctx.strokeStyle = '#805ad5';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(x.getPixelForValue(q_e), y.getPixelForValue(yLine));
-                ctx.lineTo(x.getPixelForValue(q_prod), y.getPixelForValue(yLine));
-                ctx.stroke();
-                // Vertical ticks for the gap
-                ctx.beginPath();
-                ctx.moveTo(x.getPixelForValue(q_e), y.getPixelForValue(yLine-2)); ctx.lineTo(x.getPixelForValue(q_e), y.getPixelForValue(yLine+2));
-                ctx.moveTo(x.getPixelForValue(q_prod), y.getPixelForValue(yLine-2)); ctx.lineTo(x.getPixelForValue(q_prod), y.getPixelForValue(yLine+2));
-                ctx.stroke();
-                ctx.restore();
-            }
-        }
-    };
-
-    window.onload = () => {
-        chart = new Chart(ctx, {
-            type: 'line',
-            plugins: [shadingPlugin],
-            data: {
-                datasets: [
-                    { label: 'Demand (D)', borderColor: '#3182ce', borderWidth: 3, pointRadius: 0, data: [] },
-                    { label: 'Marg. Revenue (MR)', borderColor: '#3182ce', borderWidth: 2, borderDash: [6,4], pointRadius: 0, data: [] },
-                    { label: 'Marg. Cost (MC)', borderColor: '#e53e3e', borderWidth: 3, pointRadius: 0, data: [] },
-                    { label: 'Avg. Total Cost (ATC)', borderColor: '#805ad5', borderWidth: 3, pointRadius: 0, data: [] },
-                    { type: 'scatter', label: 'Equilibrium (E)', backgroundColor: '#1a202c', pointRadius: 6, data: [] },
-                    { label: 'Alloc. Efficient Q', borderColor: '#ed8936', borderWidth: 1.5, borderDash: [2,2], pointRadius: 0, data: [] },
-                    { label: 'Prod. Efficient Q', borderColor: '#48bb78', borderWidth: 1.5, borderDash: [2,2], pointRadius: 0, data: [] }
-                ]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false, animation: false,
-                scales: {
-                    x: { type: 'linear', min: 0, max: 15, title: {display:true, text:'Quantity (Units)', font:{weight:'bold'}} },
-                    y: { type: 'linear', min: 0, max: 60, title: {display:true, text:'Price / Cost ($)', font:{weight:'bold'}} }
-                },
-                plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: {size: 11} } } }
-            }
-        });
-        document.querySelectorAll('input').forEach(el => el.addEventListener('input', update));
-        update();
-    };
+    /* ── initial draw ──────────────────────────────────────────────── */
+    myChart.resize();
+    update();
+})();
 </script>
 </body>
 </html>
