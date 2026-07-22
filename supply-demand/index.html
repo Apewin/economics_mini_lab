@@ -391,6 +391,8 @@
     const SHIFT_THRESHOLD = 25;
 
     let chart = null;
+    let handlesEnabled = false;  // whether drag is active
+
 
     const screens = {
         start: document.getElementById('startScreen'),
@@ -437,10 +439,30 @@
         }
     }
 
+    /**
+     * Find an ECharts SVG text element by its silent id.
+     * ECharts 5 renders graphic elements with ecmeta_silent_id="…".
+     */
+    function findLabelEl(id) {
+        if (!chart) return null;
+        const svg = chart.getZr().painter.getViewportRoot().querySelector('svg');
+        return svg ? svg.querySelector(`[ecmeta_silent_id="${id}"]`) : null;
+    }
+
+    /**
+     * Update label text via DOM manipulation (no setOption).
+     */
+    function updateLabelTexts(config) {
+        ['d0', 's0', 'p0', 'q0', 'p1', 'q1'].forEach(key => {
+            const el = findLabelEl(`label-${key}`);
+            if (el) { el.textContent = config[key]; el.style.display = ''; }
+        });
+    }
+
     function updateChartLabels(config) {
         if (!chart) return;
 
-        // Update axis names and series names via setOption
+        // Update axis names and series names via setOption (no graphic)
         chart.setOption({
             yAxis: [{ name: config.y }],
             xAxis: [{ name: config.x }],
@@ -449,22 +471,11 @@
                 { name: config.s0 }, // S0
                 { name: config.d1 }, // D1
                 { name: config.s1 }  // S1
-            ],
-            graphic: [{ id: 'label-d0', style: { text: config.d0 } },
-                      { id: 'label-s0', style: { text: config.s0 } },
-                      { id: 'label-p0', style: { text: config.p0 } },
-                      { id: 'label-q0', style: { text: config.q0 } },
-                      { id: 'label-p1', style: { text: config.p1 } },
-                      { id: 'label-q1', style: { text: config.q1 } }]
-        });
-
-        // Update handle labels (nested in groups) via setOption children merge
-        chart.setOption({
-            graphic: [
-                { id: 'handleDGroup', children: [{}, { style: { text: config.d1 } }] },
-                { id: 'handleSGroup', children: [{}, { style: { text: config.s1 } }] }
             ]
         });
+
+        // Update label text via DOM
+        updateLabelTexts(config);
     }
 
     /* ===== ECharts Setup ===== */
@@ -530,147 +541,75 @@
                     type: 'line', id: 'eqLines', data: [],
                     lineStyle: { color: C.green, type: 'dashed', width: 2 },
                     symbol: 'none', silent: true, z: 2
+                },
+                // 7: D1 handle (scatter, draggable)
+                {
+                    type: 'scatter', id: 'handleD', data: [[5, 5]], symbolSize: 28,
+                    itemStyle: { color: C.deepBlue, borderColor: '#fff', borderWidth: 2 },
+                    label: { show: true, formatter: 'D₁', color: '#fff', fontSize: 11, fontWeight: 'bold', fontFamily: 'Source Sans Pro' },
+                    z: 20, silent: false
+                },
+                // 8: S1 handle (scatter, draggable)
+                {
+                    type: 'scatter', id: 'handleS', data: [[5, 5]], symbolSize: 28,
+                    itemStyle: { color: C.ochre, borderColor: '#fff', borderWidth: 2 },
+                    label: { show: true, formatter: 'S₁', color: '#fff', fontSize: 11, fontWeight: 'bold', fontFamily: 'Source Sans Pro' },
+                    z: 20, silent: false
                 }
             ],
-            graphic: [{
-                type: 'group',
-                id: 'handles',
-                children: [
-                    // 0: D0 label (positioned by positionLabels())
-                    {
-                        type: 'text', id: 'label-d0', position: [0, 0],
-                        style: { text: 'D₀', fill: C.gray, font: 'bold 14px Source Sans Pro' },
-                        z: 10
-                    },
-                    // 1: S0 label (positioned by positionLabels())
-                    {
-                        type: 'text', id: 'label-s0', position: [0, 0],
-                        style: { text: 'S₀', fill: C.gray, font: 'bold 14px Source Sans Pro' },
-                        z: 10
-                    },
-                    // 2: D0 label positioned at end of D0 curve
-                    {
-                        type: 'text',
-                        position: [0, 0],
-                        style: { text: 'D₀', fill: C.gray, font: 'bold 13px Source Sans Pro' },
-                        z: 10, silent: true
-                    },
-                    // 3: S0 label positioned at end of S0 curve
-                    {
-                        type: 'text',
-                        position: [0, 0],
-                        style: { text: 'S₀', fill: C.gray, font: 'bold 13px Source Sans Pro' },
-                        z: 10, silent: true
-                    },
-                    // 4: D1 handle group
-                    {
-                        type: 'group',
-                        id: 'handleDGroup',
-                        x: 0, y: 0,
-                        draggable: true,
-                        z: 20,
-                        ondrag: function () {
-                            // this.position = absolute pixel pos; subtract initial to get delta
-                            dShift = this.position ? this.position[0] - handleCenterPx[0] : 0;
-                            updateCurvesFromShift();
-                        },
-                        children: [
-                            {
-                                type: 'circle',
-                                position: [0, 0],
-                                shape: { r: 14 },
-                                style: { fill: C.deepBlue, stroke: '#fff', lineWidth: 2 },
-                                cursor: 'ew-resize'
-                            },
-                            {
-                                type: 'text',
-                                position: [0, 0],
-                                style: { text: 'D₁', fill: '#fff', font: 'bold 11px Source Sans Pro', textAlign: 'center', textVerticalAlign: 'middle' },
-                                cursor: 'ew-resize'
-                            }
-                        ]
-                    },
-                    // 5: S1 handle group
-                    {
-                        type: 'group',
-                        id: 'handleSGroup',
-                        x: 0, y: 0,
-                        draggable: true,
-                        z: 20,
-                        ondrag: function () {
-                            // this.position = absolute pixel pos; subtract initial to get delta
-                            sShift = this.position ? this.position[0] - handleCenterPx[0] : 0;
-                            updateCurvesFromShift();
-                        },
-                        children: [
-                            {
-                                type: 'circle',
-                                position: [0, 0],
-                                shape: { r: 14 },
-                                style: { fill: C.ochre, stroke: '#fff', lineWidth: 2 },
-                                cursor: 'ew-resize'
-                            },
-                            {
-                                type: 'text',
-                                position: [0, 0],
-                                style: { text: 'S₁', fill: '#fff', font: 'bold 11px Source Sans Pro', textAlign: 'center', textVerticalAlign: 'middle' },
-                                cursor: 'ew-resize'
-                            }
-                        ]
-                    },
-                    // 6: P0 label
-                    {
-                        type: 'text',
-                        id: 'label-p0',
-                        position: [0, 0],
-                        style: { text: 'P₀', fill: C.gray, font: 'bold 13px Source Sans Pro' },
-                        z: 10, silent: true
-                    },
-                    // 7: Q0 label
-                    {
-                        type: 'text',
-                        id: 'label-q0',
-                        position: [0, 0],
-                        style: { text: 'Q₀', fill: C.gray, font: 'bold 13px Source Sans Pro' },
-                        z: 10, silent: true
-                    },
-                    // 8: P1 label (hidden initially)
-                    {
-                        type: 'text',
-                        id: 'label-p1',
-                        position: [0, 0],
-                        style: { text: 'P₁', fill: C.green, font: 'bold 13px Source Sans Pro' },
-                        z: 10, silent: true, invisible: true
-                    },
-                    // 9: Q1 label (hidden initially)
-                    {
-                        type: 'text',
-                        id: 'label-q1',
-                        position: [0, 0],
-                        style: { text: 'Q₁', fill: C.green, font: 'bold 13px Source Sans Pro' },
-                        z: 10, silent: true, invisible: true
-                    }
-                ]
-            }]
+            graphic: [
+                // Text labels — set once, updated via DOM for text, via setOption for position
+                {
+                    type: 'text', id: 'label-d0', position: [0, 0],
+                    style: { text: 'D₀', fill: C.gray, font: 'bold 14px Source Sans Pro' },
+                    z: 10, silent: true
+                },
+                {
+                    type: 'text', id: 'label-s0', position: [0, 0],
+                    style: { text: 'S₀', fill: C.gray, font: 'bold 14px Source Sans Pro' },
+                    z: 10, silent: true
+                },
+                {
+                    type: 'text', id: 'label-p0', position: [0, 0],
+                    style: { text: 'P₀', fill: C.gray, font: 'bold 13px Source Sans Pro' },
+                    z: 10, silent: true
+                },
+                {
+                    type: 'text', id: 'label-q0', position: [0, 0],
+                    style: { text: 'Q₀', fill: C.gray, font: 'bold 13px Source Sans Pro' },
+                    z: 10, silent: true
+                },
+                {
+                    type: 'text', id: 'label-p1', position: [0, 0],
+                    style: { text: 'P₁', fill: C.green, font: 'bold 13px Source Sans Pro' },
+                    z: 10, silent: true, invisible: true
+                },
+                {
+                    type: 'text', id: 'label-q1', position: [0, 0],
+                    style: { text: 'Q₁', fill: C.green, font: 'bold 13px Source Sans Pro' },
+                    z: 10, silent: true, invisible: true
+                }
+            ]
         };
 
         chart.setOption(option);
         chart._marketConfig = null;
 
-        // Position handles and labels after chart renders
+        // Position labels after chart renders
         requestAnimationFrame(() => {
-            positionHandles();
             positionLabels();
         });
 
-        // Also set handleCenterPx immediately for drag calculation
+        // Set handleCenterPx immediately for drag calculation
         handleCenterPx = chart.convertToPixel({ gridIndex: 0 }, [5, 5]) || [0, 0];
+
+        // Set up drag via mouse events
+        setupDragEvents();
 
         // Handle window resize
         window.addEventListener('resize', () => {
             chart.resize();
             requestAnimationFrame(() => {
-                positionHandles();
                 positionLabels();
             });
         });
@@ -691,39 +630,67 @@
     // Store initial handle pixel position for delta calculation
     let handleCenterPx = [0, 0];
 
-    /* Position handles at initial curve midpoint */
-    function positionHandles() {
-        if (!chart) return;
-        handleCenterPx = dataToPixel(5, 5);
-        // Position via group x/y only — do NOT set children (preserves ondrag)
-        chart.setOption({
-            graphic: [
-                { id: 'handleDGroup', x: handleCenterPx[0], y: handleCenterPx[1] },
-                { id: 'handleSGroup', x: handleCenterPx[0], y: handleCenterPx[1] }
-            ]
-        });
-    }
-
-    /* Position text labels for D0, S0, P0, Q0 */
+    /**
+     * Position text labels for D0, S0, P0, Q0, P1, Q1.
+     * P1/Q1 are positioned but kept hidden until equilibrium shifts.
+     */
     function positionLabels() {
         if (!chart) return;
 
-        // D0 label at end of D0 curve: data (9, 1)
         const d0End = dataToPixel(9, 1);
-        // S0 label at end of S0 curve: data (9, 9)
         const s0End = dataToPixel(9, 9);
-        // P0 label: y-axis at equilibrium, data (0, 5)
         const p0Pos = dataToPixel(0, 5);
-        // Q0 label: x-axis at equilibrium, data (5, 0)
         const q0Pos = dataToPixel(5, 0);
+        const eqPos = dataToPixel(5, 5);
 
         chart.setOption({
             graphic: [
                 { id: 'label-d0', position: [d0End[0] + 8, d0End[1] - 5] },
                 { id: 'label-s0', position: [s0End[0] + 8, s0End[1] - 5] },
                 { id: 'label-p0', position: [p0Pos[0] - 30, p0Pos[1] - 7] },
-                { id: 'label-q0', position: [q0Pos[0] - 7, q0Pos[1] + 10] }
+                { id: 'label-q0', position: [q0Pos[0] - 7, q0Pos[1] + 10] },
+                { id: 'label-p1', position: [eqPos[0] - 35, eqPos[1] - 7] },
+                { id: 'label-q1', position: [eqPos[0] - 7, eqPos[1] + 14] }
             ]
+        });
+    }
+
+    /**
+     * Set up mousedown / mousemove / mouseup drag on handle scatter points.
+     * mousedown on chart to detect handle click; mousemove/mouseup on document
+     * so drag continues smoothly even when cursor leaves the chart.
+     */
+    function setupDragEvents() {
+        if (!chart) return;
+        let dragging = null;  // 'd' or 's' when active
+
+        chart.on('mousedown', function (params) {
+            if (!handlesEnabled) return;
+            if (params.seriesId === 'handleD') dragging = 'd';
+            else if (params.seriesId === 'handleS') dragging = 's';
+            else return;
+            document.body.style.userSelect = 'none';
+            document.body.style.cursor = 'ew-resize';
+        });
+
+        document.addEventListener('mousemove', function (e) {
+            if (!dragging || !chart) return;
+            const rect = document.getElementById('echarts-chart').getBoundingClientRect();
+            const offsetX = e.clientX - rect.left;
+            if (dragging === 'd') {
+                dShift = offsetX - handleCenterPx[0];
+            } else {
+                sShift = offsetX - handleCenterPx[0];
+            }
+            updateCurvesFromShift();
+        });
+
+        document.addEventListener('mouseup', function () {
+            if (dragging) {
+                dragging = null;
+                document.body.style.userSelect = '';
+                document.body.style.cursor = '';
+            }
         });
     }
 
@@ -760,39 +727,31 @@
         const eqPointData = showEq ? [[qEq, pEq]] : [];
         const eqLineData = showEq ? [[0, pEq], [qEq, pEq], [qEq, 0]] : [];
 
-        // Update P1/Q1 labels AND curves AND group position in ONE setOption call
-        // to prevent group position reset
-        const graphicUpdates = [];
-        if (showEq) {
-            const eqPixel = dataToPixel(qEq, pEq);
-            graphicUpdates.push(
-                { id: 'label-p1', invisible: false, position: [eqPixel[0] - 35, eqPixel[1] - 7] },
-                { id: 'label-q1', invisible: false, position: [eqPixel[0] - 7, eqPixel[1] + 14] }
-            );
-        } else {
-            graphicUpdates.push(
-                { id: 'label-p1', invisible: true },
-                { id: 'label-q1', invisible: true }
-            );
-        }
-        // Preserve group positions to prevent reset during drag
-        graphicUpdates.push(
-            { id: 'handleDGroup', x: dShift, y: 0 },
-            { id: 'handleSGroup', x: sShift, y: 0 }
-        );
-
+        // Update series ONLY — no graphic (handles are scatter series now)
         chart.setOption({
             series: [
-                { /* D0 */ },
-                { /* S0 */ },
+                {}, {},
                 { id: 'lineD1', data: d1Data },
                 { id: 'lineS1', data: s1Data },
-                { /* E0 */ },
+                {},
                 { id: 'eqPoint', data: eqPointData },
-                { id: 'eqLines', data: eqLineData }
-            ],
-            graphic: graphicUpdates
+                { id: 'eqLines', data: eqLineData },
+                { id: 'handleD', data: [[5 + dShiftData, 5]] },
+                { id: 'handleS', data: [[5 + sShiftData, 5]] }
+            ]
         });
+
+        // Show/hide P1/Q1 labels via DOM manipulation
+        const p1El = findLabelEl('label-p1');
+        const q1El = findLabelEl('label-q1');
+        if (showEq) {
+            const eqPixel = dataToPixel(qEq, pEq);
+            if (p1El) { p1El.style.display = ''; p1El.setAttribute('x', eqPixel[0] - 35); p1El.setAttribute('y', eqPixel[1] - 7); }
+            if (q1El) { q1El.style.display = ''; q1El.setAttribute('x', eqPixel[0] - 7); q1El.setAttribute('y', eqPixel[1] + 14); }
+        } else {
+            if (p1El) p1El.style.display = 'none';
+            if (q1El) q1El.style.display = 'none';
+        }
     }
 
     /* ===== Reset Graph ===== */
@@ -809,23 +768,25 @@
 
         if (!chart) return;
 
-        // Reset handles, labels, and curves using direct setOption
+        // Reset curves and handles via series ONLY
         chart.setOption({
-            graphic: [
-                { id: 'handleDGroup', x: handleCenterPx[0], y: handleCenterPx[1] },
-                { id: 'handleSGroup', x: handleCenterPx[0], y: handleCenterPx[1] },
-                { id: 'label-p1', invisible: true },
-                { id: 'label-q1', invisible: true }
-            ],
             series: [
                 {}, {},
                 { id: 'lineD1', data: [[1, 9], [9, 1]] },
                 { id: 'lineS1', data: [[1, 1], [9, 9]] },
                 {},
                 { id: 'eqPoint', data: [] },
-                { id: 'eqLines', data: [] }
+                { id: 'eqLines', data: [] },
+                { id: 'handleD', data: [[5, 5]] },
+                { id: 'handleS', data: [[5, 5]] }
             ]
         });
+
+        // Hide P1/Q1 labels via DOM
+        const p1El = findLabelEl('label-p1');
+        const q1El = findLabelEl('label-q1');
+        if (p1El) p1El.style.display = 'none';
+        if (q1El) q1El.style.display = 'none';
     }
 
     /* ===== Quiz Logic ===== */
@@ -908,13 +869,7 @@
     }
 
     function setHandlesDraggable(enabled) {
-        if (!chart) return;
-        chart.setOption({
-            graphic: [
-                { id: 'handleDGroup', draggable: enabled },
-                { id: 'handleSGroup', draggable: enabled }
-            ]
-        });
+        handlesEnabled = enabled;
     }
 
     // Choice button handlers
