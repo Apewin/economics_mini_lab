@@ -3,341 +3,641 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Economics Lab: Optimized Price Controls (Classroom Max-Font Edition)</title>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <title>Price Controls</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <style>
-        /* 隐藏滚动条，强制自适应全屏 */
-        body, html { margin: 0; padding: 0; height: 100vh; width: 100vw; overflow: hidden; background-color: #eef2f5; font-family: 'Segoe UI', system-ui, sans-serif; }
-        
-        #app-wrapper { display: flex; height: 100%; padding: 20px; box-sizing: border-box; gap: 25px; }
-        
-        /* 左侧区域（图表 + 底部勾选框）占据更大比例 */
-        #left-col { flex: 2.2; background: white; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); display: flex; flex-direction: column; padding: 25px; box-sizing: border-box; }
-        
-        /* 图表容器，自动撑满剩余空间 */
-        #chart-container { flex-grow: 1; width: 100%; min-height: 0; position: relative; }
-        
-        /* 图表下方的控制行 - 字号加大 */
-        #chart-controls { display: flex; justify-content: center; align-items: center; gap: 35px; padding-top: 20px; border-top: 1px solid #eee; margin-top: 10px; }
-        
-        /* 右侧区域（仪表盘 + 控制面板）固定最大宽度 */
-        #right-col { flex: 1; max-width: 450px; min-width: 380px; background: white; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); display: flex; flex-direction: column; padding: 25px; box-sizing: border-box; overflow-y: auto; gap: 16px; }
-        
-        /* 标题字号加大 */
-        .panel-title { font-size: 22px; font-weight: 800; color: #212529; border-left: 5px solid #1971c2; padding-left: 12px; margin-bottom: 5px; }
-        
-        /* 优化的网格数据面板 - 字号加大 */
-        #status-indicator { padding: 10px; border-radius: 6px; text-align: center; font-weight: bold; font-size: 18px; }
-        .binding { background: #fff5f5; color: #c92a2a; border: 1px solid #ffa8a8; }
-        .non-binding { background: #e9f7ef; color: #2b8a3e; border: 1px solid #8ce99a; }
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Source+Sans+Pro:wght@400;600&display=swap');
 
-        .dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .welfare-grid { grid-template-columns: repeat(3, 1fr); border-top: 2px dashed #dee2e6; padding-top: 15px; margin-top: 5px; }
-        .stat-box { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; padding: 12px 5px; text-align: center; display: flex; flex-direction: column; gap: 4px; }
-        .stat-label { font-size: 13px; color: #6c757d; font-weight: 700; text-transform: uppercase; }
-        .stat-val { font-size: 22px; font-weight: bold; color: #212529; }
-        .highlight-box { border-color: #a5d8ff; background: #e7f5ff; }
-        .highlight-box .stat-label { color: #1971c2; }
-        .highlight-bm { border-color: #495057; background: #e9ecef; }
-        .cs-val { color: #1971c2; } .ps-val { color: #c92a2a; } .dwl-val { color: #f59f00; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* 控制滑块面板 - 字号加大 */
-        .control-section { background: #f8f9fa; padding: 15px 18px; border-radius: 8px; border: 1px solid #e9ecef; }
-        .control-row { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
-        .control-row:last-child { margin-bottom: 0; }
-        label { font-size: 16px; font-weight: 700; color: #495057; min-width: 120px; }
-        input[type="range"] { flex-grow: 1; cursor: pointer; height: 6px; }
-        .val-display { min-width: 45px; font-family: monospace; font-weight: bold; color: #1971c2; text-align: right; font-size: 17px; }
-        
-        .toggle-group { display: flex; gap: 20px; }
-        .toggle-item { display: flex; align-items: center; gap: 8px; font-size: 17px; cursor: pointer; font-weight: bold; color: #495057; }
-        .toggle-item input { cursor: pointer; width: 18px; height: 18px; }
+        body {
+            background: #f7f7f5;
+            font-family: 'Source Sans Pro', 'Segoe UI', system-ui, sans-serif;
+            color: #333;
+            padding: 24px 16px;
+            min-height: 100vh;
+        }
 
-        /* SVG 样式大字号设定 */
-        .tick text { font-size: 16px; fill: #212529; font-weight: bold; }
-        .axis-label { font-size: 20px; font-weight: bold; fill: #212529; }
+        .container {
+            max-width: 880px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 1px solid #d4d4d0;
+            padding: 28px 32px 20px;
+        }
+
+        h2 {
+            font-family: 'Merriweather', Georgia, 'Times New Roman', serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a2a3a;
+            border-bottom: 2px solid #1a2a3a;
+            padding-bottom: 8px;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #777;
+            margin-bottom: 16px;
+            margin-top: 6px;
+        }
+
+        #chart-area {
+            width: 100%;
+            height: 420px;
+        }
+
+        /* ---- Controls ---- */
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px 28px;
+            align-items: center;
+            padding: 14px 0 10px;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 10px;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-group label.ctrl-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            white-space: nowrap;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .radio-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .radio-group input[type="radio"] {
+            accent-color: #1a5276;
+            cursor: pointer;
+        }
+
+        input[type="range"] {
+            width: 110px;
+            height: 4px;
+            cursor: pointer;
+            accent-color: #1a5276;
+        }
+
+        .val-badge {
+            font-family: 'Source Sans Pro', monospace;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a5276;
+            min-width: 36px;
+            text-align: right;
+        }
+
+        .checkboxes {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .checkboxes label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .checkboxes input[type="checkbox"] {
+            accent-color: #1a5276;
+            cursor: pointer;
+            width: 14px;
+            height: 14px;
+        }
+
+        .swatch {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+        }
+
+        /* ---- Dashboard ---- */
+        .dashboard {
+            border-top: 1px solid #e0e0e0;
+            padding-top: 12px;
+            margin-top: 6px;
+        }
+
+        .status-bar {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 700;
+            padding: 7px 0;
+            margin-bottom: 10px;
+        }
+
+        .status-bar.binding {
+            color: #a12525;
+            background: #fdf0f0;
+            border: 1px solid #e8c0c0;
+        }
+
+        .status-bar.non-binding {
+            color: #1a6b3a;
+            background: #eef8f2;
+            border: 1px solid #b8dcc8;
+        }
+
+        .dash-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .dash-cell {
+            text-align: center;
+            padding: 8px 4px;
+            border: 1px solid #e8e8e8;
+            background: #fafafa;
+        }
+
+        .dash-cell .lbl {
+            font-size: 11px;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .dash-cell .val {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a2a3a;
+            margin-top: 2px;
+        }
+
+        .dash-cell.cs-cell .val { color: #1a5276; }
+        .dash-cell.ps-cell .val { color: #b85c38; }
+        .dash-cell.dwl-cell .val { color: #c03030; }
+        .dash-cell.highlight {
+            border-color: #b8c8d8;
+            background: #eef4fa;
+        }
+        .dash-cell.highlight .lbl { color: #1a5276; }
+        .dash-cell.bm-cell {
+            border-color: #aaa;
+            background: #f0f0f0;
+        }
+
+        .source {
+            font-size: 10px;
+            color: #888;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 8px;
+            margin-top: 14px;
+        }
     </style>
 </head>
 <body>
 
-<div id="app-wrapper">
-    <!-- 左边：大图表区域 + 底部图例复选框 -->
-    <div id="left-col">
-        <div id="chart-container"></div>
-        <div id="chart-controls">
-            <label class="toggle-item"><input type="checkbox" id="chk-cs" checked> <span style="color:#4dabf7; font-size: 22px;">■</span> CS</label>
-            <label class="toggle-item"><input type="checkbox" id="chk-ps" checked> <span style="color:#ff8787; font-size: 22px;">■</span> PS</label>
-            <label class="toggle-item"><input type="checkbox" id="chk-dwl" checked> <span style="color:#fab005; font-size: 22px;">■</span> DWL</label>
-            <label class="toggle-item"><input type="checkbox" id="chk-gap" checked> <span style="color:#c92a2a; font-size: 22px;">■</span> Shortage/Surplus</label>
+<div class="container">
+    <h2>Price Controls: Ceiling &amp; Floor</h2>
+    <div class="subtitle">Interactive analysis of binding and non-binding price regulations</div>
+
+    <div id="chart-area"></div>
+
+    <div class="controls">
+        <div class="control-group">
+            <label class="ctrl-label">Policy:</label>
+            <div class="radio-group">
+                <label><input type="radio" name="policy" value="ceiling" checked> Ceiling</label>
+                <label><input type="radio" name="policy" value="floor"> Floor</label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="ctrl-label" for="price-slider">Preg:</label>
+            <input type="range" id="price-slider" min="10" max="90" value="35">
+            <span class="val-badge" id="price-val">$35</span>
+        </div>
+        <div class="control-group">
+            <label class="ctrl-label" for="ped-slider">Demand Ed:</label>
+            <input type="range" id="ped-slider" min="0.4" max="2.5" step="0.1" value="1.0">
+            <span class="val-badge" id="ped-val">1.0</span>
+        </div>
+        <div class="control-group">
+            <label class="ctrl-label" for="pes-slider">Supply Es:</label>
+            <input type="range" id="pes-slider" min="0.4" max="2.5" step="0.1" value="1.0">
+            <span class="val-badge" id="pes-val">1.0</span>
+        </div>
+        <div class="checkboxes">
+            <label><input type="checkbox" id="chk-cs" checked> <span class="swatch" style="background:rgba(26,82,118,0.3)"></span> CS</label>
+            <label><input type="checkbox" id="chk-ps" checked> <span class="swatch" style="background:rgba(184,92,56,0.3)"></span> PS</label>
+            <label><input type="checkbox" id="chk-dwl" checked> <span class="swatch" style="background:rgba(200,60,60,0.4)"></span> DWL</label>
+            <label><input type="checkbox" id="chk-gap" checked> <span class="swatch" style="background:#c03030"></span> Shortage / Surplus</label>
         </div>
     </div>
 
-    <!-- 右边：仪表盘 + 调节滑块 -->
-    <div id="right-col">
-        
-        <!-- 结果面板 -->
-        <div class="panel-title">Market Dashboard</div>
-        <div id="status-indicator">Initializing...</div>
-
-        <div class="dashboard-grid">
-            <div class="stat-box"><span class="stat-label">Eq. Price (Pf)</span><span class="stat-val" id="res-pe">-</span></div>
-            <div class="stat-box"><span class="stat-label">Eq. Qty (Qf)</span><span class="stat-val" id="res-qe">-</span></div>
-            <div class="stat-box"><span class="stat-label">Qty Demanded</span><span class="stat-val" id="res-qd">-</span></div>
-            <div class="stat-box"><span class="stat-label">Qty Supplied</span><span class="stat-val" id="res-qs">-</span></div>
-            
-            <div class="stat-box highlight-box"><span class="stat-label">Transacted (Qt)</span><span class="stat-val" id="res-qt">-</span></div>
-            <div class="stat-box highlight-bm" id="black-market-box" style="display:none;"><span class="stat-label" style="color:#212529">Black Market (Pbm)</span><span class="stat-val" id="res-pbm">-</span></div>
+    <div class="dashboard">
+        <div class="status-bar" id="status-indicator">Initializing…</div>
+        <div class="dash-grid">
+            <div class="dash-cell"><div class="lbl">Eq. Price (Pf)</div><div class="val" id="res-pe">—</div></div>
+            <div class="dash-cell"><div class="lbl">Eq. Qty (Qf)</div><div class="val" id="res-qe">—</div></div>
+            <div class="dash-cell highlight"><div class="lbl">Transacted (Qt)</div><div class="val" id="res-qt">—</div></div>
+            <div class="dash-cell"><div class="lbl">Qty Demanded</div><div class="val" id="res-qd">—</div></div>
+            <div class="dash-cell"><div class="lbl">Qty Supplied</div><div class="val" id="res-qs">—</div></div>
+            <div class="dash-cell bm-cell" id="black-market-box" style="display:none"><div class="lbl">Black Market (Pbm)</div><div class="val" id="res-pbm">—</div></div>
+            <div class="dash-cell cs-cell"><div class="lbl">CS</div><div class="val" id="res-cs">—</div></div>
+            <div class="dash-cell ps-cell"><div class="lbl">PS</div><div class="val" id="res-ps">—</div></div>
+            <div class="dash-cell dwl-cell"><div class="lbl">DWL</div><div class="val" id="res-dwl">—</div></div>
         </div>
-
-        <div class="dashboard-grid welfare-grid">
-            <div class="stat-box"><span class="stat-label">CS</span><span class="stat-val cs-val" id="res-cs">-</span></div>
-            <div class="stat-box"><span class="stat-label">PS</span><span class="stat-val ps-val" id="res-ps">-</span></div>
-            <div class="stat-box"><span class="stat-label">DWL</span><span class="stat-val dwl-val" id="res-dwl">-</span></div>
-        </div>
-
-        <hr style="border:0; border-top: 1px solid #e9ecef; margin: 5px 0;">
-
-        <!-- 调节面板 -->
-        <div class="panel-title">Control Panel</div>
-        
-        <div class="control-section">
-            <div class="control-row">
-                <label>Policy Type:</label>
-                <div class="toggle-group">
-                    <label class="toggle-item"><input type="radio" name="policy" value="ceiling" checked style="font-weight:normal"> Ceiling</label>
-                    <label class="toggle-item"><input type="radio" name="policy" value="floor" style="font-weight:normal"> Floor</label>
-                </div>
-            </div>
-            <div class="control-row">
-                <label>Regulated Price:</label>
-                <input type="range" id="price-slider" min="10" max="90" value="35">
-                <span class="val-display" id="price-val">$35</span>
-            </div>
-        </div>
-
-        <div class="control-section">
-            <div class="control-row">
-                <label>Demand Ed:</label>
-                <input type="range" id="ped-slider" min="0.4" max="2.5" step="0.1" value="1.0">
-                <span class="val-display" id="ped-val">1.0</span>
-            </div>
-            <div class="control-row">
-                <label>Supply Es:</label>
-                <input type="range" id="pes-slider" min="0.4" max="2.5" step="0.1" value="1.0">
-                <span class="val-display" id="pes-val">1.0</span>
-            </div>
-        </div>
-
     </div>
+
+    <div class="source"><strong>Source:</strong> Standard microeconomic model</div>
 </div>
 
 <script>
-    let state = {};
-    const margin = {top: 40, right: 65, bottom: 50, left: 75};
-    
-    const svg = d3.select("#chart-container").append("svg");
-    const chartG = svg.append("g");
-    
-    const xAxisGroup = chartG.append("g");
-    const yAxisGroup = chartG.append("g");
-    
-    const xLabel = chartG.append("text").attr("class", "axis-label").text("Q");
-    const yLabel = chartG.append("text").attr("class", "axis-label").attr("text-anchor", "middle").text("P");
+(function () {
+    'use strict';
 
-    // 图层清晰分离
-    const areaLayer = chartG.append("g");  
-    const guideLayer = chartG.append("g"); 
-    const lineLayer = chartG.append("g");  
-    const topLayer = chartG.append("g");   
+    /* ── Color palette ── */
+    const C = {
+        deepBlue:   '#1a5276',
+        ochre:      '#b85c38',
+        green:      '#2e8b57',
+        darkGreen:  '#1a6b3a',
+        gray:       '#bbb',
+        titleText:  '#1a2a3a',
+        gridLine:   '#e8e8e8',
+        cs:         'rgba(26,82,118,0.3)',
+        ps:         'rgba(184,92,56,0.3)',
+        dwl:        'rgba(200,60,60,0.4)',
+    };
 
-    const x = d3.scaleLinear().domain([0, 100]);
-    const y = d3.scaleLinear().domain([0, 100]);
+    /* ── ECharts init ── */
+    const myChart = echarts.init(document.getElementById('chart-area'));
 
-    function calcAndUpdateData() {
-        state.policy = document.querySelector('input[name="policy"]:checked').value;
-        state.Preg = +document.getElementById('price-slider').value;
-        state.ed = +document.getElementById('ped-slider').value;
-        state.es = +document.getElementById('pes-slider').value;
-        state.b = 1 / state.ed; 
-        state.d = 1 / state.es; 
-        
-        state.Qe = 100 / (state.b + state.d);
-        state.Pe = state.d * state.Qe;
+    const N = 100;   // data points per curve
 
-        state.Qd_reg = (100 - state.Preg) / state.b;
-        state.Qs_reg = state.Preg / state.d;
-        state.isBinding = (state.policy === 'ceiling' && state.Preg < state.Pe) || (state.policy === 'floor' && state.Preg > state.Pe);
-        
-        state.Pbm = null;
+    /* ── Demand / Supply generators ── */
+    function demandData(b) {
+        const pts = [];
+        const qMax = 100 / b;
+        for (let i = 0; i <= N; i++) {
+            const q = (qMax / N) * i;
+            pts.push([q, 100 - b * q]);
+        }
+        return pts;
+    }
 
-        if (state.isBinding) {
-            state.Qt = Math.min(state.Qd_reg, state.Qs_reg);
-            state.finalCS = (100 - state.Preg) * state.Qt - 0.5 * state.b * state.Qt * state.Qt;
-            state.finalPS = state.Preg * state.Qt - 0.5 * state.d * state.Qt * state.Qt;
-            const Pd_at_Qt = 100 - state.b * state.Qt;
-            // 【修复点】：之前的代码这里漏写了 state. 前缀，导致报错终止运行
-            const Ps_at_Qt = state.d * state.Qt; 
-            state.finalDWL = 0.5 * (Pd_at_Qt - Ps_at_Qt) * (state.Qe - state.Qt);
-            if (state.policy === 'ceiling') state.Pbm = 100 - state.b * state.Qt;
-        } else {
-            state.Qt = state.Qe;
-            state.finalCS = 0.5 * (100 - state.Pe) * state.Qe;
-            state.finalPS = 0.5 * state.Pe * state.Qe;
-            state.finalDWL = 0;
+    function supplyData(d) {
+        const pts = [];
+        const qMax = 100 / d;
+        for (let i = 0; i <= N; i++) {
+            const q = (qMax / N) * i;
+            pts.push([q, d * q]);
+        }
+        return pts;
+    }
+
+    /* ── Build base option (curves, axes, grid) ── */
+    function baseOption(b, d) {
+        return {
+            animation: false,
+            animationDurationUpdate: 0,
+            grid: { left: 60, right: 80, top: 40, bottom: 50, containLabel: false },
+            xAxis: {
+                type: 'value', name: 'Q', nameLocation: 'end', nameGap: 8,
+                nameTextStyle: { fontSize: 14, fontWeight: 'bold', color: '#444' },
+                min: 0, max: 100,
+                axisLine: { lineStyle: { color: '#888' } },
+                splitLine: { lineStyle: { color: C.gridLine } },
+                axisLabel: { fontSize: 12, color: '#555' },
+            },
+            yAxis: {
+                type: 'value', name: 'P', nameLocation: 'end', nameGap: 8,
+                nameTextStyle: { fontSize: 14, fontWeight: 'bold', color: '#444' },
+                min: 0, max: 100,
+                axisLine: { lineStyle: { color: '#888' } },
+                splitLine: { lineStyle: { color: C.gridLine } },
+                axisLabel: { fontSize: 12, color: '#555' },
+            },
+            series: [
+                {
+                    name: 'D',
+                    type: 'line',
+                    data: demandData(b),
+                    symbol: 'none',
+                    lineStyle: { color: C.deepBlue, width: 2.5 },
+                    endLabel: { show: true, formatter: '{a}', distance: 8, fontSize: 14, fontWeight: 'bold', color: C.deepBlue },
+                    z: 10,
+                },
+                {
+                    name: 'S',
+                    type: 'line',
+                    data: supplyData(d),
+                    symbol: 'none',
+                    lineStyle: { color: C.ochre, width: 2.5 },
+                    endLabel: { show: true, formatter: '{a}', distance: 8, fontSize: 14, fontWeight: 'bold', color: C.ochre },
+                    z: 10,
+                },
+            ],
+        };
+    }
+
+    /* ── Helper: data coords → pixel coords ── */
+    function toPixel(pts) {
+        return pts.map(function (p) {
+            return myChart.convertToPixel({ gridIndex: 0 }, p);
+        }).filter(function (p) { return p && !isNaN(p[0]) && !isNaN(p[1]); });
+    }
+
+    /* ── Render everything ── */
+    function render(s) {
+        var b = s.b, d = s.d, Preg = s.Preg, Qe = s.Qe, Pe = s.Pe, Qt = s.Qt;
+        var isBinding = s.isBinding, policy = s.policy;
+        var Pbm = s.Pbm, Qd_reg = s.Qd_reg, Qs_reg = s.Qs_reg;
+
+        /* Step 1: curves */
+        var opt = baseOption(b, d);
+
+        /* Equilibrium dashed reference lines (Pf, Qf) via markLine */
+        opt.series[0].markLine = {
+            silent: true,
+            symbol: 'none',
+            lineStyle: { color: C.green, type: 'dashed', width: 1.2, opacity: 0.6 },
+            label: { show: true, fontSize: 13, fontWeight: 'bold', color: C.green },
+            data: [
+                { yAxis: Pe, name: 'Pf', label: { formatter: 'Pf', position: 'insideStartTop', offset: [0, -4] } },
+                { xAxis: Qe, name: 'Qf', label: { formatter: 'Qf', position: 'insideEndTop', offset: [4, 0] } },
+            ],
+        };
+
+        /* Equilibrium scatter point */
+        opt.series.push({
+            name: 'Eq',
+            type: 'scatter',
+            data: [[Qe, Pe]],
+            symbolSize: 12,
+            itemStyle: { color: C.darkGreen },
+            z: 20,
+        });
+
+        /* Preg horizontal dashed line */
+        opt.series.push({
+            name: 'Preg',
+            type: 'line',
+            data: [[0, Preg], [100, Preg]],
+            symbol: 'none',
+            lineStyle: { color: '#999', type: 'dashed', width: 1.8 },
+            z: 5,
+            endLabel: { show: true, formatter: 'Preg', distance: 8, fontSize: 13, fontWeight: 'bold', color: '#666' },
+        });
+
+        /* Qt vertical reference line when binding */
+        if (isBinding) {
+            opt.series.push({
+                name: 'Qt',
+                type: 'line',
+                data: [[Qt, 0], [Qt, 100]],
+                symbol: 'none',
+                lineStyle: { color: '#ccc', width: 1.2 },
+                z: 4,
+                markPoint: {
+                    data: [{ coord: [Qt, 0], value: 'Qt', symbol: 'none',
+                        label: { show: true, position: 'bottom', fontSize: 13, fontWeight: 'bold', color: '#888' } }]
+                },
+            });
+
+            /* Black market price line (ceiling only) */
+            if (policy === 'ceiling' && Pbm !== null) {
+                opt.series.push({
+                    name: 'Pbm',
+                    type: 'line',
+                    data: [[0, Pbm], [Qt, Pbm]],
+                    symbol: 'none',
+                    lineStyle: { color: '#333', type: 'dashed', width: 1.4 },
+                    z: 15,
+                    endLabel: { show: true, formatter: 'Pbm', distance: 8, fontSize: 13, fontWeight: 'bold', color: '#333' },
+                });
+            }
         }
 
-        // 更新控制面板和数据面板
-        document.getElementById('price-val').innerText = `$${state.Preg}`;
-        document.getElementById('ped-val').innerText = state.ed.toFixed(1);
-        document.getElementById('pes-val').innerText = state.es.toFixed(1);
-        
-        document.getElementById('res-pe').innerText = `$${state.Pe.toFixed(1)}`;
-        document.getElementById('res-qe').innerText = state.Qe.toFixed(1);
-        document.getElementById('res-qd').innerText = state.Qd_reg.toFixed(1);
-        document.getElementById('res-qs').innerText = state.Qs_reg.toFixed(1);
-        document.getElementById('res-qt').innerText = state.Qt.toFixed(1);
-        document.getElementById('res-cs').innerText = `$${Math.max(0, state.finalCS).toFixed(1)}`;
-        document.getElementById('res-ps').innerText = `$${Math.max(0, state.finalPS).toFixed(1)}`;
-        document.getElementById('res-dwl').innerText = `$${state.finalDWL.toFixed(1)}`;
-        
-        const statusEl = document.getElementById('status-indicator');
-        statusEl.className = state.isBinding ? 'binding' : 'non-binding';
-        statusEl.innerText = state.isBinding ? `Binding ${state.policy === 'ceiling' ? 'Ceiling' : 'Floor'}` : "Non-binding (Equilibrium)";
-        
-        const bmBox = document.getElementById('black-market-box');
-        if (state.Pbm) {
-            bmBox.style.display = 'flex';
-            document.getElementById('res-pbm').innerText = `$${state.Pbm.toFixed(1)}`;
+        myChart.setOption(opt, true);
+
+        /* Step 2: polygons via graphic */
+        var elems = [];
+
+        /* CS polygon */
+        if (document.getElementById('chk-cs').checked) {
+            var csPts;
+            if (isBinding) {
+                csPts = toPixel([[0, Preg], [0, 100], [Qt, 100 - b * Qt], [Qt, Preg]]);
+            } else {
+                csPts = toPixel([[0, Pe], [0, 100], [Qe, Pe]]);
+            }
+            if (csPts.length >= 3) {
+                elems.push({ type: 'polygon', shape: { points: csPts }, style: { fill: C.cs }, z: 1, silent: true });
+            }
+        }
+
+        /* PS polygon */
+        if (document.getElementById('chk-ps').checked) {
+            var psPts;
+            if (isBinding) {
+                psPts = toPixel([[0, 0], [0, Preg], [Qt, Preg], [Qt, d * Qt]]);
+            } else {
+                psPts = toPixel([[0, 0], [0, Pe], [Qe, Pe]]);
+            }
+            if (psPts.length >= 3) {
+                elems.push({ type: 'polygon', shape: { points: psPts }, style: { fill: C.ps }, z: 1, silent: true });
+            }
+        }
+
+        /* DWL polygon */
+        if (isBinding && document.getElementById('chk-dwl').checked) {
+            var dwlPts = toPixel([[Qt, 100 - b * Qt], [Qe, Pe], [Qt, d * Qt]]);
+            if (dwlPts.length >= 3) {
+                elems.push({ type: 'polygon', shape: { points: dwlPts }, style: { fill: C.dwl }, z: 1, silent: true });
+            }
+        }
+
+        /* Shortage / Surplus arrow */
+        if (isBinding && document.getElementById('chk-gap').checked) {
+            var qMin = Math.min(Qd_reg, Qs_reg);
+            var qMax = Math.max(Qd_reg, Qs_reg);
+            var isCeiling = policy === 'ceiling';
+            var gapColor = isCeiling ? '#c03030' : C.darkGreen;
+            var gapLabel = isCeiling ? 'Shortage' : 'Surplus';
+            var gapValue = (qMax - qMin).toFixed(1);
+
+            var p1 = myChart.convertToPixel({ gridIndex: 0 }, [qMin, Preg]);
+            var p2 = myChart.convertToPixel({ gridIndex: 0 }, [qMax, Preg]);
+            if (p1 && p2) {
+                /* Arrow line */
+                elems.push({
+                    type: 'line',
+                    shape: { x1: p1[0], y1: p1[1], x2: p2[0], y2: p2[1] },
+                    style: { stroke: gapColor, lineWidth: 3 },
+                    z: 200,
+                    silent: true,
+                });
+                /* Arrowhead */
+                var dx = p2[0] - p1[0];
+                var dir = dx > 0 ? 1 : -1;
+                elems.push({
+                    type: 'polygon',
+                    shape: { points: [
+                        [p2[0], p2[1]],
+                        [p2[0] - dir * 10, p2[1] - 5],
+                        [p2[0] - dir * 10, p2[1] + 5],
+                    ]},
+                    style: { fill: gapColor },
+                    z: 200,
+                    silent: true,
+                });
+                /* Label */
+                var midX = (p1[0] + p2[0]) / 2;
+                var midY = isCeiling ? p1[1] + 18 : p1[1] - 10;
+                elems.push({
+                    type: 'text',
+                    style: {
+                        text: gapLabel + ': ' + gapValue,
+                        x: midX,
+                        y: midY,
+                        fill: gapColor,
+                        fontSize: 14,
+                        fontWeight: 'bold',
+                        textAlign: 'center',
+                        textVerticalAlign: 'middle',
+                    },
+                    z: 200,
+                    silent: true,
+                });
+            }
+        }
+
+        /* Pbm dot on y-axis when ceiling binding */
+        if (isBinding && policy === 'ceiling' && Pbm !== null && document.getElementById('chk-gap').checked) {
+            var pbmP = myChart.convertToPixel({ gridIndex: 0 }, [0, Pbm]);
+            if (pbmP) {
+                elems.push({
+                    type: 'circle',
+                    shape: { cx: pbmP[0], cy: pbmP[1], r: 4 },
+                    style: { fill: '#333' },
+                    z: 200,
+                    silent: true,
+                });
+            }
+        }
+
+        myChart.setOption({ graphic: { elements: elems } }, { replaceMerge: ['graphic'] });
+    }
+
+    /* ── Update dashboard text ── */
+    function updateDashboard(s) {
+        document.getElementById('price-val').textContent = '$' + s.Preg;
+        document.getElementById('ped-val').textContent = s.ed.toFixed(1);
+        document.getElementById('pes-val').textContent = s.es.toFixed(1);
+
+        document.getElementById('res-pe').textContent = '$' + s.Pe.toFixed(1);
+        document.getElementById('res-qe').textContent = s.Qe.toFixed(1);
+        document.getElementById('res-qd').textContent = s.Qd_reg.toFixed(1);
+        document.getElementById('res-qs').textContent = s.Qs_reg.toFixed(1);
+        document.getElementById('res-qt').textContent = s.Qt.toFixed(1);
+        document.getElementById('res-cs').textContent = '$' + Math.max(0, s.finalCS).toFixed(1);
+        document.getElementById('res-ps').textContent = '$' + Math.max(0, s.finalPS).toFixed(1);
+        document.getElementById('res-dwl').textContent = '$' + s.finalDWL.toFixed(1);
+
+        var statusEl = document.getElementById('status-indicator');
+        if (s.isBinding) {
+            statusEl.className = 'status-bar binding';
+            statusEl.textContent = 'Binding ' + (s.policy === 'ceiling' ? 'Ceiling' : 'Floor');
+        } else {
+            statusEl.className = 'status-bar non-binding';
+            statusEl.textContent = 'Non-binding (Equilibrium)';
+        }
+
+        var bmBox = document.getElementById('black-market-box');
+        if (s.Pbm !== null) {
+            bmBox.style.display = '';
+            document.getElementById('res-pbm').textContent = '$' + s.Pbm.toFixed(1);
         } else {
             bmBox.style.display = 'none';
         }
-
-        drawChart();
     }
 
-    function drawChart() {
-        const container = document.getElementById('chart-container');
-        const width = container.clientWidth;
-        const height = container.clientHeight;
-        
-        if (width === 0 || height === 0) return; 
+    /* ── Main calculation ── */
+    function calc() {
+        var policy = document.querySelector('input[name="policy"]:checked').value;
+        var Preg = +document.getElementById('price-slider').value;
+        var ed = +document.getElementById('ped-slider').value;
+        var es = +document.getElementById('pes-slider').value;
+        var b = 1 / ed;
+        var d = 1 / es;
 
-        const innerW = width - margin.left - margin.right;
-        const innerH = height - margin.top - margin.bottom;
-
-        svg.attr("width", width).attr("height", height);
-        chartG.attr("transform", `translate(${margin.left},${margin.top})`);
-
-        x.range([0, innerW]);
-        y.range([innerH, 0]);
-
-        // 渲染大字号坐标轴
-        xAxisGroup.attr("transform", `translate(0,${innerH})`).call(d3.axisBottom(x).ticks(10));
-        yAxisGroup.call(d3.axisLeft(y).ticks(10));
-
-        // 调整轴名标签位置
-        xLabel.attr("x", innerW + 20).attr("y", innerH + 5).attr("text-anchor", "start");
-        yLabel.attr("x", 0).attr("y", -25);
-
-        // 清空重绘
-        areaLayer.selectAll("*").remove();
-        guideLayer.selectAll("*").remove();
-        lineLayer.selectAll("*").remove();
-        topLayer.selectAll("*").remove();
-
-        const {b, d, Preg, Qe, Pe, Qt, Pbm, isBinding, policy, Qd_reg, Qs_reg} = state;
-
-        // 1. 供需曲线
-        lineLayer.append("line").attr("x1", x(0)).attr("y1", y(100)).attr("x2", x(100/b)).attr("y2", y(0)).attr("stroke", "#1c7ed6").attr("stroke-width", 4);
-        lineLayer.append("line").attr("x1", x(0)).attr("y1", y(0)).attr("x2", x(100/d)).attr("y2", y(100)).attr("stroke", "#e03131").attr("stroke-width", 4);
-        
-        // 大字号 D 和 S 标签 (20px)
-        let D_x = 95; let D_y = 100 - b * D_x;
-        if (D_y < 4) { D_y = 4; D_x = (100 - D_y) / b; }
-        lineLayer.append("text").attr("x", x(D_x) + 10).attr("y", y(D_y) + 6).attr("fill", "#1c7ed6").style("font-size", "20px").style("font-weight", "bold").text("D");
-
-        let S_x = 95; let S_y = d * S_x;
-        if (S_y > 96) { S_y = 96; S_x = S_y / d; }
-        lineLayer.append("text").attr("x", x(S_x) + 10).attr("y", y(S_y) + 6).attr("fill", "#e03131").style("font-size", "20px").style("font-weight", "bold").text("S");
-
-        // 2. 均衡价格与数量标签加大 (15px)
-        guideLayer.append("line").attr("x1", x(Qe)).attr("y1", y(Pe)).attr("x2", x(Qe)).attr("y2", y(0)).attr("stroke", "#2b8a3e").attr("stroke-dasharray", "3,2").attr("opacity", 0.6);
-        guideLayer.append("line").attr("x1", x(Qe)).attr("y1", y(Pe)).attr("x2", x(0)).attr("y2", y(Pe)).attr("stroke", "#2b8a3e").attr("stroke-dasharray", "3,2").attr("opacity", 0.6);
-        guideLayer.append("text").attr("x", x(Qe)).attr("y", innerH + 25).attr("text-anchor", "middle").attr("fill", "#2b8a3e").style("font-size","15px").style("font-weight","bold").text("Qf");
-        guideLayer.append("text").attr("x", -45).attr("y", y(Pe) + 5).attr("fill", "#2b8a3e").style("font-size","15px").style("font-weight","bold").text("Pf");
-
-        // 3. 管制价格 Preg
-        lineLayer.append("line").attr("x1", 0).attr("x2", innerW).attr("y1", y(Preg)).attr("y2", y(Preg)).attr("stroke", "#444").attr("stroke-width", 2.5).attr("stroke-dasharray", "6,3");
-        guideLayer.append("text").attr("x", -50).attr("y", y(Preg) + 5).attr("fill", "#444").style("font-weight","bold").style("font-size","15px").text("Preg");
+        var Qe = 100 / (b + d);
+        var Pe = d * Qe;
+        var Qd_reg = (100 - Preg) / b;
+        var Qs_reg = Preg / d;
+        var isBinding = (policy === 'ceiling' && Preg < Pe) || (policy === 'floor' && Preg > Pe);
+        var Pbm = null;
+        var Qt, finalCS, finalPS, finalDWL;
 
         if (isBinding) {
-            // 交易量 Qt 辅助线
-            guideLayer.append("line").attr("x1", x(Qt)).attr("y1", y(Preg)).attr("x2", x(Qt)).attr("y2", y(0)).attr("stroke", "#888").attr("stroke-width", 1.5);
-            guideLayer.append("text").attr("x", x(Qt)).attr("y", innerH + 25).attr("text-anchor", "middle").attr("fill", "#1971c2").style("font-size","15px").style("font-weight","bold").text("Qt");
-
-            // 黑市价格 Pbm
-            if (Pbm) {
-                topLayer.append("line").attr("x1", x(Qt)).attr("y1", y(Pbm)).attr("x2", x(0)).attr("y2", y(Pbm)).attr("stroke", "#000").attr("stroke-dasharray", "3,3").attr("opacity", 0.8);
-                topLayer.append("circle").attr("cx", x(Qt)).attr("cy", y(Pbm)).attr("r", 5).attr("fill", "#000");
-                topLayer.append("text").attr("x", -50).attr("y", y(Pbm) + 5).attr("fill", "#000").style("font-weight","bold").style("font-size","15px").text("Pbm");
-            }
-            
-            // 4. Shortage/Surplus (置于最顶层的 topLayer 渲染，避免被遮挡)
-            if (document.getElementById('chk-gap').checked) {
-                const qMin = Math.min(Qd_reg, Qs_reg);
-                const qMax = Math.max(Qd_reg, Qs_reg);
-                const isCeiling = policy === 'ceiling';
-                const gapColor = isCeiling ? "#c92a2a" : "#2b8a3e"; 
-                const gapValue = (qMax - qMin).toFixed(1);
-
-                // 加粗虚线与端点
-                topLayer.append("line")
-                    .attr("x1", x(qMin)).attr("y1", y(Preg))
-                    .attr("x2", x(qMax)).attr("y2", y(Preg))
-                    .attr("stroke", gapColor).attr("stroke-width", 4.5).attr("stroke-dasharray", "5,2");
-
-                topLayer.append("circle").attr("cx", x(qMin)).attr("cy", y(Preg)).attr("r", 6).attr("fill", gapColor);
-                topLayer.append("circle").attr("cx", x(qMax)).attr("cy", y(Preg)).attr("r", 6).attr("fill", gapColor);
-                
-                // 提示文字加大 (18px)
-                topLayer.append("text")
-                    .attr("x", x((qMin + qMax) / 2))
-                    .attr("y", isCeiling ? y(Preg) + 24 : y(Preg) - 14)
-                    .attr("text-anchor", "middle").attr("fill", gapColor)
-                    .style("font-size", "18px").style("font-weight", "bold")
-                    .text(`${isCeiling ? "Shortage" : "Surplus"}: ${gapValue}`);
-            }
-
-            // 5. 福利填充色块
-            if (document.getElementById('chk-cs').checked) {
-                const csPoints = [[0, Preg], [0, 100], [Qt, 100-b*Qt], [Qt, Preg]];
-                areaLayer.append("polygon").attr("points", csPoints.map(p => [x(p[0]), y(p[1])].join(",")).join(" ")).attr("fill", "#4dabf7").attr("opacity", 0.4);
-            }
-            if (document.getElementById('chk-ps').checked) {
-                const psPoints = [[0, Preg], [Qt, Preg], [Qt, d*Qt], [0, 0]];
-                areaLayer.append("polygon").attr("points", psPoints.map(p => [x(p[0]), y(p[1])].join(",")).join(" ")).attr("fill", "#ff8787").attr("opacity", 0.4);
-            }
-            if (document.getElementById('chk-dwl').checked) {
-                const dwlPoints = [[Qt, 100-b*Qt], [Qe, Pe], [Qt, d*Qt]];
-                areaLayer.append("polygon").attr("points", dwlPoints.map(p => [x(p[0]), y(p[1])].join(",")).join(" ")).attr("fill", "#fab005").attr("opacity", 0.6);
-            }
+            Qt = Math.min(Qd_reg, Qs_reg);
+            finalCS = (100 - Preg) * Qt - 0.5 * b * Qt * Qt;
+            finalPS = Preg * Qt - 0.5 * d * Qt * Qt;
+            var Pd_at_Qt = 100 - b * Qt;
+            var Ps_at_Qt = d * Qt;
+            finalDWL = 0.5 * (Pd_at_Qt - Ps_at_Qt) * (Qe - Qt);
+            if (policy === 'ceiling') Pbm = Pd_at_Qt;
         } else {
-            // Non-binding 状态下的 CS/PS 填充
-            if (document.getElementById('chk-cs').checked) {
-                areaLayer.append("polygon").attr("points", [[x(0),y(Pe)], [x(0),y(100)], [x(Qe),y(Pe)]].join(" ")).attr("fill", "#4dabf7").attr("opacity", 0.3);
-            }
-            if (document.getElementById('chk-ps').checked) {
-                areaLayer.append("polygon").attr("points", [[x(0),y(Pe)], [x(Qe),y(Pe)], [x(0),y(0)]].join(" ")).attr("fill", "#ff8787").attr("opacity", 0.3);
-            }
+            Qt = Qe;
+            finalCS = 0.5 * (100 - Pe) * Qe;
+            finalPS = 0.5 * Pe * Qe;
+            finalDWL = 0;
         }
+
+        var s = {
+            policy: policy, Preg: Preg, ed: ed, es: es,
+            b: b, d: d, Qe: Qe, Pe: Pe,
+            Qd_reg: Qd_reg, Qs_reg: Qs_reg,
+            isBinding: isBinding, Qt: Qt, Pbm: Pbm,
+            finalCS: finalCS, finalPS: finalPS, finalDWL: finalDWL,
+        };
+
+        updateDashboard(s);
+        render(s);
     }
 
-    // 绑定事件
-    d3.selectAll("input").on("input", calcAndUpdateData).on("change", calcAndUpdateData);
-    window.addEventListener("resize", drawChart);
-    
-    // 初始化启动
-    calcAndUpdateData();
+    /* ── Event wiring ── */
+    document.querySelectorAll('input').forEach(function (el) {
+        el.addEventListener('input', calc);
+        el.addEventListener('change', calc);
+    });
+
+    window.addEventListener('resize', function () { myChart.resize(); calc(); });
+
+    /* ── Initial render ── */
+    calc();
+
+})();
 </script>
 </body>
 </html>
