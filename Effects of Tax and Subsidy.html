@@ -1,338 +1,776 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Tax & Subsidy Incidence</title>
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#faf9f7;--card:#fff;--border:#e8e5e0;--panelBg:#f5f3f0;
-  --text:#1a1a1a;--textSec:#6b6560;--textMut:#9e9890;
-  --demand:#2563eb;--supply:#dc2626;--sprime:#ef4444;
-  --purple:#7c3aed;--pink:#db2777;--red:#ef4444;--green:#059669;--orange:#ea580c;--gray:#6b7280;
-  --accent:#7c3aed;
-  --serif:'Source Serif 4',Georgia,serif;
-  --mono:'JetBrains Mono',monospace;
-}
-body{background:var(--bg);font-family:var(--serif);color:var(--text)}
-.root{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tax &amp; Subsidy Incidence</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Source+Sans+Pro:wght@400;600&display=swap');
 
-/* Header */
-.hdr{text-align:center;margin-bottom:18px;max-width:640px}
-.hdr h1{font-size:28px;font-weight:700;line-height:1.15;margin-bottom:6px}
-.hdr p{font-size:13.5px;color:var(--textSec);line-height:1.5}
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* Mode toggle */
-.mtog{display:flex;gap:4px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:14px}
-.mbtn{padding:7px 18px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:600;font-family:var(--mono);transition:all .2s}
-.mbtn.on{background:var(--accent);color:#fff}
-.mbtn:not(.on){background:transparent;color:var(--textSec)}
+        body {
+            background: #f7f7f5;
+            font-family: 'Source Sans Pro', 'Segoe UI', system-ui, sans-serif;
+            color: #333;
+            padding: 24px 16px;
+            min-height: 100vh;
+        }
 
-/* Layout Fix: Forced side-by-side for classroom use */
-.main{
-  display:flex;
-  flex-direction:row;
-  flex-wrap:nowrap; /* Prevent wrapping on desktop */
-  gap:20px;
-  max-width:1100px;
-  width:100%;
-  justify-content:center;
-  align-items:flex-start;
-}
+        .container {
+            max-width: 880px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 1px solid #d4d4d0;
+            padding: 28px 32px 20px;
+        }
 
-/* Chart card: Flex-grow to occupy space */
-.cc{
-  background:var(--card);
-  border-radius:14px;
-  border:1px solid var(--border);
-  box-shadow:0 2px 20px rgba(0,0,0,.04);
-  padding:18px;
-  flex: 1 1 640px;
-  min-width: 0; /* Important for flex shrink */
-}
+        h2 {
+            font-family: 'Merriweather', Georgia, 'Times New Roman', serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a2a3a;
+            border-bottom: 2px solid #1a2a3a;
+            padding-bottom: 8px;
+            margin-bottom: 4px;
+        }
 
-/* Right panel: Fixed width to prevent layout shifts */
-.pnl{
-  flex: 0 0 340px; 
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
+        .subtitle {
+            font-size: 13px;
+            color: #777;
+            margin-bottom: 16px;
+            margin-top: 6px;
+        }
 
-/* Responsive: Only wrap on very small screens */
-@media(max-width:960px){
-  .main{flex-direction:column;align-items:stretch;flex-wrap:wrap}
-  .cc,.pnl{max-width:100%;flex-basis:auto}
-}
+        #chart-area {
+            width: 100%;
+            height: 460px;
+        }
 
-/* Controls */
-.ctrl{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
-.ctrl-group{flex:1 1 140px;min-width:130px;background:var(--panelBg);border-radius:10px;padding:8px 12px}
-.ctrl-group label{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:600;color:var(--textSec);font-family:var(--mono);margin-bottom:4px}
-.ctrl-group label .v{font-size:16px;font-weight:700;color:var(--accent);min-width:32px;text-align:right}
-.ctrl-group input[type=range]{width:100%;accent-color:var(--accent);height:4px;cursor:pointer}
-.ctrl-group.demand-ctrl input[type=range]{accent-color:var(--demand)}
-.ctrl-group.demand-ctrl label .v{color:var(--demand)}
-.ctrl-group.supply-ctrl input[type=range]{accent-color:var(--supply)}
-.ctrl-group.supply-ctrl label .v{color:var(--supply)}
-.ctrl-group.tax-ctrl input[type=range]{accent-color:var(--accent)}
+        /* ---- Controls ---- */
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px 28px;
+            align-items: center;
+            padding: 14px 0 10px;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 10px;
+        }
 
-/* Walk bar */
-.wbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:10px 14px;background:var(--panelBg);border-radius:10px}
-.wbar .mid{flex:1;text-align:center}
-.wbar .sn{font-size:10px;color:var(--textMut);font-family:var(--mono)}
-.wbar .st{font-size:14px;font-weight:700}
-.wb{padding:5px 14px;border-radius:6px;font-size:12px;font-weight:600;font-family:var(--mono);cursor:pointer;transition:opacity .2s}
-.wb.p{border:1px solid var(--border);background:var(--card);color:var(--text)}
-.wb.n{border:none;background:var(--accent);color:#fff}
-.wb:disabled{opacity:.3;cursor:default}
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-/* Toggles */
-.togs{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
-.tb{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;cursor:pointer;transition:all .2s;background:transparent;font-size:10px;font-weight:600;font-family:var(--mono);color:var(--text)}
-.tb .d{width:7px;height:7px;border-radius:2px}
+        .control-group label.ctrl-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            white-space: nowrap;
+        }
 
-/* Panels */
-.pc{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:14px;box-shadow:0 2px 12px rgba(0,0,0,.03)}
-.ptag{font-size:10px;letter-spacing:2px;color:var(--accent);font-weight:600;font-family:var(--mono);margin-bottom:10px;text-transform:uppercase}
-.pr{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0}
-.pr:not(:last-child){border-bottom:1px solid var(--border)}
-.pr .k{font-size:11px;color:var(--textSec);font-family:var(--mono)}
-.pr .v{font-size:13px;font-weight:700;font-family:var(--mono)}
+        input[type="range"] {
+            width: 110px;
+            height: 4px;
+            cursor: pointer;
+            accent-color: #1a5276;
+        }
 
-/* Burden bar */
-.burden-wrap{margin-top:2px}
-.burden-label{display:flex;justify-content:space-between;font-size:10px;font-family:var(--mono);color:var(--textSec);margin-bottom:4px}
-.burden-bar{height:24px;border-radius:8px;overflow:hidden;display:flex;position:relative;border:1px solid var(--border)}
-.burden-bar .seg{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:var(--mono);color:#fff;transition:width .4s ease;min-width:0;overflow:hidden;white-space:nowrap}
-.burden-bar .seg.c{background:var(--purple)}
-.burden-bar .seg.p{background:var(--pink)}
+        .val-badge {
+            font-family: 'Source Sans Pro', monospace;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a5276;
+            min-width: 36px;
+            text-align: right;
+        }
 
-/* Insight & Explanation */
-.insight{background:linear-gradient(135deg,#f5f0ff 0%,#fdf2f8 100%);border:1px solid #e9d5ff;border-radius:12px;padding:14px;font-size:12px;color:var(--text);line-height:1.6}
-.expl{background:var(--card);border:1px solid var(--accent);border-radius:12px;padding:16px;box-shadow:0 4px 12px rgba(124,58,237,0.1)}
-.expl p{font-size:13px;color:var(--text);line-height:1.65}
-.remember{background:var(--panelBg);border-radius:12px;padding:12px;font-size:11px;color:var(--textSec);line-height:1.6}
-.remember strong{color:var(--text)}
+        .checkboxes {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
 
-/* Welfare Table */
-.wtbl { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 11px; text-align: right; margin-top: 4px; }
-.wtbl th { font-weight: 600; color: var(--textSec); padding-bottom: 6px; border-bottom: 1px solid var(--border); }
-.wtbl th:first-child, .wtbl td:first-child { text-align: left; }
-.wtbl td { padding: 6px 0; }
-.wtbl .total-row td { border-top: 1px solid var(--border); font-weight: 700; padding-top: 8px; margin-top: 2px; }
+        .checkboxes label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
 
-</style>
+        .checkboxes input[type="checkbox"] {
+            accent-color: #1a5276;
+            cursor: pointer;
+            width: 14px;
+            height: 14px;
+        }
+
+        .swatch {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+        }
+
+        /* ---- Welfare Table ---- */
+        .welfare-section {
+            border-top: 1px solid #e0e0e0;
+            padding-top: 12px;
+            margin-top: 6px;
+        }
+
+        .section-label {
+            font-family: 'Merriweather', Georgia, serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: #1a2a3a;
+            margin-bottom: 8px;
+        }
+
+        .wtbl {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: right;
+        }
+
+        .wtbl th {
+            font-weight: 600;
+            color: #888;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 12px;
+        }
+
+        .wtbl th:first-child, .wtbl td:first-child { text-align: left; }
+
+        .wtbl td {
+            padding: 6px 0;
+            font-size: 13px;
+        }
+
+        .wtbl .total-row td {
+            border-top: 1px solid #e0e0e0;
+            font-weight: 700;
+            padding-top: 8px;
+        }
+
+        /* ---- Status ---- */
+        .status-bar {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 700;
+            padding: 7px 0;
+            margin-bottom: 10px;
+        }
+
+        .status-bar.tax-status {
+            color: #a12525;
+            background: #fdf0f0;
+            border: 1px solid #e8c0c0;
+        }
+
+        .status-bar.subsidy-status {
+            color: #1a6b3a;
+            background: #eef8f2;
+            border: 1px solid #b8dcc8;
+        }
+
+        .status-bar.no-policy-status {
+            color: #555;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+        }
+
+        /* ---- Burden Bar ---- */
+        .burden-section {
+            border-top: 1px solid #e0e0e0;
+            padding-top: 12px;
+            margin-top: 6px;
+        }
+
+        .burden-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #555;
+            margin-bottom: 4px;
+        }
+
+        .burden-bar {
+            height: 24px;
+            overflow: hidden;
+            display: flex;
+            position: relative;
+            border: 1px solid #d4d4d0;
+        }
+
+        .burden-bar .seg {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: #fff;
+            transition: width 0.3s ease;
+            min-width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .burden-bar .seg.c { background: rgba(124,58,237,0.7); }
+        .burden-bar .seg.p { background: rgba(219,39,119,0.7); }
+
+        .burden-rule {
+            font-size: 11px;
+            color: #888;
+            margin-top: 6px;
+            font-style: italic;
+        }
+
+        /* ---- Source ---- */
+        .source {
+            font-size: 10px;
+            color: #888;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 8px;
+            margin-top: 14px;
+        }
+    </style>
 </head>
 <body>
-<div id="app" class="root"></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+
+<div class="container">
+    <h2>Tax &amp; Subsidy Incidence</h2>
+    <div class="subtitle">Interactive analysis of per-unit tax and subsidy effects on market welfare</div>
+
+    <div id="chart-area"></div>
+
+    <div class="controls">
+        <div class="control-group">
+            <label class="ctrl-label" for="tax-slider">Tax / Subsidy:</label>
+            <input type="range" id="tax-slider" min="-4" max="4" step="0.25" value="2">
+            <span class="val-badge" id="tax-val">+2.00</span>
+        </div>
+        <div class="control-group">
+            <label class="ctrl-label" for="ped-slider">PED:</label>
+            <input type="range" id="ped-slider" min="0.2" max="3.0" step="0.1" value="1.0">
+            <span class="val-badge" id="ped-val">1.0</span>
+        </div>
+        <div class="control-group">
+            <label class="ctrl-label" for="pes-slider">PES:</label>
+            <input type="range" id="pes-slider" min="0.2" max="3.0" step="0.1" value="1.0">
+            <span class="val-badge" id="pes-val">1.0</span>
+        </div>
+        <div class="checkboxes">
+            <label><input type="checkbox" id="chk-cs" checked> <span class="swatch" style="background:rgba(26,82,118,0.3)"></span> CS</label>
+            <label><input type="checkbox" id="chk-ps" checked> <span class="swatch" style="background:rgba(184,92,56,0.3)"></span> PS</label>
+            <label><input type="checkbox" id="chk-taxcons" checked> <span class="swatch" style="background:rgba(124,58,237,0.25)"></span> Tax Consumer</label>
+            <label><input type="checkbox" id="chk-taxprod" checked> <span class="swatch" style="background:rgba(219,39,119,0.25)"></span> Tax Producer</label>
+            <label><input type="checkbox" id="chk-dwl" checked> <span class="swatch" style="background:rgba(100,100,100,0.35)"></span> DWL</label>
+        </div>
+    </div>
+
+    <!-- Welfare Table -->
+    <div class="welfare-section">
+        <div class="section-label">Welfare Analysis</div>
+        <table class="wtbl">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Free</th>
+                    <th>Policy</th>
+                    <th>&Delta;</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="color:#1a5276">CS</td>
+                    <td id="tbl-cs-free">—</td>
+                    <td id="tbl-cs-policy">—</td>
+                    <td id="tbl-cs-diff">—</td>
+                </tr>
+                <tr>
+                    <td style="color:#b85c38">PS</td>
+                    <td id="tbl-ps-free">—</td>
+                    <td id="tbl-ps-policy">—</td>
+                    <td id="tbl-ps-diff">—</td>
+                </tr>
+                <tr>
+                    <td id="tbl-gov-label" style="color:#059669">Gov Rev</td>
+                    <td id="tbl-gov-free">0.0</td>
+                    <td id="tbl-gov-policy">—</td>
+                    <td id="tbl-gov-diff">—</td>
+                </tr>
+                <tr class="total-row">
+                    <td>Total</td>
+                    <td id="tbl-total-free">—</td>
+                    <td id="tbl-total-policy">—</td>
+                    <td id="tbl-total-diff">—</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Burden Split Bar -->
+    <div class="burden-section" id="burden-section" style="display:none">
+        <div class="section-label" id="burden-title">Burden Split</div>
+        <div class="burden-label">
+            <span id="burden-cons-label" style="color:rgba(124,58,237,0.85)">Cons 50%</span>
+            <span id="burden-prod-label" style="color:rgba(219,39,119,0.85)">Prod 50%</span>
+        </div>
+        <div class="burden-bar">
+            <div class="seg c" id="burden-cons-bar" style="width:50%"></div>
+            <div class="seg p" id="burden-prod-bar" style="width:50%"></div>
+        </div>
+        <div class="burden-rule">Rule: Relatively inelastic side bears more burden</div>
+    </div>
+
+    <!-- Status -->
+    <div style="margin-top:10px">
+        <div class="status-bar no-policy-status" id="status-indicator">No Policy</div>
+    </div>
+
+    <div class="source"><strong>Source:</strong> Standard microeconomic model of tax incidence and deadweight loss</div>
+</div>
+
 <script>
-const h=React.createElement,{useState,useEffect,useMemo}=React;
+(function () {
+    'use strict';
 
-function econ(tax,slopeD,slopeS){
-  const dInt=10,sInt=0.5;
-  const qStar=(dInt-sInt)/(slopeD+slopeS);
-  const pStar=dInt-slopeD*qStar;
-  
-  const qt=Math.max(0,(dInt-sInt-tax)/(slopeD+slopeS));
-  const pb=dInt-slopeD*qt;
-  const ps=sInt+slopeS*qt;
-  
-  const csOld=.5*(dInt-pStar)*qStar, csNew=.5*(dInt-pb)*qt;
-  const psOld=.5*(pStar-sInt)*qStar, psNew=.5*(ps-sInt)*qt;
-  
-  const taxRev = tax >= 0 ? tax * qt : 0;
-  const govCost = tax < 0 ? Math.abs(tax) * qt : 0;
-  const dwl=.5*Math.abs(tax)*Math.abs(qStar-qt);
-  
-  const consumerIncidence=Math.abs(pb-pStar), producerIncidence=Math.abs(pStar-ps);
-  const totalIncidence=consumerIncidence+producerIncidence;
-  const consPct=totalIncidence>0?consumerIncidence/totalIncidence*100:50;
-  const prodPct=totalIncidence>0?producerIncidence/totalIncidence*100:50;
-  
-  return {dInt,sInt,slopeD,slopeS,tax,qStar,pStar,qt,pb,ps,csOld,csNew,psOld,psNew,taxRev,govCost,dwl,consumerIncidence,producerIncidence,consPct,prodPct};
-}
+    /* ── Color palette ── */
+    var C = {
+        deepBlue:    '#1a5276',
+        ochre:       '#b85c38',
+        green:       '#2e8b57',
+        darkGreen:   '#1a6b3a',
+        gray:        '#bbb',
+        titleText:   '#1a2a3a',
+        gridLine:    '#e8e8e8',
+        cs:          'rgba(26,82,118,0.3)',
+        ps:          'rgba(184,92,56,0.3)',
+        taxCons:     'rgba(124,58,237,0.25)',
+        taxProd:     'rgba(219,39,119,0.25)',
+        dwl:         'rgba(100,100,100,0.35)',
+    };
 
-const W=620,H=450,ML=52,MR=24,MT=28,MB=48;
-const CW=W-ML-MR,CH=H-MT-MB;
-const tx=q=>ML+(q/10)*CW, ty=p=>MT+CH-(p/11)*CH;
-const fmt=n=>n.toFixed(1);
-const pct=n=>Math.round(n);
-const fmtDiff = d => Math.abs(d) < 0.05 ? "0.0" : (d > 0 ? "+" : "") + fmt(d);
+    /* ── ECharts init ── */
+    var myChart = echarts.init(document.getElementById('chart-area'));
 
-const STEPS=[
-  {id:"base",title:"Free-Market Equilibrium",a:[],sp:false,d:"Supply and Demand intersect at E\u2080, establishing equilibrium price P* and quantity Q*. Use sliders to adjust elasticity."},
-  {id:"cs",title:"Consumer Surplus",a:["cs"],sp:false,d:"Consumer surplus (blue) is the area below D and above the price paid. It represents the buyer's gain."},
-  {id:"ps",title:"Producer Surplus",a:["ps"],sp:false,d:"Producer surplus (red) is the area above S and below the price received. It represents the seller's gain."},
-  {id:"tax",title:"Imposing a Policy",a:[],sp:true,d:"A per-unit tax shifts S up to S\u2032, reducing quantity. A subsidy shifts S down, increasing quantity beyond the efficient level."},
-  {id:"inci",title:"Incidence & Elasticity",a:["taxC","taxP"],sp:true,d:"The purple area is the consumer share; pink is the producer share. Notice how relative steepness dictates who bears more."},
-  {id:"dwl",title:"Deadweight Loss",a:["taxC","taxP","dwl"],sp:true,d:"The gray area is DWL. It represents the loss in total welfare because the policy moves quantity away from Q*."},
-  {id:"all",title:"Complete Picture",a:["cs","ps","taxC","taxP","dwl"],sp:true,d:"Check the Welfare Table to see how \u0394CS + \u0394PS + Gov Balance equals -DWL."},
-];
+    var N = 100;  // data points per curve
 
-const AC={
-  cs:{f:"rgba(37,99,235,0.12)",s:"rgba(37,99,235,0.4)"},
-  ps:{f:"rgba(220,38,38,0.12)",s:"rgba(220,38,38,0.35)"},
-  taxC:{f:"rgba(124,58,237,0.18)",s:"rgba(124,58,237,0.45)"},
-  taxP:{f:"rgba(219,39,119,0.18)",s:"rgba(219,39,119,0.45)"},
-  dwl:{f:"rgba(107,114,128,0.3)",s:"rgba(107,114,128,0.6)"},
-};
+    /* ── Economics constants ── */
+    var dInt = 10;
+    var sInt = 0.5;
 
-function App(){
-  const [tax,setTax]=useState(2);
-  const [pedVal,setPedVal]=useState(1);
-  const [pesVal,setPesVal]=useState(1);
-  const [mode,setMode]=useState("explore");
-  const [step,setStep]=useState(0);
-  const [vis,setVis]=useState({cs:true,ps:true,taxC:true,taxP:true,dwl:true});
-  const [hov,setHov]=useState(null);
+    /* ── Economics model ── */
+    function econ(tax, slopeD, slopeS) {
+        var qStar = (dInt - sInt) / (slopeD + slopeS);
+        var pStar = dInt - slopeD * qStar;
 
-  const actualSlopeD = useMemo(() => 1 / pedVal, [pedVal]);
-  const actualSlopeS = useMemo(() => 1 / pesVal, [pesVal]);
-  const ec=useMemo(()=>econ(tax,actualSlopeD,actualSlopeS),[tax,actualSlopeD,actualSlopeS]);
-  
-  const dL=q=>ec.dInt-ec.slopeD*q, sL=q=>ec.sInt+ec.slopeS*q, spL=q=>ec.sInt+ec.tax+ec.slopeS*q;
+        var qt = Math.max(0, (dInt - sInt - tax) / (slopeD + slopeS));
+        var pb = dInt - slopeD * qt;
+        var ps = sInt + slopeS * qt;
 
-  const act=mode==="walkthrough"
-    ?STEPS[step].a.reduce((a,k)=>({...a,[k]:true}),{cs:false,ps:false,taxC:false,taxP:false,dwl:false})
-    :vis;
-  const showSp=mode==="walkthrough"?(STEPS[step].sp||false):true;
+        var csOld = 0.5 * (dInt - pStar) * qStar;
+        var csNew = 0.5 * (dInt - pb) * qt;
+        var psOld = 0.5 * (pStar - sInt) * qStar;
+        var psNew = 0.5 * (ps - sInt) * qt;
 
-  const toggle=k=>setVis(p=>({...p,[k]:!p[k]}));
-  const next=()=>setStep(s=>Math.min(s+1,STEPS.length-1));
-  const prev=()=>setStep(s=>Math.max(s-1,0));
+        var taxRev = tax >= 0 ? tax * qt : 0;
+        var govCost = tax < 0 ? Math.abs(tax) * qt : 0;
+        var dwl = 0.5 * Math.abs(tax) * Math.abs(qStar - qt);
 
-  const dEnd=Math.min(10,ec.dInt/ec.slopeD);
-  const sEnd=Math.min(10,(11-ec.sInt)/ec.slopeS);
-  const spEnd=Math.min(10,(11-ec.sInt-ec.tax)/ec.slopeS);
+        var consumerIncidence = Math.abs(pb - pStar);
+        var producerIncidence = Math.abs(pStar - ps);
+        var totalIncidence = consumerIncidence + producerIncidence;
+        var consPct = totalIncidence > 0 ? consumerIncidence / totalIncidence * 100 : 50;
+        var prodPct = totalIncidence > 0 ? producerIncidence / totalIncidence * 100 : 50;
 
-  const poly=pts=>pts.map((p,i)=>(i===0?"M":"L")+p[0]+","+p[1]).join(" ")+"Z";
-  const areas={
-    cs:poly([[tx(0),ty(ec.dInt)],[tx(ec.qt),ty(ec.pb)],[tx(0),ty(ec.pb)]]),
-    ps:poly([[tx(0),ty(ec.sInt)],[tx(ec.qt),ty(ec.ps)],[tx(0),ty(ec.ps)]]),
-    taxC:poly([[tx(0),ty(ec.pb)],[tx(ec.qt),ty(ec.pb)],[tx(ec.qt),ty(ec.pStar)],[tx(0),ty(ec.pStar)]]),
-    taxP:poly([[tx(0),ty(ec.pStar)],[tx(ec.qt),ty(ec.pStar)],[tx(ec.qt),ty(ec.ps)],[tx(0),ty(ec.ps)]]),
-    dwl:poly([[tx(ec.qt),ty(ec.ps)],[tx(ec.qStar),ty(ec.pStar)],[tx(ec.qt),ty(ec.pb)]]),
-  };
+        return {
+            slopeD: slopeD, slopeS: slopeS, tax: tax,
+            qStar: qStar, pStar: pStar,
+            qt: qt, pb: pb, ps: ps,
+            csOld: csOld, csNew: csNew,
+            psOld: psOld, psNew: psNew,
+            taxRev: taxRev, govCost: govCost, dwl: dwl,
+            consumerIncidence: consumerIncidence, producerIncidence: producerIncidence,
+            consPct: consPct, prodPct: prodPct,
+        };
+    }
 
-  const diffCS = ec.csNew - ec.csOld;
-  const diffPS = ec.psNew - ec.psOld;
-  const govBalance = tax >= 0 ? ec.taxRev : -ec.govCost;
-  const totalOld = ec.csOld + ec.psOld;
-  const totalNew = ec.csNew + ec.psNew + govBalance;
-  const diffTotal = totalNew - totalOld; 
+    /* ── Demand / Supply data generators ── */
+    function demandData(slopeD) {
+        var pts = [];
+        var qMax = dInt / slopeD;
+        for (var i = 0; i <= N; i++) {
+            var q = (qMax / N) * i;
+            pts.push([q, dInt - slopeD * q]);
+        }
+        return pts;
+    }
 
-  return h("div",{className:"root"},
-    h("div",{className:"hdr"},
-      h("h1",null,"Tax & Subsidy Incidence"),
-      h("p",null,"A side-by-side analysis of policy impacts on market welfare.")
-    ),
+    function supplyData(slopeS) {
+        var pts = [];
+        var qMax = (11 - sInt) / slopeS;
+        for (var i = 0; i <= N; i++) {
+            var q = (qMax / N) * i;
+            pts.push([q, sInt + slopeS * q]);
+        }
+        return pts;
+    }
 
-    h("div",{className:"mtog"},
-      h("button",{className:"mbtn"+(mode==="explore"?" on":""),onClick:()=>setMode("explore")},"\uD83D\uDD2C Explore"),
-      h("button",{className:"mbtn"+(mode==="walkthrough"?" on":""),onClick:()=>setMode("walkthrough")},"\uD83C\uDF93 Walkthrough")
-    ),
+    function supplyShiftedData(slopeS, tax) {
+        var pts = [];
+        var qMax = (11 - sInt - tax) / slopeS;
+        for (var i = 0; i <= N; i++) {
+            var q = (qMax / N) * i;
+            pts.push([q, sInt + tax + slopeS * q]);
+        }
+        return pts;
+    }
 
-    h("div",{className:"main"},
-      /* Left Column: Chart & Main Controls */
-      h("div",{className:"cc"},
-        h("div",{className:"ctrl"},
-          h("div",{className:"ctrl-group tax-ctrl"},
-            h("label",null,h("span",null,tax>0?"Tax":tax<0?"Subsidy":"Policy"),h("span",{className:"v"},(tax>0?"+":"")+fmt(tax))),
-            h("input",{type:"range",min:-4,max:4,step:.25,value:tax,onChange:ev=>setTax(+ev.target.value)})
-          ),
-          h("div",{className:"ctrl-group demand-ctrl"},
-            h("label",null,h("span",null,"PED"),h("span",{className:"v"},fmt(pedVal))),
-            h("input",{type:"range",min:.2,max:3,step:.1,value:pedVal,onChange:ev=>setPedVal(+ev.target.value)})
-          ),
-          h("div",{className:"ctrl-group supply-ctrl"},
-            h("label",null,h("span",null,"PES"),h("span",{className:"v"},fmt(pesVal))),
-            h("input",{type:"range",min:.2,max:3,step:.1,value:pesVal,onChange:ev=>setPesVal(+ev.target.value)})
-          )
-        ),
+    /* ── Helper: data coords → pixel coords ── */
+    function toPixel(pts) {
+        return pts.map(function (p) {
+            return myChart.convertToPixel({ gridIndex: 0 }, p);
+        }).filter(function (p) { return p && !isNaN(p[0]) && !isNaN(p[1]); });
+    }
 
-        mode==="walkthrough"&&h("div",{className:"wbar"},
-          h("button",{className:"wb p",disabled:step===0,onClick:prev},"\u2190 Prev"),
-          h("div",{className:"mid"},
-            h("div",{className:"sn"},"Step "+(step+1)+" / "+STEPS.length),
-            h("div",{className:"st"},STEPS[step].title)
-          ),
-          h("button",{className:"wb n",disabled:step===STEPS.length-1,onClick:next},"Next \u2192")
-        ),
+    /* ── Build base option (curves, axes, grid) ── */
+    function baseOption(ec) {
+        return {
+            animation: false,
+            animationDurationUpdate: 0,
+            grid: { left: 60, right: 80, top: 40, bottom: 50, containLabel: false },
+            xAxis: {
+                type: 'value', name: 'Q', nameLocation: 'end', nameGap: 8,
+                nameTextStyle: { fontSize: 14, fontWeight: 'bold', color: '#444' },
+                min: 0, max: 10,
+                axisLine: { lineStyle: { color: '#888' } },
+                splitLine: { lineStyle: { color: C.gridLine } },
+                axisLabel: { fontSize: 12, color: '#555' },
+            },
+            yAxis: {
+                type: 'value', name: 'P', nameLocation: 'end', nameGap: 8,
+                nameTextStyle: { fontSize: 14, fontWeight: 'bold', color: '#444' },
+                min: 0, max: 11,
+                axisLine: { lineStyle: { color: '#888' } },
+                splitLine: { lineStyle: { color: C.gridLine } },
+                axisLabel: { fontSize: 12, color: '#555' },
+            },
+            series: [
+                /* Demand */
+                {
+                    name: 'D',
+                    type: 'line',
+                    data: demandData(ec.slopeD),
+                    symbol: 'none',
+                    lineStyle: { color: C.deepBlue, width: 2.5 },
+                    endLabel: { show: true, formatter: '{a}', distance: 8, fontSize: 14, fontWeight: 'bold', color: C.deepBlue },
+                    z: 10,
+                },
+                /* Supply */
+                {
+                    name: 'S',
+                    type: 'line',
+                    data: supplyData(ec.slopeS),
+                    symbol: 'none',
+                    lineStyle: { color: C.ochre, width: 2.5 },
+                    endLabel: { show: true, formatter: '{a}', distance: 8, fontSize: 14, fontWeight: 'bold', color: C.ochre },
+                    z: 10,
+                },
+                /* Supply shifted (S') — only when tax ≠ 0 */
+                ec.tax !== 0 ? {
+                    name: "S'",
+                    type: 'line',
+                    data: supplyShiftedData(ec.slopeS, ec.tax),
+                    symbol: 'none',
+                    lineStyle: { color: C.gray, width: 2, type: 'dashed' },
+                    endLabel: { show: true, formatter: '{a}', distance: 8, fontSize: 14, fontWeight: 'bold', color: C.gray },
+                    z: 10,
+                } : {
+                    name: "S'",
+                    type: 'line',
+                    data: [],
+                    symbol: 'none',
+                },
+                /* Equilibrium reference lines (P*, Q*) */
+                {
+                    name: 'ref',
+                    type: 'line',
+                    data: [[0, 0]],
+                    symbol: 'none',
+                    lineStyle: { width: 0 },
+                    markLine: {
+                        silent: true,
+                        symbol: 'none',
+                        lineStyle: { color: C.green, type: 'dashed', width: 1.2, opacity: 0.6 },
+                        label: { show: true, fontSize: 13, fontWeight: 'bold', color: C.green },
+                        data: [
+                            { yAxis: ec.pStar, name: 'P*', label: { formatter: 'P*', position: 'insideStartTop', offset: [0, -4] } },
+                            { xAxis: ec.qStar, name: 'Q*', label: { formatter: 'Q*', position: 'insideEndTop', offset: [4, 0] } },
+                        ],
+                    },
+                },
+                /* Equilibrium scatter point E₀ */
+                {
+                    name: 'E₀',
+                    type: 'scatter',
+                    data: [[ec.qStar, ec.pStar]],
+                    symbolSize: 12,
+                    itemStyle: { color: C.darkGreen },
+                    z: 20,
+                    label: {
+                        show: true,
+                        formatter: 'E₀',
+                        position: 'right',
+                        distance: 8,
+                        fontSize: 13,
+                        fontWeight: 'bold',
+                        color: C.darkGreen,
+                    },
+                },
+                /* Pb dot at Qt (tax equilibrium — buyer price) */
+                ec.tax !== 0 ? {
+                    name: 'Pb',
+                    type: 'scatter',
+                    data: [[ec.qt, ec.pb]],
+                    symbolSize: 10,
+                    itemStyle: { color: '#7c3aed' },
+                    z: 20,
+                    label: {
+                        show: true,
+                        formatter: 'Pb',
+                        position: 'right',
+                        distance: 6,
+                        fontSize: 12,
+                        fontWeight: 'bold',
+                        color: '#7c3aed',
+                    },
+                } : { type: 'scatter', data: [] },
+                /* Ps dot at Qt (tax equilibrium — seller price) */
+                ec.tax !== 0 ? {
+                    name: 'Ps',
+                    type: 'scatter',
+                    data: [[ec.qt, ec.ps]],
+                    symbolSize: 10,
+                    itemStyle: { color: '#db2777' },
+                    z: 20,
+                    label: {
+                        show: true,
+                        formatter: 'Ps',
+                        position: 'right',
+                        distance: 6,
+                        fontSize: 12,
+                        fontWeight: 'bold',
+                        color: '#db2777',
+                    },
+                } : { type: 'scatter', data: [] },
+                /* Qt reference line (dashed vertical) */
+                ec.tax !== 0 ? {
+                    name: 'Qt',
+                    type: 'line',
+                    data: [[ec.qt, 0], [ec.qt, 11]],
+                    symbol: 'none',
+                    lineStyle: { color: '#ccc', width: 1.2, type: 'dashed' },
+                    z: 4,
+                    markPoint: {
+                        data: [{
+                            coord: [ec.qt, 0], value: 'Qt', symbol: 'none',
+                            label: { show: true, position: 'bottom', fontSize: 13, fontWeight: 'bold', color: '#888' }
+                        }]
+                    },
+                } : { type: 'line', data: [] },
+            ],
+        };
+    }
 
-        h("svg",{viewBox:"0 0 "+W+" "+H,style:{width:"100%",height:"auto",display:"block"}},
-          ...[2,4,6,8,10].map(p=>h("line",{key:"gy"+p,x1:ML,y1:ty(p),x2:W-MR,y2:ty(p),stroke:"rgba(0,0,0,0.04)"})),
-          h("line",{x1:ML,y1:MT-4,x2:ML,y2:H-MB,stroke:"#b0ada6",strokeWidth:1.5}),
-          h("line",{x1:ML,y1:H-MB,x2:W-MR+4,y2:H-MB,stroke:"#b0ada6",strokeWidth:1.5}),
+    /* ── Render everything ── */
+    function render(ec) {
+        /* Step 1: curves */
+        var opt = baseOption(ec);
+        myChart.setOption(opt, true);
 
-          ...["cs","ps","taxC","taxP","dwl"].map(k=>
-            h("path",{key:k,d:areas[k], fill:act[k]?AC[k].f:"transparent", stroke:act[k]?AC[k].s:"transparent"})
-          ),
+        /* Step 2: polygons via graphic */
+        var elems = [];
 
-          h("line",{x1:tx(0.1),y1:ty(dL(0.1)),x2:tx(Math.min(dEnd,12)),y2:ty(dL(Math.min(dEnd,12))),stroke:"#2563eb",strokeWidth:2.5}),
-          h("line",{x1:tx(0),y1:ty(sL(0)),x2:tx(Math.min(sEnd,12)),y2:ty(sL(Math.min(sEnd,12))),stroke:"#dc2626",strokeWidth:2.5}),
-          showSp&&tax!==0&&spEnd>0&&h("line",{x1:tx(0),y1:ty(spL(0)),x2:tx(Math.min(spEnd,12)),y2:ty(spL(Math.min(spEnd,12))),stroke:"#ef4444",strokeWidth:2.5,strokeDasharray:"8 4"}),
+        /* CS polygon: [0, dInt] → [Qt, Pb] → [0, Pb] */
+        if (document.getElementById('chk-cs').checked) {
+            var csPts = toPixel([[0, dInt], [ec.qt, ec.pb], [0, ec.pb]]);
+            if (csPts.length >= 3) {
+                elems.push({
+                    type: 'polygon', shape: { points: csPts },
+                    style: { fill: C.cs }, z: 1, silent: true
+                });
+            }
+        }
 
-          h("text",{x:tx(ec.qStar),y:H-MB+18,textAnchor:"middle",fill:"#6b6560",fontSize:11,fontWeight:600,fontFamily:"var(--mono)"},"Q*"),
-          tax!==0&&h("text",{x:tx(ec.qt),y:H-MB+18,textAnchor:"middle",fill:"#6b6560",fontSize:11,fontWeight:600,fontFamily:"var(--mono)"},"Q\u209C"),
-          
-          h("circle",{cx:tx(ec.qStar),cy:ty(ec.pStar),r:4,fill:"#1a1a1a"}),
-          tax!==0&&h("circle",{cx:tx(ec.qt),cy:ty(ec.pb),r:4,fill:"#7c3aed"}),
-          tax!==0&&h("circle",{cx:tx(ec.qt),cy:ty(ec.ps),r:4,fill:"#db2777"})
-        ),
+        /* PS polygon: [0, sInt] → [Qt, Ps] → [0, Ps] */
+        if (document.getElementById('chk-ps').checked) {
+            var psPts = toPixel([[0, sInt], [ec.qt, ec.ps], [0, ec.ps]]);
+            if (psPts.length >= 3) {
+                elems.push({
+                    type: 'polygon', shape: { points: psPts },
+                    style: { fill: C.ps }, z: 1, silent: true
+                });
+            }
+        }
 
-        mode==="explore"&&h("div",{className:"togs"},
-          ...[["cs","CS","#2563eb"],["ps","PS","#dc2626"],["taxC",tax>=0?"Tax: Cons":"Ben: Cons","#7c3aed"],["taxP",tax>=0?"Tax: Prod":"Ben: Prod","#db2777"],["dwl","DWL","#6b7280"]].map(([k,l,c])=>
-            h("button",{key:k,className:"tb", style:{border:"1.5px solid "+(vis[k]?c:"#e8e5e0"),background:vis[k]?c+"10":"transparent"}, onClick:()=>toggle(k)},
-              h("span",{className:"d",style:{background:c}}), h("span",null,l)
-            )
-          )
-        )
-      ),
+        /* Tax Consumer burden: rectangle [0, Pb] → [Qt, Pb] → [Qt, P*] → [0, P*] */
+        if (ec.tax !== 0 && document.getElementById('chk-taxcons').checked) {
+            var tcPts = toPixel([[0, ec.pb], [ec.qt, ec.pb], [ec.qt, ec.pStar], [0, ec.pStar]]);
+            if (tcPts.length >= 3) {
+                elems.push({
+                    type: 'polygon', shape: { points: tcPts },
+                    style: { fill: C.taxCons }, z: 2, silent: true
+                });
+            }
+        }
 
-      /* Right Column: Walkthrough Info & Data Table */
-      h("div",{className:"pnl"},
-        mode==="walkthrough"&&h("div",{className:"expl"},
-          h("div",{className:"ptag"},"Explanation"),
-          h("p",null,STEPS[step].d)
-        ),
+        /* Tax Producer burden: rectangle [0, P*] → [Qt, P*] → [Qt, Ps] → [0, Ps] */
+        if (ec.tax !== 0 && document.getElementById('chk-taxprod').checked) {
+            var tpPts = toPixel([[0, ec.pStar], [ec.qt, ec.pStar], [ec.qt, ec.ps], [0, ec.ps]]);
+            if (tpPts.length >= 3) {
+                elems.push({
+                    type: 'polygon', shape: { points: tpPts },
+                    style: { fill: C.taxProd }, z: 2, silent: true
+                });
+            }
+        }
 
-        h("div",{className:"pc"},
-          h("div",{className:"ptag"},"Welfare Analysis"),
-          h("table", {className: "wtbl"},
-            h("thead", null,
-              h("tr", null, h("th", null, ""), h("th", null, "Free"), h("th", null, "Policy"), h("th", null, "\u0394"))
-            ),
-            h("tbody", null,
-              h("tr", null, h("td", {style:{color:"#2563eb"}}, "CS"), h("td", null, fmt(ec.csOld)), h("td", null, fmt(ec.csNew)), h("td", {style:{color:diffCS>0?"#059669":diffCS<0?"#ef4444":"inherit"}}, fmtDiff(diffCS))),
-              h("tr", null, h("td", {style:{color:"#dc2626"}}, "PS"), h("td", null, fmt(ec.psOld)), h("td", null, fmt(ec.psNew)), h("td", {style:{color:diffPS>0?"#059669":diffPS<0?"#ef4444":"inherit"}}, fmtDiff(diffPS))),
-              h("tr", null, h("td", {style:{color:tax>=0?"#059669":"#ea580c"}}, tax>=0?"GovRev":"GovExp"), h("td", null, "0.0"), h("td", null, fmt(govBalance)), h("td", {style:{color:govBalance>0?"#059669":govBalance<0?"#ef4444":"inherit"}}, fmtDiff(govBalance))),
-              h("tr", {className: "total-row"}, h("td", null, "Total"), h("td", null, fmt(totalOld)), h("td", null, fmt(totalNew)), h("td", {style:{color:diffTotal<0?"#ef4444":"inherit"}}, fmtDiff(diffTotal)))
-            )
-          )
-        ),
+        /* DWL triangle: [Qt, Ps] → [Q*, P*] → [Qt, Pb] */
+        if (ec.tax !== 0 && document.getElementById('chk-dwl').checked) {
+            var dwlPts = toPixel([[ec.qt, ec.ps], [ec.qStar, ec.pStar], [ec.qt, ec.pb]]);
+            if (dwlPts.length >= 3) {
+                elems.push({
+                    type: 'polygon', shape: { points: dwlPts },
+                    style: { fill: C.dwl }, z: 1, silent: true
+                });
+            }
+        }
 
-        tax!==0&&h("div",{className:"pc"},
-          h("div",{className:"ptag"},tax>0?"Burden Split":"Benefit Split"),
-          h("div",{className:"burden-wrap"},
-            h("div",{className:"burden-label"}, h("span",{style:{color:"#7c3aed"}},"Cons "+pct(ec.consPct)+"%"), h("span",{style:{color:"#db2777"}},"Prod "+pct(ec.prodPct)+"%")),
-            h("div",{className:"burden-bar"},
-              h("div",{className:"seg c",style:{width:ec.consPct+"%"}}),
-              h("div",{className:"seg p",style:{width:ec.prodPct+"%"}})
-            )
-          )
-        ),
+        myChart.setOption({ graphic: { elements: elems } }, { replaceMerge: ['graphic'] });
+    }
 
-        h("div",{className:"remember"}, h("strong",null,"Rule: "), "Relatively inelastic side bears more burden/receives more benefit.")
-      )
-    ),
-  );
-}
-ReactDOM.render(h(App),document.getElementById("app"));
+    /* ── Update welfare table ── */
+    function updateTable(ec) {
+        var diffCS = ec.csNew - ec.csOld;
+        var diffPS = ec.psNew - ec.psOld;
+        var govBalance = ec.tax >= 0 ? ec.taxRev : -ec.govCost;
+        var totalOld = ec.csOld + ec.psOld;
+        var totalNew = ec.csNew + ec.psNew + govBalance;
+        var diffTotal = totalNew - totalOld;
+
+        var fmt = function (n) { return n.toFixed(1); };
+        var fmtDiff = function (d) {
+            if (Math.abs(d) < 0.05) return '0.0';
+            return (d > 0 ? '+' : '') + d.toFixed(1);
+        };
+        var diffColor = function (d) {
+            if (d > 0.05) return '#059669';
+            if (d < -0.05) return '#ef4444';
+            return 'inherit';
+        };
+
+        document.getElementById('tbl-cs-free').textContent = fmt(ec.csOld);
+        document.getElementById('tbl-cs-policy').textContent = fmt(ec.csNew);
+        document.getElementById('tbl-cs-diff').textContent = fmtDiff(diffCS);
+        document.getElementById('tbl-cs-diff').style.color = diffColor(diffCS);
+
+        document.getElementById('tbl-ps-free').textContent = fmt(ec.psOld);
+        document.getElementById('tbl-ps-policy').textContent = fmt(ec.psNew);
+        document.getElementById('tbl-ps-diff').textContent = fmtDiff(diffPS);
+        document.getElementById('tbl-ps-diff').style.color = diffColor(diffPS);
+
+        var govLabelEl = document.getElementById('tbl-gov-label');
+        if (ec.tax >= 0) {
+            govLabelEl.textContent = 'Gov Rev';
+            govLabelEl.style.color = '#059669';
+        } else {
+            govLabelEl.textContent = 'Gov Exp';
+            govLabelEl.style.color = '#ea580c';
+        }
+        document.getElementById('tbl-gov-policy').textContent = fmt(govBalance);
+        document.getElementById('tbl-gov-diff').textContent = fmtDiff(govBalance);
+        document.getElementById('tbl-gov-diff').style.color = diffColor(govBalance);
+
+        document.getElementById('tbl-total-free').textContent = fmt(totalOld);
+        document.getElementById('tbl-total-policy').textContent = fmt(totalNew);
+        document.getElementById('tbl-total-diff').textContent = fmtDiff(diffTotal);
+        document.getElementById('tbl-total-diff').style.color = diffColor(diffTotal);
+    }
+
+    /* ── Update burden bar ── */
+    function updateBurden(ec) {
+        var burdenSection = document.getElementById('burden-section');
+        if (ec.tax === 0) {
+            burdenSection.style.display = 'none';
+            return;
+        }
+        burdenSection.style.display = '';
+        document.getElementById('burden-title').textContent = ec.tax > 0 ? 'Burden Split' : 'Benefit Split';
+        document.getElementById('burden-cons-label').textContent = 'Cons ' + Math.round(ec.consPct) + '%';
+        document.getElementById('burden-prod-label').textContent = 'Prod ' + Math.round(ec.prodPct) + '%';
+        document.getElementById('burden-cons-bar').style.width = ec.consPct + '%';
+        document.getElementById('burden-prod-bar').style.width = ec.prodPct + '%';
+    }
+
+    /* ── Update status indicator ── */
+    function updateStatus(ec) {
+        var el = document.getElementById('status-indicator');
+        if (ec.tax > 0) {
+            el.className = 'status-bar tax-status';
+            el.textContent = 'Tax (+' + ec.tax.toFixed(2) + ')';
+        } else if (ec.tax < 0) {
+            el.className = 'status-bar subsidy-status';
+            el.textContent = 'Subsidy (' + ec.tax.toFixed(2) + ')';
+        } else {
+            el.className = 'status-bar no-policy-status';
+            el.textContent = 'No Policy';
+        }
+    }
+
+    /* ── Main calculation + render ── */
+    function calc() {
+        var tax = +document.getElementById('tax-slider').value;
+        var ped = +document.getElementById('ped-slider').value;
+        var pes = +document.getElementById('pes-slider').value;
+        var slopeD = 1 / ped;
+        var slopeS = 1 / pes;
+
+        var ec = econ(tax, slopeD, slopeS);
+
+        /* Update slider badges */
+        var taxStr = (tax >= 0 ? '+' : '') + tax.toFixed(2);
+        document.getElementById('tax-val').textContent = taxStr;
+        document.getElementById('ped-val').textContent = ped.toFixed(1);
+        document.getElementById('pes-val').textContent = pes.toFixed(1);
+
+        render(ec);
+        updateTable(ec);
+        updateBurden(ec);
+        updateStatus(ec);
+    }
+
+    /* ── Event wiring ── */
+    document.querySelectorAll('input').forEach(function (el) {
+        el.addEventListener('input', calc);
+        el.addEventListener('change', calc);
+    });
+
+    window.addEventListener('resize', function () { myChart.resize(); calc(); });
+
+    /* ── Initial render ── */
+    calc();
+
+})();
 </script>
 </body>
 </html>
