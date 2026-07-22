@@ -3,399 +3,765 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Utility Maximization Lab (Classroom Pro)</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Consumer Choice — The Equal MU per Dollar Rule</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #2c3e50;
-            --snack: #3498db;
-            --movie: #e74c3c;
-            --optimal: #2ecc71;
-            --bg: #f1f3f5;
-            --border: #dee2e6;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: var(--bg);
-            margin: 0; padding: 10px 15px;
-            height: 100vh; display: flex; flex-direction: column; align-items: center; box-sizing: border-box;
-            overflow: hidden; /* 保证整页不滚动 */
+            background: #f7f7f5;
+            font-family: 'Source Sans Pro', 'Segoe UI', Arial, sans-serif;
+            color: #333;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            max-width: 880px;
+            width: 100%;
+            background: #ffffff;
+            border: 1px solid #d4d4d0;
+            padding: 0;
+        }
+        .page-title {
+            font-family: 'Merriweather', Georgia, serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a2a3a;
+            border-bottom: 2px solid #1a2a3a;
+            padding: 12px 20px;
         }
 
-        /* Navigation */
+        /* --- Tab Switcher --- */
         .tab-nav {
-            display: flex; gap: 8px; margin-bottom: 10px; background: #fff; padding: 4px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); flex: 0 0 auto;
+            display: flex;
+            border-bottom: 1px solid #e0e0e0;
+            background: #fafafa;
         }
         .tab-btn {
-            padding: 8px 20px; border: none; background: transparent; font-size: 15px; font-weight: bold; color: #6c757d; border-radius: 6px; cursor: pointer; transition: 0.2s;
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            background: transparent;
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: none;
         }
-        .tab-btn.active { background: var(--primary); color: white; }
-
-        .tab-content { display: none; width: 1280px; height: calc(100vh - 70px); gap: 15px; }
-        .tab-content.active { display: flex; }
-
-        /* --- Tab 1: Theory Layout (Optimized) --- */
-        .theory-layout { 
-            flex-direction: column; background: white; border-radius: 12px; padding: 15px 20px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; box-sizing: border-box;
+        .tab-btn.active {
+            color: #1a2a3a;
+            border-bottom-color: #1a5276;
+            background: #fff;
         }
-        
-        .theory-top { flex: 0 0 auto; }
-        
-        .theory-header { text-align: center; margin-bottom: 10px; }
-        .theory-header h1 { margin: 0; color: var(--primary); font-size: 24px; }
-        .theory-header p { margin: 4px 0 0 0; color: #6c757d; font-size: 15px; }
+        .tab-btn:hover:not(.active) {
+            background: #f0f0ee;
+        }
 
-        .data-table { width: 100%; border-collapse: collapse; text-align: center; table-layout: fixed; }
-        .data-table th { background: #f8f9fa; color: var(--primary); padding: 6px; border: 2px solid var(--border); font-size: 16px; }
-        .data-table td { padding: 6px; border: 2px solid var(--border); font-size: 20px; font-weight: bold; font-family: 'Consolas', monospace; transition: all 0.2s; }
-        
-        /* Column Visibility */
+        .tab-panel { display: none; padding: 20px; }
+        .tab-panel.active { display: block; }
+
+        /* --- Table Styling --- */
+        table {
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+        }
+        th {
+            background: #f8f9fa;
+            color: #1a2a3a;
+            padding: 8px;
+            border: 1px solid #e0e0e0;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+        }
+        td {
+            padding: 8px;
+            border: 1px solid #e0e0e0;
+            text-align: center;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 15px;
+            font-weight: bold;
+            color: #333;
+        }
+        td.qty-cell {
+            background: #f8f9fa;
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+        }
         .col-hidden { display: none; }
-        .col-visible { display: table-cell; animation: fadeIn 0.3s ease-out; }
+        .col-visible { display: table-cell; }
 
-        /* Horizontal Action Panel (Modified) */
-        .action-panel { 
-            display: flex; flex-direction: column; gap: 10px; border-top: 3px solid #eee; 
-            padding-top: 10px; margin-top: 10px; flex: 1; min-height: 0; 
+        /* --- Step Buttons --- */
+        .step-bar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+            align-items: center;
         }
-        .btn-group { 
-            display: flex; flex-direction: row; gap: 10px; align-items: center; flex-wrap: wrap; flex: 0 0 auto;
+        .step-btn {
+            padding: 8px 14px;
+            border: 1px solid #d4d4d0;
+            background: #fff;
+            color: #555;
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
         }
-        .step-btn { 
-            padding: 10px 16px; border: none; background: #e9ecef; color: var(--primary); 
-            font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px; transition: 0.2s;
+        .step-btn:hover:not(.hidden-step):not(.active-step) {
+            background: #f0f0ee;
         }
-        .step-btn:hover:not(.hidden-step) { background: #dde2e6; }
-        .step-btn.active-step { background: var(--primary); color: white; box-shadow: 0 3px 6px rgba(0,0,0,0.2); transform: translateY(-1px); }
+        .step-btn.active-step {
+            background: #1a5276;
+            color: #fff;
+            border-color: #1a5276;
+        }
         .step-btn.hidden-step { display: none; }
-        
-        .reset-btn { 
-            margin-left: auto; background: white; border: 1px solid #ccc; color: #666; 
-            padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold;
+        .reset-btn {
+            margin-left: auto;
+            padding: 8px 14px;
+            border: 1px solid #d4d4d0;
+            background: #fff;
+            color: #888;
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
         }
-        .reset-btn:hover { background: #f8f9fa; }
+        .reset-btn:hover { background: #f0f0ee; }
 
-        .result-panel { 
-            flex: 1; background: #fdfdfd; border-radius: 8px; padding: 12px 16px; 
-            font-size: 17px; line-height: 1.4; border: 2px solid #eee; overflow-y: auto; 
+        /* --- Result Panel --- */
+        .result-panel {
+            border: 1px solid #e0e0e0;
+            padding: 14px 16px;
+            font-size: 14px;
+            line-height: 1.6;
+            min-height: 80px;
+            color: #444;
         }
-        .res-item { padding: 6px 10px; margin-bottom: 6px; border-radius: 6px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.08); display: flex; justify-content: space-between; border-left: 5px solid #dee2e6; font-size: 16px; }
-        .res-item.winner { border: 2px solid var(--optimal); border-left-width: 8px; background: #f0fff4; font-size: 18px; font-weight: bold; }
+        .result-panel b { color: #1a2a3a; }
+        .res-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            margin-bottom: 6px;
+            border: 1px solid #e0e0e0;
+            font-size: 14px;
+            background: #fafafa;
+        }
+        .res-item.winner {
+            border: 2px solid #2e8b57;
+            background: #f0faf4;
+            font-weight: 700;
+        }
+        .res-item span:last-child {
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+        }
 
-        /* --- Tab 2: Simulator Layout --- */
-        .control-panel { flex: 0 0 320px; display: flex; flex-direction: column; gap: 10px; }
-        .chart-panel { flex: 1; background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
-        .card { background: white; border-radius: 10px; padding: 12px; border: 1px solid var(--border); }
-        .wallet-card { border-left: 6px solid var(--optimal); background: #fafffb; }
-        .factor-card.snack { border-left: 6px solid var(--snack); }
-        .factor-card.movie { border-left: 6px solid var(--movie); }
-        .stat-row { display: flex; justify-content: space-between; margin: 2px 0; font-size: 14px; }
-        .stat-val { font-weight: bold; font-family: monospace; font-size: 17px; }
-        
-        .toggle-row { display: flex; align-items: center; justify-content: space-between; background: white; padding: 10px; border-radius: 10px; border: 1px solid var(--border); font-size: 14px; font-weight: bold; }
-        .switch { position: relative; width: 40px; height: 22px; }
+        /* --- Highlight Cells --- */
+        .highlight-match { background: #fff3cd !important; }
+        .highlight-optimal {
+            box-shadow: inset 0 0 0 3px #2e8b57;
+        }
+
+        /* --- Simulator Layout --- */
+        .sim-layout {
+            display: flex;
+            gap: 16px;
+        }
+        .sim-controls {
+            flex: 0 0 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .sim-chart-area {
+            flex: 1;
+            min-height: 400px;
+        }
+
+        /* --- Cards --- */
+        .card {
+            border: 1px solid #e0e0e0;
+            padding: 12px;
+        }
+        .wallet-card {
+            border-left: 4px solid #2e8b57;
+        }
+        .wallet-card h3 {
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a2a3a;
+            margin-bottom: 6px;
+        }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 3px;
+        }
+        .stat-val {
+            font-weight: 700;
+            font-family: 'Consolas', monospace;
+            font-size: 15px;
+            color: #1a2a3a;
+        }
+        .factor-card { border-left: 4px solid #bbb; }
+        .factor-card.snack { border-left-color: #1a5276; }
+        .factor-card.movie { border-left-color: #b85c38; }
+        .factor-card h3 {
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .buy-btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .buy-btn.snack-btn { background: #1a5276; }
+        .buy-btn.movie-btn { background: #b85c38; }
+        .buy-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .buy-btn:hover:not(:disabled) {
+            filter: brightness(1.1);
+        }
+
+        /* --- Toggle Switch --- */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            border: 1px solid #e0e0e0;
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+        }
+        .switch {
+            position: relative;
+            width: 40px;
+            height: 22px;
+        }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 22px; }
-        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--optimal); }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            border-radius: 22px;
+            transition: .3s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: .3s;
+        }
+        input:checked + .slider { background-color: #2e8b57; }
         input:checked + .slider:before { transform: translateX(18px); }
 
-        button.buy-btn { width: 100%; padding: 10px; border: none; border-radius: 6px; background: var(--snack); color: white; font-weight: bold; cursor: pointer; margin-top: 5px; font-size: 15px; transition: 0.2s; }
-        .movie button.buy-btn { background: var(--movie); }
-        button.buy-btn:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
-        button.buy-btn:disabled { background: #dee2e6; cursor: not-allowed; }
+        .sim-reset {
+            background: none;
+            border: none;
+            text-decoration: underline;
+            color: #999;
+            cursor: pointer;
+            font-size: 13px;
+            font-family: 'Source Sans Pro', sans-serif;
+            margin-top: auto;
+            padding: 6px 0;
+        }
+        .sim-reset:hover { color: #666; }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* --- Source --- */
+        .source-area {
+            border-top: 1px solid #e0e0e0;
+            padding: 8px 20px;
+            font-size: 10px;
+            color: #888;
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 700px) {
+            .sim-layout { flex-direction: column; }
+            .sim-controls { flex: none; }
+        }
     </style>
 </head>
 <body>
+    <div class="container">
+        <div class="page-title">Consumer Choice — The Equal MU per Dollar Rule</div>
 
-    <div class="tab-nav">
-        <button class="tab-btn active" onclick="switchTab(1)">1. Step-by-Step Theory</button>
-        <button class="tab-btn" onclick="switchTab(2)">2. Game Simulator</button>
-    </div>
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab(1)">Step-by-Step Theory</button>
+            <button class="tab-btn" onclick="switchTab(2)">Game Simulator</button>
+        </div>
 
-    <div id="tab1" class="tab-content active theory-layout">
-        <div class="theory-top">
-            <div class="theory-header">
-                <h1>Solving Consumer Equilibrium (Budget: $50)</h1>
-                <p>Prices: Snacks ($5) | Movies ($10). Find the utility-maximizing bundle.</p>
-            </div>
-            
-            <table class="data-table">
+        <!-- ======== TAB 1: Step-by-Step Theory ======== -->
+        <div id="tab1" class="tab-panel active">
+            <table>
                 <thead>
                     <tr>
-                        <th rowspan="2" style="width: 70px;">Qty</th>
-                        <th id="head-snack" colspan="1" style="background: rgba(52, 152, 219, 0.1);">Snacks ($5)</th>
-                        <th id="head-movie" colspan="1" style="background: rgba(231, 76, 60, 0.1);">Movies ($10)</th>
+                        <th rowspan="2" style="width:50px;">Qty</th>
+                        <th id="head-snack" colspan="1" style="background:rgba(26,82,118,0.08);">Snacks ($5)</th>
+                        <th id="head-movie" colspan="1" style="background:rgba(184,92,56,0.08);">Movies ($10)</th>
                     </tr>
                     <tr>
-                        <th style="font-size: 14px;">Total Utility (TU)</th>
-                        <th class="col-mu col-hidden" style="font-size: 14px;">Marginal Utility (MU)</th>
-                        <th class="col-rup col-hidden" style="font-size: 14px;">MU / Price</th>
-                        <th style="font-size: 14px;">Total Utility (TU)</th>
-                        <th class="col-mu col-hidden" style="font-size: 14px;">Marginal Utility (MU)</th>
-                        <th class="col-rup col-hidden" style="font-size: 14px;">MU / Price</th>
+                        <th style="font-size:12px;">TU</th>
+                        <th class="col-mu col-hidden" style="font-size:12px; background:rgba(26,82,118,0.05);">MU</th>
+                        <th class="col-rup col-hidden" style="font-size:12px; background:rgba(26,82,118,0.05);">MU / P</th>
+                        <th style="font-size:12px;">TU</th>
+                        <th class="col-mu col-hidden" style="font-size:12px; background:rgba(184,92,56,0.05);">MU</th>
+                        <th class="col-rup col-hidden" style="font-size:12px; background:rgba(184,92,56,0.05);">MU / P</th>
                     </tr>
                 </thead>
                 <tbody id="theory-tbody"></tbody>
             </table>
-        </div>
 
-        <div class="action-panel">
-            <div class="btn-group">
-                <button class="step-btn" id="s1" onclick="doStep(1)">Step 1: Calculate MU</button>
-                <button class="step-btn hidden-step" id="s2" onclick="doStep(2)">Step 2: Utility per Dollar</button>
-                <button class="step-btn hidden-step" id="s3" onclick="doStep(3)">Step 3: Equimarginal Ratios</button>
+            <div class="step-bar">
+                <button class="step-btn active-step" id="s1" onclick="doStep(1)">Step 1: Calculate MU</button>
+                <button class="step-btn hidden-step" id="s2" onclick="doStep(2)">Step 2: MU per Dollar</button>
+                <button class="step-btn hidden-step" id="s3" onclick="doStep(3)">Step 3: Equal Ratios</button>
                 <button class="step-btn hidden-step" id="s4" onclick="doStep(4)">Step 4: Verify Budget</button>
                 <button class="reset-btn" onclick="resetTheory()">Reset</button>
             </div>
             <div class="result-panel" id="theory-res">
-                <span style="color:#adb5bd; font-size: 20px;">Follow the steps above (left to right) to find the optimal combination.</span>
+                Click <b>Step 1</b> to begin calculating Marginal Utility.
             </div>
         </div>
-    </div>
 
-    <div id="tab2" class="tab-content">
-        <div class="control-panel">
-            <div class="card wallet-card">
-                <h3 style="margin:0">💰 Wallet</h3>
-                <div class="stat-row"><span>Budget Left:</span> <span class="stat-val" id="sim-budget">$50.00</span></div>
-                <div class="stat-row"><span>Total Utility:</span> <span class="stat-val" id="sim-tu" style="color:var(--optimal)">0</span></div>
-            </div>
+        <!-- ======== TAB 2: Game Simulator ======== -->
+        <div id="tab2" class="tab-panel">
+            <div class="sim-layout">
+                <div class="sim-controls">
+                    <div class="card wallet-card">
+                        <h3>Wallet</h3>
+                        <div class="stat-row"><span>Budget Left:</span> <span class="stat-val" id="sim-budget">$50</span></div>
+                        <div class="stat-row"><span>Total Utility:</span> <span class="stat-val" id="sim-tu" style="color:#2e8b57;">0</span></div>
+                    </div>
 
-            <div class="toggle-row">
-                <span>Show Optimal Strategy</span>
-                <label class="switch">
-                    <input type="checkbox" id="toggle-opt" onchange="updateChartVisibility()">
-                    <span class="slider"></span>
-                </label>
-            </div>
+                    <div class="toggle-row">
+                        <span>Show Optimal Strategy</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-opt" onchange="toggleOptimal()">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
 
-            <div class="card factor-card snack">
-                <h3 style="margin:0">🍿 Snacks ($5)</h3>
-                <div class="stat-row"><span>Next MU:</span> <span class="stat-val" id="n-mu-s">20</span></div>
-                <div class="stat-row"><span>MU / $1:</span> <span class="stat-val" id="n-r-s">4.0</span></div>
-                <div class="stat-row"><span>Qty:</span> <span class="stat-val" id="q-s">0</span></div>
-                <button class="buy-btn" id="buy-s" onclick="simBuy('S')">Buy Snack</button>
-            </div>
+                    <div class="card factor-card snack">
+                        <h3 style="color:#1a5276;">Snacks ($5)</h3>
+                        <div class="stat-row"><span>Next MU:</span> <span class="stat-val" id="n-mu-s">20</span></div>
+                        <div class="stat-row"><span>MU / $1:</span> <span class="stat-val" id="n-r-s">4.0</span></div>
+                        <div class="stat-row"><span>Qty Bought:</span> <span class="stat-val" id="q-s">0</span></div>
+                        <button class="buy-btn snack-btn" id="buy-s" onclick="simBuy('S')">Buy Snack</button>
+                    </div>
 
-            <div class="card factor-card movie">
-                <h3 style="margin:0">🎬 Movies ($10)</h3>
-                <div class="stat-row"><span>Next MU:</span> <span class="stat-val" id="n-mu-m">40</span></div>
-                <div class="stat-row"><span>MU / $1:</span> <span class="stat-val" id="n-r-m">4.0</span></div>
-                <div class="stat-row"><span>Qty:</span> <span class="stat-val" id="q-m">0</span></div>
-                <button class="buy-btn" id="buy-m" onclick="simBuy('M')">Buy Movie</button>
+                    <div class="card factor-card movie">
+                        <h3 style="color:#b85c38;">Movies ($10)</h3>
+                        <div class="stat-row"><span>Next MU:</span> <span class="stat-val" id="n-mu-m">40</span></div>
+                        <div class="stat-row"><span>MU / $1:</span> <span class="stat-val" id="n-r-m">4.0</span></div>
+                        <div class="stat-row"><span>Qty Bought:</span> <span class="stat-val" id="q-m">0</span></div>
+                        <button class="buy-btn movie-btn" id="buy-m" onclick="simBuy('M')">Buy Movie</button>
+                    </div>
+
+                    <button class="sim-reset" onclick="resetSim()">Reset Simulation</button>
+                </div>
+
+                <div class="sim-chart-area">
+                    <div id="simChart" style="width:100%;height:100%;min-height:400px;"></div>
+                </div>
             </div>
-            <button onclick="resetSim()" style="background:none; border:none; text-decoration:underline; color:#999; cursor:pointer; margin-top:auto;">Reset Game Simulation</button>
         </div>
 
-        <div class="chart-panel">
-            <h3 style="margin:0 0 5px 0; text-align:center">Utility Growth Visualization</h3>
-            <div style="flex:1;"><canvas id="simChart"></canvas></div>
+        <div class="source-area">
+            Economics Mini Lab — Consumer Choice: The Equal MU per Dollar Rule
         </div>
     </div>
 
 <script>
-    // --- CONSTANTS ---
-    const PS=5, PM=10, BUDGET=50;
-    const Q = [1,2,3,4,5,6,7,8];
-    const TUS = [20, 36, 50, 62, 72, 80, 86, 90];
-    const TUM = [40, 72, 96, 116, 132, 144, 154, 160];
-    const MUS = [20, 16, 14, 12, 10, 8, 6, 4];
-    const MUM = [40, 32, 24, 20, 16, 12, 10, 6];
-    const COLORS = ['#ffeaa7', '#fab1a0', '#55efc4', '#81ecec', '#a29bfe', '#dfe6e9'];
+// ============================================================
+// DATA (keep exactly)
+// ============================================================
+const PS = 5, PM = 10, BUDGET = 50;
+const Q  = [1, 2, 3, 4, 5, 6, 7, 8];
+const TUS = [20, 36, 50, 62, 72, 80, 86, 90];
+const TUM = [40, 72, 96, 116, 132, 144, 154, 160];
+const MUS = [20, 16, 14, 12, 10, 8, 6, 4];
+const MUM = [40, 32, 24, 20, 16, 12, 10, 6];
 
-    // --- TAB SYSTEM ---
-    function switchTab(n) {
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(`tab${n}`).classList.add('active');
-        document.querySelectorAll('.tab-btn')[n-1].classList.add('active');
-        if(n===2 && chart) chart.resize();
+const C = {
+    deepBlue:   '#1a5276',
+    ochre:      '#b85c38',
+    green:      '#2e8b57',
+    darkGreen:  '#1a6b3a',
+    gray:       '#bbb',
+    titleText:  '#1a2a3a',
+    gridLine:   '#e8e8e8',
+    snack:      'rgba(26,82,118,0.2)',
+    movie:      'rgba(184,92,56,0.2)',
+};
+
+// ============================================================
+// TAB SYSTEM
+// ============================================================
+function switchTab(n) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab' + n).classList.add('active');
+    document.querySelectorAll('.tab-btn')[n - 1].classList.add('active');
+    if (n === 2 && simChart) {
+        setTimeout(() => simChart.resize(), 50);
     }
+}
 
-    // --- THEORY LOGIC ---
-    function initTable() {
-        const b = document.getElementById('theory-tbody');
-        b.innerHTML = '';
-        Q.forEach((q, i) => {
-            b.innerHTML += `<tr>
-                <td style="background:#f1f3f5;">${q}</td>
-                <td>${TUS[i]}</td><td class="col-mu col-hidden m-s">${MUS[i]}</td><td class="col-rup col-hidden r-s">${(MUS[i]/PS).toFixed(1)}</td>
-                <td>${TUM[i]}</td><td class="col-mu col-hidden m-m">${MUM[i]}</td><td class="col-rup col-hidden r-m">${(MUM[i]/PM).toFixed(1)}</td>
-            </tr>`;
-        });
+// ============================================================
+// TAB 1: STEP-BY-STEP THEORY
+// ============================================================
+let pairs = [];
+
+function initTable() {
+    const tbody = document.getElementById('theory-tbody');
+    tbody.innerHTML = '';
+    Q.forEach((q, i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+            '<td class="qty-cell">' + q + '</td>' +
+            '<td>' + TUS[i] + '</td>' +
+            '<td class="col-mu col-hidden mu-s">' + MUS[i] + '</td>' +
+            '<td class="col-rup col-hidden rup-s">' + (MUS[i] / PS).toFixed(1) + '</td>' +
+            '<td>' + TUM[i] + '</td>' +
+            '<td class="col-mu col-hidden mu-m">' + MUM[i] + '</td>' +
+            '<td class="col-rup col-hidden rup-m">' + (MUM[i] / PM).toFixed(1) + '</td>';
+        tbody.appendChild(tr);
+    });
+}
+
+function doStep(s) {
+    const res = document.getElementById('theory-res');
+    const hS = document.getElementById('head-snack');
+    const hM = document.getElementById('head-movie');
+
+    document.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active-step'));
+    document.getElementById('s' + s).classList.add('active-step');
+
+    if (s === 1) {
+        // Show MU columns
+        document.querySelectorAll('.col-mu').forEach(el => el.classList.add('col-visible'));
+        hS.colSpan = 2;
+        hM.colSpan = 2;
+        document.getElementById('s2').classList.remove('hidden-step');
+        res.innerHTML = '<b>Step 1: Marginal Utility (MU)</b><br>' +
+            'Marginal Utility is the extra utility from each additional unit. Notice diminishing MU — each additional unit gives less satisfaction than the previous one.';
     }
+    else if (s === 2) {
+        // Show MU/Price columns
+        document.querySelectorAll('.col-rup').forEach(el => el.classList.add('col-visible'));
+        hS.colSpan = 3;
+        hM.colSpan = 3;
+        document.getElementById('s3').classList.remove('hidden-step');
+        res.innerHTML = '<b>Step 2: MU per Dollar (MU / P)</b><br>' +
+            'Divide MU by price to find the "bang for your buck". Snacks: MU / $5. Movies: MU / $10. This allows fair comparison across goods with different prices.';
+    }
+    else if (s === 3) {
+        // Highlight equal MU/P ratios
+        pairs = [];
+        const rsCells = document.querySelectorAll('.rup-s');
+        const rmCells = document.querySelectorAll('.rup-m');
+        let colorIdx = 0;
+        const matchColors = ['#ffeaa7', '#dfe6e9', '#c8e6c9', '#bbdefb', '#f8bbd0', '#e1bee7', '#b2dfdb'];
 
-    let pairs = [];
-    function doStep(s) {
-        const res = document.getElementById('theory-res');
-        const hS = document.getElementById('head-snack');
-        const hM = document.getElementById('head-movie');
-        
-        document.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active-step'));
-        document.getElementById(`s${s}`).classList.add('active-step');
-
-        if(s===1) {
-            document.querySelectorAll('.col-mu').forEach(el => el.classList.add('col-visible'));
-            hS.colSpan = 2; hM.colSpan = 2;
-            document.getElementById('s2').classList.remove('hidden-step');
-            res.innerHTML = "<b>Step 1: Marginal Utility (MU)</b><br>Calculate the extra utility from each additional unit. <i>Notice the Law of Diminishing Marginal Utility.</i>";
-        }
-        else if(s===2) {
-            document.querySelectorAll('.col-rup').forEach(el => el.classList.add('col-visible'));
-            hS.colSpan = 3; hM.colSpan = 3;
-            document.getElementById('s3').classList.remove('hidden-step');
-            res.innerHTML = "<b>Step 2: Utility per Dollar (MU/P)</b><br>Divide MU by price to find the 'Bang for your buck'. This allows for a fair comparison between different goods.";
-        }
-        else if(s===3) {
-            pairs = [];
-            let cIdx = 0;
-            const rsCells = document.querySelectorAll('.r-s');
-            const rmCells = document.querySelectorAll('.r-m');
-            for(let i=0; i<8; i++) {
-                for(let j=0; j<8; j++) {
-                    if(rsCells[i].innerText === rmCells[j].innerText && rsCells[i].innerText !== '0.0') {
-                        let color = COLORS[cIdx % COLORS.length];
-                        pairs.push({qs:i+1, qm:j+1, r:rsCells[i].innerText, color});
-                        rsCells[i].style.backgroundColor = color;
-                        rmCells[j].style.backgroundColor = color;
-                        cIdx++;
-                    }
+        for (let i = 0; i < 8; i++) {
+            for (let j = 0; j < 8; j++) {
+                const rsVal = rsCells[i].innerText;
+                const rmVal = rmCells[j].innerText;
+                if (rsVal === rmVal && rsVal !== '0.0') {
+                    const color = matchColors[colorIdx % matchColors.length];
+                    pairs.push({ qs: i + 1, qm: j + 1, r: rsVal, color: color });
+                    rsCells[i].style.backgroundColor = color;
+                    rmCells[j].style.backgroundColor = color;
+                    colorIdx++;
                 }
             }
-            document.getElementById('s4').classList.remove('hidden-step');
-            res.innerHTML = `<b>Step 3: Matching Ratios</b><br>Found ${pairs.length} combinations where MU/P is equal. The Equimarginal Principle states efficiency is only possible at these points.`;
         }
-        else if(s===4) {
-            let html = "<b>Step 4: Verify Budget Selection ($50)</b><br>Which of these optimal combos costs exactly $50?<br><br>";
-            pairs.forEach(p => {
-                let cost = p.qs*PS + p.qm*PM;
-                let isWin = cost === BUDGET;
-                html += `<div class="res-item ${isWin?'winner':''}">
-                    <span>${p.qs} Snacks & ${p.qm} Movies</span>
-                    <span>Cost: <b>$${cost}</b> | TU: <b>${TUS[p.qs-1]+TUM[p.qm-1]}</b> ${isWin?'🎯 OPTIMAL!':''}</span>
-                </div>`;
-                if(isWin) {
-                    document.querySelectorAll('.r-s')[p.qs-1].style.boxShadow = 'inset 0 0 0 4px #2ecc71';
-                    document.querySelectorAll('.r-m')[p.qm-1].style.boxShadow = 'inset 0 0 0 4px #2ecc71';
-                }
-            });
-            res.innerHTML = html;
-        }
+        document.getElementById('s4').classList.remove('hidden-step');
+        res.innerHTML = '<b>Step 3: Equimarginal Principle</b><br>' +
+            'Found <b>' + pairs.length + '</b> combinations where MU/P is equal. The Equimarginal Principle states that utility is maximized only when the last dollar spent on each good yields equal marginal utility.';
     }
-
-    function resetTheory() {
-        initTable();
-        document.getElementById('theory-res').innerHTML = '<span style="color:#adb5bd; font-size: 20px;">Follow the steps above (left to right) to find the optimal combination.</span>';
-        document.getElementById('head-snack').colSpan = 1;
-        document.getElementById('head-movie').colSpan = 1;
-        document.querySelectorAll('.col-mu, .col-rup').forEach(el => el.classList.remove('col-visible'));
-        document.querySelectorAll('.step-btn').forEach(b => {
-            b.classList.remove('active-step');
-            if(b.id !== 's1') b.classList.add('hidden-step');
+    else if (s === 4) {
+        // Verify budget constraint
+        let html = '<b>Step 4: Verify Budget Constraint ($50)</b><br>' +
+            'Which equal-ratio combinations cost exactly $50?<br><br>';
+        pairs.forEach(function(p) {
+            const cost = p.qs * PS + p.qm * PM;
+            const tu = TUS[p.qs - 1] + TUM[p.qm - 1];
+            const isOptimal = (cost === BUDGET);
+            html += '<div class="res-item' + (isOptimal ? ' winner' : '') + '">' +
+                '<span>' + p.qs + ' Snacks + ' + p.qm + ' Movies</span>' +
+                '<span>Cost: $' + cost + ' | TU: ' + tu + (isOptimal ? ' &#x1f3af; OPTIMAL' : '') + '</span>' +
+                '</div>';
+            if (isOptimal) {
+                const rsCells = document.querySelectorAll('.rup-s');
+                const rmCells = document.querySelectorAll('.rup-m');
+                rsCells[p.qs - 1].classList.add('highlight-optimal');
+                rmCells[p.qm - 1].classList.add('highlight-optimal');
+            }
         });
+        res.innerHTML = html;
     }
+}
 
-    // --- SIMULATOR LOGIC ---
-    let sim = { b: BUDGET, u: 0, qs: 0, qm: 0, path:[{x:0, y:0}] };
-    let chart;
+function resetTheory() {
+    // Clear highlights
+    document.querySelectorAll('.rup-s, .rup-m').forEach(el => {
+        el.style.backgroundColor = '';
+        el.classList.remove('highlight-optimal');
+    });
+    // Hide columns
+    document.querySelectorAll('.col-mu, .col-rup').forEach(el => el.classList.remove('col-visible'));
+    // Reset header colspan
+    document.getElementById('head-snack').colSpan = 1;
+    document.getElementById('head-movie').colSpan = 1;
+    // Reset buttons
+    document.querySelectorAll('.step-btn').forEach(b => {
+        b.classList.remove('active-step');
+        if (b.id !== 's1') b.classList.add('hidden-step');
+    });
+    document.getElementById('s1').classList.add('active-step');
+    // Reset result
+    document.getElementById('theory-res').innerHTML = 'Click <b>Step 1</b> to begin calculating Marginal Utility.';
+    // Rebuild table
+    initTable();
+    pairs = [];
+}
 
-    function getOptimalPath() {
-        let b = BUDGET, s = 0, m = 0, u = 0, spent = 0;
-        let p = [{x: 0, y: 0}];
-        while (b >= PS) {
-            let rs = s < 8 ? MUS[s]/PS : 0;
-            let rm = m < 8 ? MUM[m]/PM : 0;
-            if (rs >= rm && b >= PS) { u += MUS[s++]; b -= PS; spent += PS; }
-            else if (rm > rs && b >= PM) { u += MUM[m++]; b -= PM; spent += PM; }
-            else if (b >= PS) { u += MUS[s++]; b -= PS; spent += PS; }
-            else break;
-            p.push({x: spent, y: u});
+// ============================================================
+// TAB 2: GAME SIMULATOR
+// ============================================================
+let sim = { b: BUDGET, u: 0, qs: 0, qm: 0, path: [{ x: 0, y: 0 }] };
+let simChart = null;
+
+function getOptimalPath() {
+    // Find optimal allocation by brute-force (max TU within budget)
+    let bestS = 0, bestM = 0, bestTU = 0;
+    for (let s = 0; s <= 8; s++) {
+        for (let m = 0; m <= 8; m++) {
+            const cost = s * PS + m * PM;
+            if (cost <= BUDGET) {
+                const tu = TUS[s] + TUM[m];
+                if (tu > bestTU || (tu === bestTU && cost > bestS * PS + bestM * PM)) {
+                    bestTU = tu;
+                    bestS = s;
+                    bestM = m;
+                }
+            }
         }
-        return p;
     }
 
-    function initChart() {
-        const ctx = document.getElementById('simChart').getContext('2d');
-        chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                datasets: [
-                    {
-                        label: 'Optimal Path',
-                        data: getOptimalPath(),
-                        borderColor: '#2ecc71',
-                        borderWidth: 4,
-                        pointRadius: 0,
-                        hidden: true,
-                        tension: 0
-                    },
-                    {
-                        label: 'Your Path',
-                        data: sim.path,
-                        borderColor: '#3498db',
-                        borderWidth: 4,
-                        pointRadius: 6,
-                        pointBackgroundColor: '#fff',
-                        tension: 0
-                    }
-                ]
+    // Build step-by-step path to reach optimal allocation
+    // Step: 1S → 2S → 1M → 2M → 3S → 4S → 5S → 6S (best MU/P at each step)
+    let s = 0, m = 0, u = 0, spent = 0;
+    const p = [{ x: 0, y: 0 }];
+    const alloc = [[1,0],[2,0],[2,1],[2,2],[3,2],[4,2],[5,2],[6,2]];
+    for (let i = 0; i < alloc.length; i++) {
+        const [ts, tm] = alloc[i];
+        while (s < ts) { u += MUS[s++]; spent += PS; }
+        while (m < tm) { u += MUM[m++]; spent += PM; }
+        p.push({ x: spent, y: u });
+    }
+    return p;
+}
+
+function buildStepData(points) {
+    // Convert points to step function: horizontal then vertical
+    const step = [];
+    for (let i = 0; i < points.length; i++) {
+        if (i > 0) {
+            // Horizontal segment: same y as previous, x jumps to current
+            step.push([points[i].x, points[i - 1].y]);
+        }
+        // Vertical segment: current point
+        step.push([points[i].x, points[i].y]);
+    }
+    return step;
+}
+
+function initSimChart() {
+    const el = document.getElementById('simChart');
+    simChart = echarts.init(el);
+
+    const optPath = getOptimalPath();
+    const optStep = buildStepData(optPath);
+
+    const option = {
+        animation: false,
+        grid: { left: 60, right: 60, top: 40, bottom: 50 },
+        xAxis: {
+            type: 'value',
+            name: 'Total Cost ($)',
+            nameLocation: 'middle',
+            nameGap: 30,
+            nameTextStyle: { fontSize: 13, fontWeight: 'bold', color: '#1a2a3a' },
+            min: 0,
+            max: 55,
+            splitLine: { lineStyle: { color: C.gridLine } },
+            axisLine: { lineStyle: { color: '#999' } },
+            axisLabel: { fontSize: 12, color: '#666' }
+        },
+        yAxis: {
+            type: 'value',
+            name: 'Total Utility',
+            nameLocation: 'middle',
+            nameGap: 42,
+            nameTextStyle: { fontSize: 13, fontWeight: 'bold', color: '#1a2a3a' },
+            min: 0,
+            max: 170,
+            splitLine: { lineStyle: { color: C.gridLine } },
+            axisLine: { lineStyle: { color: '#999' } },
+            axisLabel: { fontSize: 12, color: '#666' }
+        },
+        series: [
+            {
+                name: 'Optimal Path',
+                type: 'line',
+                data: optStep,
+                symbol: 'none',
+                lineStyle: { color: C.green, width: 3, type: 'dashed' },
+                itemStyle: { color: C.green },
+                z: 1
             },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                scales: {
-                    x: { type:'linear', min:0, max:60, title:{display:true, text:'Total Cost ($)', font:{size:15, weight:'bold'}}},
-                    y: { min:0, max:180, title:{display:true, text:'Total Utility', font:{size:15, weight:'bold'}}}
-                },
-                plugins: { legend: { labels: { font: { size: 13 } } } }
+            {
+                name: 'Your Path',
+                type: 'line',
+                data: [[0, 0]],
+                symbol: 'circle',
+                symbolSize: 8,
+                lineStyle: { color: C.deepBlue, width: 3 },
+                itemStyle: { color: C.deepBlue, borderColor: '#fff', borderWidth: 2 },
+                z: 2
             }
-        });
-    }
-
-    function simBuy(type) {
-        if(type==='S' && sim.b >= PS) {
-            sim.u += MUS[sim.qs]; sim.b -= PS; sim.qs++;
-        } else if(type==='M' && sim.b >= PM) {
-            sim.u += MUM[sim.qm]; sim.b -= PM; sim.qm++;
+        ],
+        legend: {
+            show: true,
+            top: 5,
+            right: 60,
+            textStyle: { fontSize: 12, color: '#555' },
+            selected: { 'Optimal Path': false }
+        },
+        tooltip: {
+            trigger: 'item',
+            formatter: function(params) {
+                if (params.seriesName === 'Your Path') {
+                    return 'Cost: $' + params.value[0] + '<br>Utility: ' + params.value[1];
+                }
+                return params.seriesName + '<br>Cost: $' + params.value[0] + '<br>Utility: ' + params.value[1];
+            }
         }
-        sim.path.push({x: BUDGET-sim.b, y: sim.u});
-        chart.update();
-        updateSimUI();
-    }
+    };
 
-    function updateSimUI() {
-        document.getElementById('sim-budget').innerText = `$${sim.b.toFixed(2)}`;
-        document.getElementById('sim-tu').innerText = sim.u;
-        document.getElementById('q-s').innerText = sim.qs;
-        document.getElementById('q-m').innerText = sim.qm;
-        let rs = sim.qs < 8 ? (MUS[sim.qs]/PS).toFixed(1) : 0;
-        let rm = sim.qm < 8 ? (MUM[sim.qm]/PM).toFixed(1) : 0;
-        document.getElementById('n-mu-s').innerText = sim.qs < 8 ? MUS[sim.qs] : 'MAX';
-        document.getElementById('n-r-s').innerText = rs;
-        document.getElementById('n-mu-m').innerText = sim.qm < 8 ? MUM[sim.qm] : 'MAX';
-        document.getElementById('n-r-m').innerText = rm;
-        document.getElementById('buy-s').disabled = sim.b < PS || sim.qs >= 8;
-        document.getElementById('buy-m').disabled = sim.b < PM || sim.qm >= 8;
-    }
+    simChart.setOption(option);
 
-    function updateChartVisibility() {
-        chart.setDatasetVisibility(0, document.getElementById('toggle-opt').checked);
-        chart.update();
-    }
+    window.addEventListener('resize', function() {
+        if (simChart) simChart.resize();
+    });
+}
 
-    function resetSim() {
-        sim = { b: BUDGET, u: 0, qs: 0, qm: 0, path:[{x:0, y:0}] };
-        document.getElementById('toggle-opt').checked = false;
-        chart.data.datasets[1].data = sim.path;
-        chart.setDatasetVisibility(0, false);
-        chart.update();
-        updateSimUI();
-    }
+function updateSimChart() {
+    const step = buildStepData(sim.path);
+    simChart.setOption({
+        series: [{ data: simChart.getOption().series[0].data }, { data: step }]
+    });
+}
 
-    window.onload = () => { initTable(); initChart(); updateSimUI(); };
+function simBuy(type) {
+    if (type === 'S' && sim.b >= PS && sim.qs < 8) {
+        sim.u += MUS[sim.qs];
+        sim.b -= PS;
+        sim.qs++;
+    } else if (type === 'M' && sim.b >= PM && sim.qm < 8) {
+        sim.u += MUM[sim.qm];
+        sim.b -= PM;
+        sim.qm++;
+    }
+    sim.path.push({ x: BUDGET - sim.b, y: sim.u });
+    updateSimChart();
+    updateSimUI();
+}
+
+function updateSimUI() {
+    document.getElementById('sim-budget').textContent = '$' + sim.b;
+    document.getElementById('sim-tu').textContent = sim.u;
+    document.getElementById('q-s').textContent = sim.qs;
+    document.getElementById('q-m').textContent = sim.qm;
+
+    const nextMuS = sim.qs < 8 ? MUS[sim.qs] : '—';
+    const nextMuM = sim.qm < 8 ? MUM[sim.qm] : '—';
+    const nextRpS = sim.qs < 8 ? (MUS[sim.qs] / PS).toFixed(1) : '—';
+    const nextRpM = sim.qm < 8 ? (MUM[sim.qm] / PM).toFixed(1) : '—';
+
+    document.getElementById('n-mu-s').textContent = nextMuS;
+    document.getElementById('n-r-s').textContent = nextRpS;
+    document.getElementById('n-mu-m').textContent = nextMuM;
+    document.getElementById('n-r-m').textContent = nextRpM;
+
+    document.getElementById('buy-s').disabled = (sim.b < PS || sim.qs >= 8);
+    document.getElementById('buy-m').disabled = (sim.b < PM || sim.qm >= 8);
+}
+
+function toggleOptimal() {
+    const show = document.getElementById('toggle-opt').checked;
+    simChart.setOption({
+        legend: { selected: { 'Optimal Path': show } }
+    });
+}
+
+function resetSim() {
+    sim = { b: BUDGET, u: 0, qs: 0, qm: 0, path: [{ x: 0, y: 0 }] };
+    document.getElementById('toggle-opt').checked = false;
+    simChart.setOption({
+        legend: { selected: { 'Optimal Path': false } },
+        series: [
+            { data: simChart.getOption().series[0].data },
+            { data: [[0, 0]] }
+        ]
+    });
+    updateSimUI();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('DOMContentLoaded', function() {
+    initTable();
+    initSimChart();
+    updateSimUI();
+});
 </script>
 </body>
 </html>
