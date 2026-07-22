@@ -722,14 +722,13 @@
     function updateCurvesFromShift() {
         if (!chart) return;
 
-        // dShift and sShift are pixel offsets from initial handle position
-        // Convert pixel shift to data-space shift
-        const origin = dataToPixel(0, 0);
-        const unitPoint = dataToPixel(1, 0);
-        const pixelsPerUnit = unitPoint[0] - origin[0];
-
-        const dShiftData = dShift / pixelsPerUnit;
-        const sShiftData = sShift / pixelsPerUnit;
+        // dShift and sShift are pixel offsets from the initial handle position.
+        // Convert to data-space by anchoring at the handle's initial pixel location,
+        // applying the pixel offset, and then converting via convertFromPixel.
+        const initPx = dataToPixel(5, 5);                     // initial handle pixel pos
+        const initData = pixelToData(initPx[0], initPx[1]);   // round-trip for precision
+        const dShiftData = pixelToData(initPx[0] + dShift, initPx[1])[0] - initData[0];
+        const sShiftData = pixelToData(initPx[0] + sShift, initPx[1])[0] - initData[0];
 
         // D1: P = 10 - (Q - dShiftData) = (10 + dShiftData) - Q
         // Two endpoints in data space: (1 + dShiftData, 9) and (9 + dShiftData, 1)
@@ -925,11 +924,7 @@
 
         let qData = sessionQuestions[currentQ];
 
-        // Convert pixel shift to data-space shift to determine direction
-        const origin = dataToPixel(0, 0);
-        const unitPoint = dataToPixel(1, 0);
-        const pixelsPerUnit = unitPoint[0] - origin[0];
-
+        // Determine shift direction from pixel offsets
         let userD = "none", userS = "none";
         if (dShift > SHIFT_THRESHOLD) userD = "right";
         else if (dShift < -SHIFT_THRESHOLD) userD = "left";
