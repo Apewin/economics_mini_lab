@@ -480,13 +480,17 @@ function renderPPC(sc, isVisible) {
             type: 'value',
             min: sc.rLim[0],
             max: sc.rLim[1],
-            show: false
+            axisLine: { show: true, lineStyle: { color: '#343a40', width: 2 } },
+            axisTick: { show: true, interval: 20, lineStyle: { color: '#343a40', width: 1.5 }, length: 5 },
+            axisLabel: { show: true, interval: 20, color: '#555', fontSize: 12 }
         },
         yAxis: {
             type: 'value',
             min: sc.fLim[0],
             max: sc.fLim[1],
-            show: false
+            axisLine: { show: true, lineStyle: { color: '#343a40', width: 2 } },
+            axisTick: { show: true, interval: 20, lineStyle: { color: '#343a40', width: 1.5 }, length: 5 },
+            axisLabel: { show: true, interval: 20, color: '#555', fontSize: 12 }
         },
         series: series,
         graphic: [
@@ -508,36 +512,6 @@ function renderPPC(sc, isVisible) {
                     text: 'Rabbits Produced',
                     font: '600 13px Source Sans Pro, sans-serif',
                     fill: C.titleText
-                }
-            },
-            {
-                type: 'text',
-                left: 8,
-                top: 28,
-                style: {
-                    text: String(sc.fLim[1]),
-                    font: '12px Source Sans Pro, sans-serif',
-                    fill: '#666'
-                }
-            },
-            {
-                type: 'text',
-                right: 45,
-                bottom: 30,
-                style: {
-                    text: String(sc.rLim[1]),
-                    font: '12px Source Sans Pro, sans-serif',
-                    fill: '#666'
-                }
-            },
-            {
-                type: 'text',
-                left: 6,
-                bottom: 30,
-                style: {
-                    text: '0',
-                    font: '12px Source Sans Pro, sans-serif',
-                    fill: '#666'
                 }
             }
         ]
@@ -614,13 +588,17 @@ function renderOC(sc, isVisible) {
             type: 'value',
             min: sc.rLim[0],
             max: sc.rLim[1],
-            show: false
+            axisLine: { show: true, lineStyle: { color: '#343a40', width: 2 } },
+            axisTick: { show: true, interval: 20, lineStyle: { color: '#343a40', width: 1.5 }, length: 5 },
+            axisLabel: { show: true, interval: 20, color: '#555', fontSize: 12 }
         },
         yAxis: {
             type: 'value',
             min: sc.ocLim[0],
             max: sc.ocLim[1],
-            show: false
+            axisLine: { show: true, lineStyle: { color: '#343a40', width: 2 } },
+            axisTick: { show: true, interval: 20, lineStyle: { color: '#343a40', width: 1.5 }, length: 5 },
+            axisLabel: { show: true, interval: 20, color: '#555', fontSize: 12 }
         },
         series: series,
         graphic: [
@@ -642,36 +620,6 @@ function renderOC(sc, isVisible) {
                     text: 'Rabbits Produced',
                     font: '600 13px Source Sans Pro, sans-serif',
                     fill: C.titleText
-                }
-            },
-            {
-                type: 'text',
-                left: 8,
-                top: 28,
-                style: {
-                    text: String(sc.ocLim[1]),
-                    font: '12px Source Sans Pro, sans-serif',
-                    fill: '#666'
-                }
-            },
-            {
-                type: 'text',
-                right: 45,
-                bottom: 30,
-                style: {
-                    text: String(sc.rLim[1]),
-                    font: '12px Source Sans Pro, sans-serif',
-                    fill: '#666'
-                }
-            },
-            {
-                type: 'text',
-                left: 6,
-                bottom: 30,
-                style: {
-                    text: '0',
-                    font: '12px Source Sans Pro, sans-serif',
-                    fill: '#666'
                 }
             }
         ]
