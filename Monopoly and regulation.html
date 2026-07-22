@@ -562,8 +562,8 @@ function update() {
         }
     }
 
-    // Then set graphic elements
-    myChart.setOption({ graphic: { elements: graphicElements } });
+    // Then set graphic elements (replaceMerge ensures unchecked areas are removed)
+    myChart.setOption({ graphic: { elements: graphicElements } }, { replaceMerge: ['graphic'] });
 }
 
 // ════════════════════════════════════════════════════════════
