@@ -3,402 +3,663 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AP Econ: Long-Run Side-by-Side Lab</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Long-Run Adjustment — Industry &amp; Firm Lab</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body {
-            margin: 0; padding: 0;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            display: flex; height: 100vh;
-            background-color: #f0f2f5; color: #1a1a1a;
-            overflow: hidden;
-        }
-        /* --- 布局结构 --- */
-        .left-panel {
-            flex: 6.5; display: flex; flex-direction: column;
-            padding: 15px; box-sizing: border-box; background: #fff;
-            border-right: 1px solid #d1d9e0;
-        }
-        .right-panel {
-            flex: 3.5; padding: 20px; box-sizing: border-box;
-            background: #fafafa; overflow-y: auto;
+            background: #f7f7f5;
+            font-family: 'Source Sans Pro', 'Segoe UI', system-ui, sans-serif;
+            color: #333;
+            padding: 24px 16px;
+            margin: 0;
         }
 
-        /* --- 图表容器：上下布局 --- */
-        .graphs-container {
-            flex-grow: 1; display: flex; gap: 15px; min-height: 0;
-        }
-        .graph-box { flex: 1; position: relative; }
-
-        /* --- 控制区 --- */
-        .controls-container {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 10px; padding: 12px;
-            background: #f8f9fa; border-radius: 8px;
-            border: 1px solid #dee2e6; margin-top: 10px;
-        }
-        .control-group { display: flex; flex-direction: column; }
-        .control-group label {
-            font-weight: 600; font-size: 0.85rem; color: #444; margin-bottom: 4px;
-        }
-        .control-group input[type="range"] { cursor: pointer; }
-        
-        .radio-group {
-            grid-column: span 3; display: flex; gap: 25px;
-            justify-content: center; background: #fff;
-            padding: 8px; border-radius: 4px; border: 1px solid #ececec;
-        }
-        .radio-group label {
-            cursor: pointer; display: flex; align-items: center;
-            gap: 8px; font-size: 0.9rem; font-weight: bold;
-        }
-
-        .lr-toggle {
-            grid-column: span 3;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        .container {
+            max-width: 880px;
+            margin: 0 auto;
             background: #fff;
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #ececec;
-            font-size: 0.9rem;
-            font-weight: bold;
+            border: 1px solid #d4d4d0;
+            padding: 28px 32px;
         }
 
-        /* --- 报表样式 --- */
-        h2 { margin: 0 0 12px 0; font-size: 1.4rem; color: #2c3e50; border-bottom: 2px solid #3498db; }
-        table { width: 100%; border-collapse: collapse; background: #fff; margin-bottom: 20px; font-size: 1.1rem; }
-        th, td { border: 1px solid #e0e0e0; padding: 10px; text-align: center; }
-        th { background-color: #34495e; color: white; font-size: 0.9rem; }
-        b { color: #2980b9; }
-        .profit-pos { color: #27ae60; font-weight: bold; }
-        .profit-neg { color: #c0392b; font-weight: bold; }
+        h2 {
+            font-family: 'Merriweather', 'Georgia', serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a2a3a;
+            border-bottom: 2px solid #1a2a3a;
+            padding-bottom: 8px;
+            margin: 0 0 12px 0;
+        }
 
-        /* --- 独立版权组件 --- */
-        .copyright-tag {
-            position: fixed; bottom: 5px; right: 10px;
-            font-size: 10px; color: #bbb; pointer-events: none;
-            z-index: 1000; letter-spacing: 0.5px;
+        .chart-box {
+            width: 100%;
+            height: 350px;
+            margin: 12px 0;
+        }
+
+        /* Controls */
+        .controls-section {
+            margin-top: 16px;
+        }
+
+        .slider-group {
+            margin-bottom: 12px;
+        }
+
+        .slider-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a2a3a;
+            margin-bottom: 4px;
+        }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .slider-row input[type="range"] {
+            flex: 1;
+            cursor: pointer;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #d4d4d0;
+            border-radius: 0;
+            outline: none;
+        }
+
+        .slider-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #1a5276;
+            border: 2px solid #fff;
+            border-radius: 0;
+            cursor: pointer;
+        }
+
+        .slider-val {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a5276;
+            min-width: 48px;
+            text-align: right;
+        }
+
+        .slider-group.lr-highlight {
+            background: #e3f0f9;
+            border-left: 3px solid #1a5276;
+            padding: 8px 12px;
+            margin-top: 8px;
+        }
+
+        .slider-group.lr-highlight label {
+            color: #1a5276;
+        }
+
+        /* Radio / Checkbox toggles */
+        .toggles {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 12px;
+            padding: 10px 0;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .toggles label {
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #333;
+        }
+
+        .toggles input[type="checkbox"],
+        .toggles input[type="radio"] {
+            cursor: pointer;
+            accent-color: #1a5276;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            margin-top: 16px;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 16px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .stat-group h3 {
+            font-family: 'Merriweather', 'Georgia', serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: #1a2a3a;
+            margin: 0 0 6px 0;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin: 4px 0;
+        }
+
+        .stat-label {
+            color: #555;
+        }
+
+        .stat-val {
+            font-weight: 600;
+        }
+
+        .val-green { color: #3d6b4f; }
+        .val-red   { color: #8b4545; }
+
+        /* Hint */
+        .hint-box {
+            margin-top: 14px;
+            font-size: 12px;
+            color: #555;
+            line-height: 1.6;
+            background: #fffde7;
+            padding: 14px 16px;
+            border-left: 4px solid #f1c40f;
+        }
+
+        .hint-box strong {
+            color: #1a2a3a;
+        }
+
+        /* Source */
+        .source {
+            font-size: 10px;
+            color: #888;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 8px;
+            margin-top: 16px;
+        }
+
+        /* Legend strip */
+        .legend-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin: 8px 0 4px 0;
+            font-size: 12px;
+            color: #555;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend-line {
+            width: 20px;
+            height: 0;
+            border-top: 2.5px solid;
+            display: inline-block;
+        }
+
+        .legend-line.dashed {
+            border-top-style: dashed;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            background: #1a2a3a;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 1px #1a2a3a;
+            display: inline-block;
+        }
+
+        .legend-rect {
+            width: 14px;
+            height: 10px;
+            display: inline-block;
         }
     </style>
 </head>
 <body>
 
-    <div class="left-panel">
-        <div class="graphs-container">
-            <div class="graph-box">
-                <canvas id="marketChart"></canvas>
-            </div>
-            <div class="graph-box">
-                <canvas id="firmChart"></canvas>
+<div class="container">
+    <h2>Long-Run Adjustment — Industry &amp; Firm</h2>
+
+    <!-- Legend strip (shared for both charts) -->
+    <div class="legend-strip">
+        <span class="legend-item"><span class="legend-line dashed" style="border-color:#bbb;"></span> Original D₀ / S₀ / MC₀ / ATC₀</span>
+        <span class="legend-item"><span class="legend-line" style="border-color:#1a5276;"></span> Demand (D)</span>
+        <span class="legend-item"><span class="legend-line" style="border-color:#b85c38;"></span> Supply (S)</span>
+        <span class="legend-item"><span class="legend-line" style="border-color:#5a3d7a;"></span> MC / ATC (current)</span>
+        <span class="legend-item"><span class="legend-line" style="border-color:#3d6b4f;"></span> LR Supply</span>
+        <span class="legend-item"><span class="legend-dot"></span> Equilibrium</span>
+        <span class="legend-item"><span class="legend-rect" style="background:rgba(61,107,79,0.25);"></span> Profit</span>
+    </div>
+
+    <!-- Industry chart -->
+    <div id="chartIndustry" class="chart-box"></div>
+
+    <!-- Firm chart -->
+    <div id="chartFirm" class="chart-box"></div>
+
+    <!-- Controls -->
+    <div class="controls-section">
+        <div class="slider-group">
+            <label>Industry Demand Shift: <span id="valD" style="color:#1a5276;">0</span></label>
+            <div class="slider-row">
+                <input type="range" id="inpD" min="-20" max="20" step="1" value="0">
+                <span class="slider-val" id="dispD">0</span>
             </div>
         </div>
+        <div class="slider-group">
+            <label>Initial Supply Shift (SR): <span id="valS" style="color:#1a5276;">0</span></label>
+            <div class="slider-row">
+                <input type="range" id="inpS" min="-20" max="20" step="1" value="0">
+                <span class="slider-val" id="dispS">0</span>
+            </div>
+        </div>
+        <div class="slider-group lr-highlight">
+            <label>Entry / Exit (Long-Run): <span id="valLR" style="color:#1a5276;">0</span></label>
+            <div class="slider-row">
+                <input type="range" id="inpLR" min="-30" max="50" step="1" value="0">
+                <span class="slider-val" id="dispLR">0</span>
+            </div>
+        </div>
+        <div class="toggles">
+            <label><input type="radio" name="costType" value="constant" checked> Constant-Cost Industry</label>
+            <label><input type="radio" name="costType" value="increasing"> Increasing-Cost Industry</label>
+            <label><input type="checkbox" id="showLRSupply" checked> Show Long-Run Supply Curve</label>
+        </div>
+    </div>
 
-        <div class="controls-container">
-            <div class="control-group">
-                <label>Industry Demand Shift: <span id="valD">0</span></label>
-                <input type="range" id="inpD" min="-20" max="20" value="0" step="1">
+    <!-- Dashboard -->
+    <div class="dashboard">
+        <div class="dashboard-grid">
+            <div class="stat-group">
+                <h3>Market Report</h3>
+                <div class="stat-row"><span class="stat-label">Price (P)</span><span class="stat-val" id="lblP">$25.00</span></div>
+                <div class="stat-row"><span class="stat-label">Industry Q</span><span class="stat-val" id="lblQ">100.00</span></div>
             </div>
-            <div class="control-group">
-                <label>Initial Supply Shift (SR): <span id="valS">0</span></label>
-                <input type="range" id="inpS" min="-20" max="20" value="0" step="1">
-            </div>
-            <div class="control-group" style="background: #e3f2fd; border-radius: 4px; padding: 2px 8px;">
-                <label style="color:#1565c0">Entry / Exit (Long-Run): <span id="valLR">0</span></label>
-                <input type="range" id="inpLR" min="-30" max="50" value="0" step="1">
-            </div>
-
-            <div class="radio-group">
-                <label><input type="radio" name="costType" value="constant" checked> Constant-Cost Industry</label>
-                <label><input type="radio" name="costType" value="increasing"> Increasing-Cost Industry</label>
-            </div>
-
-            <div class="lr-toggle">
-                <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                    <input type="checkbox" id="showLRSupply" checked>
-                    Show Long-Run Supply Curve (connect two LR equilibria)
-                </label>
+            <div class="stat-group">
+                <h3>Firm Report</h3>
+                <div class="stat-row"><span class="stat-label">Output (q)</span><span class="stat-val" id="lblq">6.67</span></div>
+                <div class="stat-row"><span class="stat-label">Avg Total Cost</span><span class="stat-val" id="lblATC">$25.00</span></div>
+                <div class="stat-row"><span class="stat-label">Economic Profit</span><span class="stat-val" id="lblProfit">$0.00</span></div>
             </div>
         </div>
     </div>
 
-    <div class="right-panel">
-        <h2>Market Report</h2>
-        <table>
-            <tr><th>Variable</th><th>Value</th></tr>
-            <tr><td>Price (P)</td><td><b id="lblP">$25.00</b></td></tr>
-            <tr><td>Industry Q</td><td><b id="lblQ">100.00</b></td></tr>
-        </table>
-
-        <h2>Firm Report</h2>
-        <table>
-            <tr><th>Variable</th><th>Value</th></tr>
-            <tr><td>Output (q)</td><td><b id="lblq">6.67</b></td></tr>
-            <tr><td>Avg Total Cost</td><td><b id="lblATC">$25.00</b></td></tr>
-            <tr><td>Economic Profit</td><td><span id="lblProfit">$0.00</span></td></tr>
-        </table>
-
-        <div style="font-size: 0.9rem; color: #666; line-height: 1.5; background: #fffde7; padding: 15px; border-radius: 6px; border-left: 5px solid #f1c40f;">
-            <strong>Step-by-Step Logic (conceptually accurate):</strong><br>
-            1. Demand shift → short-run shock (P rises/falls, profit ±).<br>
-            2. Entry/exit (LR) → SR Supply shifts <b>RIGHT</b> (positive LR slider).<br>
-            3. In <b>Increasing-Cost</b>: costs shift UP as firms enter.<br>
-            4. Long-Run Supply = line connecting two zero-profit equilibria.<br>
-            <strong style="color:#e67e22">Now shows BOTH original &amp; current curves for D and S.</strong><br>
-            <strong style="color:#27ae60">Fixed:</strong> Long-run economic profit is now exactly $0.00 (ATC/MC perfectly calibrated).
-        </div>
+    <!-- Hint box -->
+    <div class="hint-box">
+        <strong>Step-by-Step Logic:</strong><br>
+        1. Demand shift → short-run shock (P rises/falls, profit ±).<br>
+        2. Entry/exit (LR) → SR Supply shifts <strong>RIGHT</strong> (positive LR slider).<br>
+        3. In <strong>Increasing-Cost</strong>: costs shift UP as firms enter (MC₀, ATC₀ → MC, ATC).<br>
+        4. Long-Run Supply = line connecting two zero-profit equilibria.<br>
+        <strong style="color:#b85c38;">Original curves shown as dashed gray; current curves are solid colored.</strong><br>
+        <strong style="color:#3d6b4f;">LR profit is exactly $0.00 when LR slider = 0 (ATC/MC perfectly calibrated).</strong>
     </div>
 
-    <div class="copyright-tag">© 2026 Dr. Jia. All rights reserved. For teaching use only.</div>
+    <div class="source">© 2026 Economics Visualization — Dr. Jia Edition · Textbook interactive built with Apache ECharts</div>
+</div>
 
 <script>
-    let mktChart, frmChart;
-
-    // 核心数学模型（已修正ATC常数项 + 精确求解最优q）
-    const model = {
-        calcMktQ: (dShift, sShiftOld) => (40 + dShift - sShiftOld) / 0.4,
-        calcMktP: (q, sShiftOld) => 5 + 0.2 * q + sShiftOld,
-        
-        getFirmMC: (q, costShift) => (0.6 * q * q - 4 * q + 25) + costShift,
-        
-        // 关键修正：ATC常数项减去1/18，使q*=20/3时ATC精确等于MC
-        getFirmATC: (q, costShift) => (0.2 * q * q - 2 * q + 25 - 1/18 + 30/q) + costShift,
-        
-        // 新增：精确求解最优产量（二次方程解析解，避免数值搜索误差）
-        getOptimalQ: (P, costShift) => {
-            const a = 0.6;
-            const b = -4;
-            const c = 25 + costShift - P;
-            const discriminant = 16 - 2.4 * c;
-            if (discriminant < 0) return 0.1;
-            const sqrtD = Math.sqrt(discriminant);
-            // 取较大根（经济意义上的最优产量）
-            const q = (4 + sqrtD) / (2 * a);
-            return Math.max(q, 0.1);
-        }
+(function () {
+    /* ── colour palette ────────────────────────────────────────────── */
+    const C = {
+        deepBlue:   '#1a5276',
+        ochre:      '#b85c38',
+        darkPurple: '#5a3d7a',
+        green:      '#3d6b4f',
+        gray:       '#bbb',
+        red:        '#8b4545',
+        titleText:  '#1a2a3a',
+        gridLine:   '#e8e8e8',
+        profit:     'rgba(61,107,79,0.2)',
+        loss:       'rgba(139,69,69,0.2)'
     };
 
-    // 绘制企业盈利/亏损矩形
-    function drawProfitBox(chart, p, q, atc, profit) {
-        if (!chart || !chart.ctx || q <= 0) return;
-        const ctx = chart.ctx;
-        const xScale = chart.scales.x;
-        const yScale = chart.scales.y;
+    /* ── DOM refs ──────────────────────────────────────────────────── */
+    const elChartIndustry = document.getElementById('chartIndustry');
+    const elChartFirm     = document.getElementById('chartFirm');
+    const elInpD   = document.getElementById('inpD');
+    const elInpS   = document.getElementById('inpS');
+    const elInpLR  = document.getElementById('inpLR');
+    const elValD   = document.getElementById('valD');
+    const elValS   = document.getElementById('valS');
+    const elValLR  = document.getElementById('valLR');
+    const elDispD  = document.getElementById('dispD');
+    const elDispS  = document.getElementById('dispS');
+    const elDispLR = document.getElementById('dispLR');
+    const elShowLR = document.getElementById('showLRSupply');
 
-        const x0 = xScale.getPixelForValue(0);
-        const xQ = xScale.getPixelForValue(q);
-        const yP = yScale.getPixelForValue(p);
-        const yATC = yScale.getPixelForValue(atc);
+    /* ── ECharts init ──────────────────────────────────────────────── */
+    const mktChart = echarts.init(elChartIndustry, null, { renderer: 'canvas' });
+    const frmChart = echarts.init(elChartFirm, null, { renderer: 'canvas' });
 
-        ctx.save();
-        
-        const topY = Math.min(yP, yATC);
-        const height = Math.abs(yP - yATC);
-        
-        const fillColor = profit > 0.01 
-            ? 'rgba(39, 174, 96, 0.25)' 
-            : (profit < -0.01 ? 'rgba(149, 165, 166, 0.35)' : 'transparent');
-        
-        ctx.fillStyle = fillColor;
-        ctx.fillRect(x0, topY, xQ - x0, height);
+    /* ── Economics model ───────────────────────────────────────────── */
+    const Q_MIN = 0, Q_MAX = 200, Q_STEP_MKT = 5;
+    const q_MIN = 0.3, q_MAX = 15, q_STEP = 0.15;
 
-        if (Math.abs(profit) > 0.01) {
-            ctx.strokeStyle = profit > 0 ? '#27ae60' : '#95a5a6';
-            ctx.lineWidth = 1.5;
-            ctx.strokeRect(x0, topY, xQ - x0, height);
-        }
-        
-        ctx.restore();
+    function getFirmMC(q, costShift) { return 0.6 * q * q - 4 * q + 25 + costShift; }
+    function getFirmATC(q, costShift) { return 0.2 * q * q - 2 * q + 25 - 1/18 + 30 / q + costShift; }
+
+    function getOptimalQ(P, costShift) {
+        const a = 0.6, b = -4, c = 25 + costShift - P;
+        const disc = b * b - 4 * a * c;
+        if (disc < 0) return 0.1;
+        return Math.max((-b + Math.sqrt(disc)) / (2 * a), 0.1);
     }
 
+    function genMktCurve(fn) {
+        const d = [];
+        for (let Q = Q_MIN; Q <= Q_MAX; Q += Q_STEP_MKT) d.push([Q, fn(Q)]);
+        return d;
+    }
+
+    function genFirmCurve(fn) {
+        const d = [];
+        for (let q = q_MIN; q <= q_MAX; q = +(q + q_STEP).toFixed(4)) d.push([q, fn(q)]);
+        return d;
+    }
+
+    /* ── axis label graphics ───────────────────────────────────────── */
+    function axisLabels(xText, yText) {
+        return [
+            {
+                type: 'text', left: 'center', bottom: 4,
+                style: { text: xText, fill: '#555', font: '600 12px "Source Sans Pro", sans-serif' }
+            },
+            {
+                type: 'text', top: 'center', left: 6,
+                style: {
+                    text: yText, fill: '#555',
+                    font: '600 12px "Source Sans Pro", sans-serif'
+                },
+                rotation: -Math.PI / 2
+            }
+        ];
+    }
+
+    /* ── shared series style helpers ───────────────────────────────── */
+    function lineStyle(color, width, dash) {
+        return {
+            symbol: 'none',
+            lineStyle: { color: color, width: width || 2.5, type: dash || 'solid' },
+            emphasis: { disabled: true },
+            animation: false
+        };
+    }
+
+    /* ── Main update ──────────────────────────────────────────────── */
     function update() {
-        const dShift = parseFloat(document.getElementById('inpD').value);
-        const sInitial = parseFloat(document.getElementById('inpS').value);
-        const lrAdj = parseFloat(document.getElementById('inpLR').value);
-        const isIncreasing = document.querySelector('input[name="costType"]:checked').value === 'increasing';
-        const showLRSupply = document.getElementById('showLRSupply').checked;
+        const dShift    = parseFloat(elInpD.value);
+        const sInitial  = parseFloat(elInpS.value);
+        const lrAdj     = parseFloat(elInpLR.value);
+        const isInc     = document.querySelector('input[name="costType"]:checked').value === 'increasing';
+        const showLR    = elShowLR.checked;
 
-        // === 严格正确的经济逻辑 ===
-        const supplyShiftSR = sInitial;
-        const supplyShiftLR = sInitial + lrAdj;
-        const s_old_SR = -supplyShiftSR;
-        const s_old_LR = -supplyShiftLR;
-
+        // Supply shift: SR vs LR
+        const s_old_SR = -sInitial;
+        const s_old_LR = -(sInitial + lrAdj);
         const costShiftOriginal = 0;
-        const costShiftCurrent = isIncreasing ? lrAdj * 0.3 : 0;
+        const costShiftCurrent  = isInc ? lrAdj * 0.3 : 0;
 
-        // 市场均衡（使用长期调整后的供给）
-        const Q = model.calcMktQ(dShift, s_old_LR);
-        const P = model.calcMktP(Q, s_old_LR);
+        // Industry equilibrium (LR-adjusted supply)
+        const dDemand   = (Q) => 45 - 0.2 * Q + dShift;
+        const dOriginal = (Q) => 45 - 0.2 * Q;
+        const sCurrent  = (Q) => 5 + 0.2 * Q + s_old_LR;
+        const sOriginal = (Q) => 5 + 0.2 * Q + s_old_SR;
 
-        // 企业最优产量（精确解析解）
-        const bestq = model.getOptimalQ(P, costShiftCurrent);
+        const mktQ = (40 + dShift - s_old_LR) / 0.4;
+        const mktP = 5 + 0.2 * mktQ + s_old_LR;
+        const origQ = 100, origP = 25;
 
-        const atc = model.getFirmATC(bestq, costShiftCurrent);
-        const profit = (P - atc) * bestq;
+        // Firm
+        const bestq = getOptimalQ(mktP, costShiftCurrent);
+        const atc   = getFirmATC(bestq, costShiftCurrent);
+        const profit = (mktP - atc) * bestq;
 
-        // 更新数值显示
-        document.getElementById('valD').innerText = (dShift > 0 ? "+" : "") + dShift;
-        document.getElementById('valS').innerText = (sInitial > 0 ? "+" : "") + sInitial;
-        document.getElementById('valLR').innerText = lrAdj > 0 ? "Entry (+" + lrAdj + ")" : (lrAdj < 0 ? "Exit (" + lrAdj + ")" : "0");
-        
-        document.getElementById('lblP').innerText = "$" + P.toFixed(2);
-        document.getElementById('lblQ').innerText = Q.toFixed(2);
-        document.getElementById('lblq').innerText = bestq.toFixed(2);
-        document.getElementById('lblATC').innerText = "$" + atc.toFixed(2);
-        
+        // LR Supply data
+        const lrSupplyData = [];
+        if (isInc) {
+            // Increasing-cost: upward sloping through (origQ, origP) and (mktQ, mktP)
+            const qMin = Math.min(origQ, mktQ), qMax = Math.max(origQ, mktQ);
+            for (let Q = Math.max(0, qMin - 20); Q <= qMax + 20; Q += 5) {
+                const slope = (mktP - origP) / (mktQ - origQ || 1);
+                lrSupplyData.push([Q, origP + slope * (Q - origQ)]);
+            }
+        } else {
+            // Constant-cost: horizontal at P = 25
+            for (let Q = 0; Q <= Q_MAX; Q += 10) lrSupplyData.push([Q, origP]);
+        }
+
+        // MR = P line for firm chart
+        const mrData = [];
+        for (let q = q_MIN; q <= q_MAX; q = +(q + q_STEP).toFixed(4)) mrData.push([q, mktP]);
+
+        // Profit/loss rectangle
+        const showRect = Math.abs(profit) > 0.05;
+        const profitColor = profit > 0 ? C.profit : C.loss;
+
+        // --- UI labels ---
+        elValD.textContent   = (dShift > 0 ? '+' : '') + dShift;
+        elValS.textContent   = (sInitial > 0 ? '+' : '') + sInitial;
+        elValLR.textContent  = lrAdj > 0 ? 'Entry (+' + lrAdj + ')' : (lrAdj < 0 ? 'Exit (' + lrAdj + ')' : '0');
+        elDispD.textContent  = elValD.textContent;
+        elDispS.textContent  = elValS.textContent;
+        elDispLR.textContent = elValLR.textContent;
+
+        document.getElementById('lblP').textContent = '$' + mktP.toFixed(2);
+        document.getElementById('lblQ').textContent = mktQ.toFixed(2);
+        document.getElementById('lblq').textContent = bestq.toFixed(2);
+        document.getElementById('lblATC').textContent = '$' + atc.toFixed(2);
         const profEl = document.getElementById('lblProfit');
-        profEl.innerText = "$" + profit.toFixed(2);
-        profEl.className = profit > 0.01 ? "profit-pos" : (profit < -0.01 ? "profit-neg" : "");
+        profEl.textContent = '$' + profit.toFixed(2);
+        profEl.className = 'stat-val ' + (profit > 0.05 ? 'val-green' : (profit < -0.05 ? 'val-red' : ''));
 
-        // 渲染图表
-        renderCharts(P, Q, dShift, s_old_SR, s_old_LR, costShiftOriginal, costShiftCurrent, bestq, atc, profit, showLRSupply, isIncreasing, lrAdj);
-    }
+        // Show/hide current MC/ATC in increasing-cost mode
+        const showCurrentCosts = isInc && Math.abs(lrAdj) > 0.01;
 
-    function renderCharts(P, Q, dShift, s_old_SR, s_old_LR, costShiftOriginal, costShiftCurrent, bestq, atc, profit, showLRSupply, isIncreasing, lrAdj) {
-        const originalQ = 100;
-        const originalP = 25;
-
-        // --- 市场图数据 ---
-        const d0Data = [], dCurrentData = [], sOriginalData = [], sCurrentData = [];
-        for (let i = 0; i <= 200; i += 20) {
-            d0Data.push({x: i, y: 45 - 0.2 * i});
-            dCurrentData.push({x: i, y: 45 - 0.2 * i + dShift});
-            sOriginalData.push({x: i, y: 5 + 0.2 * i + s_old_SR});
-            sCurrentData.push({x: i, y: 5 + 0.2 * i + s_old_LR});
-        }
-        const lrSupplyData = [{x: originalQ, y: originalP}, {x: Q, y: P}];
-
-        mktChart.data.datasets[0].data = d0Data;          // D₀
-        mktChart.data.datasets[1].data = dCurrentData;    // D current
-        mktChart.data.datasets[2].data = sOriginalData;   // S₀
-        mktChart.data.datasets[3].data = sCurrentData;    // S current
-        mktChart.data.datasets[4].data = lrSupplyData;    // LR Supply
-        mktChart.data.datasets[4].hidden = !showLRSupply;
-        mktChart.data.datasets[5].data = [{x: Q, y: P}];
-
-        // --- 企业图数据 ---
-        const mcOriginalData = [], atcOriginalData = [], mcCurrentData = [], atcCurrentData = [], mrData = [];
-        for (let j = 0.5; j <= 15; j += 0.5) {
-            mcOriginalData.push({x: j, y: model.getFirmMC(j, costShiftOriginal)});
-            atcOriginalData.push({x: j, y: model.getFirmATC(j, costShiftOriginal)});
-            mcCurrentData.push({x: j, y: model.getFirmMC(j, costShiftCurrent)});
-            atcCurrentData.push({x: j, y: model.getFirmATC(j, costShiftCurrent)});
-            mrData.push({x: j, y: P});
-        }
-
-        frmChart.data.datasets[0].data = mcOriginalData;
-        frmChart.data.datasets[1].data = atcOriginalData;
-
-        const showCurrentCosts = isIncreasing && Math.abs(lrAdj) > 0.01;
-        frmChart.data.datasets[2].data = mcCurrentData;
-        frmChart.data.datasets[3].data = atcCurrentData;
-        frmChart.data.datasets[2].hidden = !showCurrentCosts;
-        frmChart.data.datasets[3].hidden = !showCurrentCosts;
-
-        frmChart.data.datasets[4].data = mrData;
-        frmChart.data.datasets[5].data = [{x: bestq, y: P}];
-
-        mktChart.update('none');
-        frmChart.update('none');
-
-        drawProfitBox(frmChart, P, bestq, atc, profit);
-    }
-
-    function initCharts() {
-        const marketOptions = {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: false,
-            scales: {
-                x: { 
-                    type: 'linear', min: 0,
-                    title: { display: true, text: 'Industry Quantity (Q)', font: { size: 13, weight: 'bold' } },
-                    ticks: { font: { size: 10 } }
-                },
-                y: { 
-                    type: 'linear', min: 0, max: 65,
-                    title: { display: true, text: 'Price (P)', font: { size: 13, weight: 'bold' } },
-                    ticks: { font: { size: 10 } }
-                }
+        /* ── Industry chart option ─────────────────────────────────── */
+        const mktSeries = [
+            {
+                name: 'D₀', type: 'line',
+                data: genMktCurve(dOriginal),
+                ...lineStyle(C.gray, 1.5, [6, 4])
             },
-            plugins: { 
-                legend: { display: true, position: 'top', align: 'start', labels: { font: { size: 11 }, boxWidth: 12, padding: 8, usePointStyle: true } },
-                title: { display: true, text: 'INDUSTRY', font: { size: 16, weight: 'bold' } }
+            {
+                name: 'D', type: 'line',
+                data: genMktCurve(dDemand),
+                ...lineStyle(C.deepBlue, 2.5)
+            },
+            {
+                name: 'S₀ (SR)', type: 'line',
+                data: genMktCurve(sOriginal),
+                ...lineStyle(C.gray, 1.5, [6, 4])
+            },
+            {
+                name: 'S (LR-adj)', type: 'line',
+                data: genMktCurve(sCurrent),
+                ...lineStyle(C.ochre, 2.5)
+            },
+            {
+                name: 'LR Supply', type: 'line',
+                data: showLR ? lrSupplyData : [],
+                ...lineStyle(C.green, 2.5),
+                lineStyle: { color: C.green, width: 2.5, type: 'dashed' },
+                symbol: 'none',
+                emphasis: { disabled: true },
+                animation: false
+            },
+            {
+                name: 'Equilibrium', type: 'scatter',
+                data: [[mktQ, mktP]],
+                symbolSize: 10,
+                itemStyle: { color: '#1a2a3a', borderColor: '#fff', borderWidth: 2 },
+                emphasis: { disabled: true },
+                animation: false
             }
-        };
+        ];
 
-        const firmOptions = {
-            responsive: true,
-            maintainAspectRatio: false,
+        mktChart.setOption({
             animation: false,
-            scales: {
-                x: { 
-                    type: 'linear', min: 0,
-                    title: { display: true, text: 'Firm Output (q)', font: { size: 13, weight: 'bold' } },
-                    ticks: { font: { size: 10 } }
-                },
-                y: { 
-                    type: 'linear', min: 0, max: 65,
-                    title: { display: true, text: 'Price and Cost ($)', font: { size: 13, weight: 'bold' } },
-                    ticks: { font: { size: 10 } }
-                }
+            grid: { left: 60, right: 40, top: 40, bottom: 50 },
+            xAxis: {
+                type: 'value', min: 0, max: 220,
+                name: 'Industry Quantity (Q)',
+                nameLocation: 'middle', nameGap: 30,
+                nameTextStyle: { fontSize: 12, fontWeight: 600, fontFamily: 'Source Sans Pro', color: '#555' },
+                axisLine: { lineStyle: { color: '#999' } },
+                splitLine: { lineStyle: { color: C.gridLine } },
+                axisLabel: { fontSize: 10, color: '#666' }
             },
-            plugins: { 
-                legend: { display: true, position: 'top', align: 'start', labels: { font: { size: 11 }, boxWidth: 12, padding: 8, usePointStyle: true } },
-                title: { display: true, text: 'FIRM', font: { size: 16, weight: 'bold' } }
+            yAxis: {
+                type: 'value', min: 0, max: 50,
+                name: 'Price (P)',
+                nameLocation: 'middle', nameGap: 40,
+                nameTextStyle: { fontSize: 12, fontWeight: 600, fontFamily: 'Source Sans Pro', color: '#555' },
+                axisLine: { lineStyle: { color: '#999' } },
+                splitLine: { lineStyle: { color: C.gridLine } },
+                axisLabel: { fontSize: 10, color: '#666', formatter: '${value}' }
+            },
+            series: mktSeries,
+            graphic: axisLabels('Industry Quantity (Q)', 'Price (P)'),
+            // Show LR Supply only when checkbox is on
+            legend: { show: false }
+        }, true);
+
+        /* ── Firm chart option ──────────────────────────────────────── */
+        const firmSeries = [
+            {
+                name: 'MC₀', type: 'line',
+                data: genFirmCurve((q) => getFirmMC(q, costShiftOriginal)),
+                ...lineStyle(C.gray, 1.5, [6, 4])
+            },
+            {
+                name: 'ATC₀', type: 'line',
+                data: genFirmCurve((q) => getFirmATC(q, costShiftOriginal)),
+                ...lineStyle(C.gray, 1.5, [6, 4])
+            },
+            {
+                name: 'MC', type: 'line',
+                data: showCurrentCosts ? genFirmCurve((q) => getFirmMC(q, costShiftCurrent)) : [],
+                ...lineStyle(C.red, 2.5)
+            },
+            {
+                name: 'ATC', type: 'line',
+                data: showCurrentCosts ? genFirmCurve((q) => getFirmATC(q, costShiftCurrent)) : [],
+                ...lineStyle(C.darkPurple, 2.5)
+            },
+            {
+                name: 'MR = P', type: 'line',
+                data: mrData,
+                ...lineStyle(C.green, 2),
+                lineStyle: { color: C.green, width: 2, type: [8, 4] },
+                symbol: 'none',
+                emphasis: { disabled: true },
+                animation: false
+            },
+            {
+                name: 'q*', type: 'scatter',
+                data: [[bestq, mktP]],
+                symbolSize: 10,
+                itemStyle: { color: '#1a2a3a', borderColor: '#fff', borderWidth: 2 },
+                emphasis: { disabled: true },
+                animation: false
             }
-        };
+        ];
 
-        mktChart = new Chart(document.getElementById('marketChart'), {
-            type: 'line',
-            data: {
-                datasets: [
-                    { label: 'D₀ (original)', borderColor: '#3498db', borderWidth: 2, borderDash: [4, 2], pointRadius: 0, data: [] },
-                    { label: 'D (current)', borderColor: '#2980b9', borderWidth: 3, pointRadius: 0, data: [] },
-                    { label: 'S₀ (original)', borderColor: '#e67e22', borderWidth: 2, borderDash: [4, 2], pointRadius: 0, data: [] },
-                    { label: 'S (current)', borderColor: '#e67e22', borderWidth: 3, pointRadius: 0, data: [] },
-                    { label: 'LR Supply', borderColor: '#27ae60', borderWidth: 3, pointRadius: 0, data: [] },
-                    { label: 'E', backgroundColor: '#2c3e50', pointRadius: 6, data: [], type: 'scatter', showLine: false }
-                ]
-            },
-            options: marketOptions
-        });
+        // Profit/loss rectangle as graphic element
+        const firmGraphic = axisLabels('Firm Output (q)', 'Price & Cost ($)');
+        if (showRect) {
+            // Convert data coords to pixel using a helper
+            // We'll use convertToPixel after setting option
+            // For now, use a deferred approach
+        }
 
-        frmChart = new Chart(document.getElementById('firmChart'), {
-            type: 'line',
-            data: {
-                datasets: [
-                    { label: 'MC (original)', borderColor: '#e74c3c', borderWidth: 2, borderDash: [4, 2], tension: 0.3, pointRadius: 0, data: [] },
-                    { label: 'ATC (original)', borderColor: '#9b59b6', borderWidth: 2, borderDash: [4, 2], tension: 0.3, pointRadius: 0, data: [] },
-                    { label: 'MC (current)', borderColor: '#c0392b', borderWidth: 2.5, tension: 0.3, pointRadius: 0, data: [] },
-                    { label: 'ATC (current)', borderColor: '#8e44ad', borderWidth: 2.5, tension: 0.3, pointRadius: 0, data: [] },
-                    { label: 'MR = P = D', borderColor: '#27ae60', borderWidth: 4, borderDash: [5, 5], pointRadius: 0, data: [] },
-                    { label: 'q*', backgroundColor: '#27ae60', pointRadius: 6, data: [], type: 'scatter', showLine: false }
-                ]
+        frmChart.setOption({
+            animation: false,
+            grid: { left: 60, right: 40, top: 40, bottom: 50 },
+            xAxis: {
+                type: 'value', min: 0, max: 16,
+                name: 'Firm Output (q)',
+                nameLocation: 'middle', nameGap: 30,
+                nameTextStyle: { fontSize: 12, fontWeight: 600, fontFamily: 'Source Sans Pro', color: '#555' },
+                axisLine: { lineStyle: { color: '#999' } },
+                splitLine: { lineStyle: { color: C.gridLine } },
+                axisLabel: { fontSize: 10, color: '#666' }
             },
-            options: firmOptions
-        });
+            yAxis: {
+                type: 'value', min: 0, max: 50,
+                name: 'Price & Cost ($)',
+                nameLocation: 'middle', nameGap: 40,
+                nameTextStyle: { fontSize: 12, fontWeight: 600, fontFamily: 'Source Sans Pro', color: '#555' },
+                axisLine: { lineStyle: { color: '#999' } },
+                splitLine: { lineStyle: { color: C.gridLine } },
+                axisLabel: { fontSize: 10, color: '#666', formatter: '${value}' }
+            },
+            series: firmSeries,
+            graphic: firmGraphic,
+            legend: { show: false }
+        }, true);
+
+        // Draw profit/loss rectangle via graphic after option is set
+        if (showRect) {
+            try {
+                const coordSys = { xAxisIndex: 0, yAxisIndex: 0 };
+                const p0 = frmChart.convertToPixel(coordSys, [0, mktP]);
+                const p1 = frmChart.convertToPixel(coordSys, [bestq, mktP]);
+                const p2 = frmChart.convertToPixel(coordSys, [bestq, atc]);
+                const p3 = frmChart.convertToPixel(coordSys, [0, atc]);
+                frmChart.setOption({
+                    graphic: [
+                        ...axisLabels('Firm Output (q)', 'Price & Cost ($)'),
+                        {
+                            type: 'polygon',
+                            shape: { points: [p0, p1, p2, p3] },
+                            style: { fill: profitColor },
+                            silent: true
+                        }
+                    ]
+                });
+            } catch (e) {
+                frmChart.setOption({ graphic: axisLabels('Firm Output (q)', 'Price & Cost ($)') });
+            }
+        } else {
+            frmChart.setOption({ graphic: axisLabels('Firm Output (q)', 'Price & Cost ($)') });
+        }
     }
 
-    window.onload = () => {
-        initCharts();
-        
-        const controls = ['inpD', 'inpS', 'inpLR'];
-        controls.forEach(id => {
-            document.getElementById(id).addEventListener('input', update);
-        });
-        
-        document.querySelectorAll('input[name="costType"]').forEach(radio => {
-            radio.addEventListener('change', update);
-        });
+    /* ── Event listeners ───────────────────────────────────────────── */
+    [elInpD, elInpS, elInpLR].forEach(el => el.addEventListener('input', update));
+    document.querySelectorAll('input[name="costType"]').forEach(r => r.addEventListener('change', update));
+    elShowLR.addEventListener('change', update);
 
-        document.getElementById('showLRSupply').addEventListener('change', update);
+    /* ── Resize handler ────────────────────────────────────────────── */
+    window.addEventListener('resize', () => { mktChart.resize(); frmChart.resize(); });
 
-        update();
-    };
+    /* ── Initial render ────────────────────────────────────────────── */
+    update();
+})();
 </script>
 </body>
 </html>
