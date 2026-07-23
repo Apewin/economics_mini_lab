@@ -8,10 +8,10 @@
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <style>
         :root {
-            --cs: #3b82f6;
-            --ps: #ef4444;
-            --rev: #22c55e;
-            --dwl: #f59e0b;
+            --cs: #4a7a9a;
+            --ps: #a0616a;
+            --rev: #5a8a6a;
+            --dwl: #a08a50;
             --deepBlue: #1a5276;
             --ochre: #b85c38;
             --green: #3d6b4f;
@@ -130,7 +130,7 @@
     var chart = echarts.init(document.getElementById('chart'));
     window.addEventListener('resize', function() { chart.resize(); });
 
-    var C = { cs: '#3b82f6', ps: '#ef4444', rev: '#22c55e', dwl: '#f59e0b', curve: '#1a2a3a', pw: '#888', pd: '#1a2a3a', eq: '#999', proj: '#aaa' };
+    var C = { cs: '#4a7a9a', ps: '#a0616a', rev: '#5a8a6a', dwl: '#a08a50', curve: '#1a2a3a', pw: '#888', pd: '#1a2a3a', eq: '#999', proj: '#aaa' };
 
     function poly(name, pts, color, op) {
         return { name: name, type: 'line', data: pts, symbol: 'none', animation: false,
