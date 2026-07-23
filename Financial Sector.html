@@ -4,354 +4,616 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AP Macro: Financial System Transmission</title>
-    <script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-color: #f4f6f8;
-            --panel-bg: #ffffff;
-            --primary-dark: #2c3e50;
-            --accent-blue: #2980b9;
-            --accent-green: #27ae60;
-            --accent-purple: #8e44ad;
-            --border-color: #dcdde1;
-            --text-muted: #7f8c8d;
-        }
-
         body {
-            margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif;
-            background: var(--bg-color); color: var(--primary-dark);
-            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+            background: #f7f7f5;
+            font-family: 'Source Sans Pro', 'Segoe UI', system-ui, sans-serif;
+            color: #333;
+            padding: 24px 16px;
+            margin: 0;
         }
 
-        /* 主体图表容器上移，占据主要空间 */
-        .main-container {
-            flex: 1; display: flex; flex-direction: row; padding: 20px; gap: 15px; min-height: 0;
+        .container {
+            max-width: 880px;
+            margin: 0 auto;
+            background: #fff;
+            border: 1px solid #d4d4d0;
+            padding: 28px 32px;
+        }
+
+        h2 {
+            font-family: 'Merriweather', 'Georgia', serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a2a3a;
+            border-bottom: 2px solid #1a2a3a;
+            padding-bottom: 8px;
+            margin: 0 0 12px 0;
+        }
+
+        .charts-row {
+            display: flex;
+            gap: 12px;
+            margin: 12px 0;
+        }
+
+        .chart-col {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .chart-title {
+            font-family: 'Merriweather', 'Georgia', serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: #1a2a3a;
+            text-align: center;
+            margin: 0 0 4px 0;
         }
 
         .chart-box {
-            flex: 1; background: var(--panel-bg); border: 1px solid var(--border-color);
-            border-radius: 10px; padding: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.04);
-            display: flex; flex-direction: column; min-width: 0; position: relative;
-        }
-        /* 增大图表标题字号并增加下边距 */
-        .chart-box h3 { 
-            margin: 0 0 10px 0; font-size: 1.3rem; text-align: center; color: #34495e; 
-            border-bottom: 2px solid #f1f2f6; padding-bottom: 10px; 
-        }
-        .chart-wrapper { flex: 1; position: relative; min-height: 0; }
-        
-        .transmission-arrow {
-            display: flex; align-items: center; justify-content: center; width: 20px; color: #bdc3c7; font-size: 2rem;
+            width: 100%;
+            height: 320px;
         }
 
-        /* 控制面板下沉 */
-        .toolbar {
-            background: white; padding: 15px 25px; border-top: 1px solid var(--border-color);
-            display: flex; justify-content: space-between; align-items: center; gap: 20px;
-        }
-
+        /* Toggle */
         .toggle-group {
-            display: flex; background: #ecf0f1; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color);
+            display: flex;
+            margin: 16px 0 8px 0;
+            border: 1px solid #d4d4d0;
+            overflow: hidden;
         }
-        /* 增大按钮字号 */
+
         .toggle-btn {
-            padding: 10px 20px; border: none; background: transparent; cursor: pointer;
-            font-size: 1rem; font-weight: 600; color: var(--text-muted); transition: all 0.2s;
+            flex: 1;
+            padding: 8px 16px;
+            border: none;
+            background: #f7f7f5;
+            cursor: pointer;
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: #888;
+            transition: all 0.15s;
         }
-        .toggle-btn.active { background: var(--primary-dark); color: white; }
 
-        .controls-container {
-            display: flex; gap: 30px; flex: 1; justify-content: flex-end; align-items: center;
+        .toggle-btn.active {
+            background: #1a5276;
+            color: #fff;
         }
-        /* 增加容器宽度以防止文字换行 */
-        .control-item { display: flex; flex-direction: column; width: 350px; }
-        /* 增大说明文字字号 */
-        .control-header { display: flex; justify-content: space-between; font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
-        input[type="range"] { width: 100%; cursor: pointer; accent-color: var(--accent-blue); height: 6px; }
-        input[type="range"]:disabled { opacity: 0.4; cursor: not-allowed; }
 
-        /* 页脚版权声明 */
-        footer {
-            text-align: center; font-size: 0.8rem; color: var(--text-muted);
-            padding: 8px; background: white;
+        .toggle-btn + .toggle-btn {
+            border-left: 1px solid #d4d4d0;
+        }
+
+        /* Controls */
+        .controls-section {
+            margin-top: 12px;
+        }
+
+        .slider-group {
+            margin-bottom: 12px;
+        }
+
+        .slider-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a2a3a;
+            margin-bottom: 4px;
+        }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .slider-row input[type="range"] {
+            flex: 1;
+            cursor: pointer;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #d4d4d0;
+            border-radius: 0;
+            outline: none;
+        }
+
+        .slider-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #1a5276;
+            border: 2px solid #fff;
+            border-radius: 0;
+            cursor: pointer;
+        }
+
+        .slider-row input[type="range"]:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .slider-val {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a5276;
+            min-width: 48px;
+            text-align: right;
+        }
+
+        .slider-group.disabled-group {
+            opacity: 0.35;
+        }
+
+        .slider-group.disabled-group label {
+            color: #888;
+        }
+
+        /* Source */
+        .source {
+            font-size: 10px;
+            color: #888;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 8px;
+            margin-top: 16px;
+        }
+
+        /* Legend strip */
+        .legend-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin: 8px 0 4px 0;
+            font-size: 12px;
+            color: #555;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend-line {
+            width: 20px;
+            height: 0;
+            border-top: 2.5px solid;
+            display: inline-block;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            background: #1a2a3a;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 1px #1a2a3a;
+            display: inline-block;
+        }
+
+        /* Responsive: stack charts on narrow screens */
+        @media (max-width: 720px) {
+            .charts-row {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="main-container">
-    <!-- Chart 1: Reserve Market -->
-    <div class="chart-box">
-        <h3>Market for Reserves</h3>
-        <div class="chart-wrapper"><canvas id="reserveChart"></canvas></div>
-    </div>
-    
-    <div class="transmission-arrow">➔</div>
+<div class="container">
+    <h2>Financial Sector — Monetary Policy Transmission</h2>
 
-    <!-- Chart 2: Money Market -->
-    <div class="chart-box">
-        <h3>Money Market</h3>
-        <div class="chart-wrapper"><canvas id="moneyChart"></canvas></div>
+    <div class="legend-strip">
+        <span class="legend-item"><span class="legend-line" style="border-color:#1a5276;"></span> Demand (Rd / MD / LF-D)</span>
+        <span class="legend-item"><span class="legend-line" style="border-color:#b85c38;"></span> Supply (Rs / MS / LF-S)</span>
+        <span class="legend-item"><span class="legend-dot"></span> Equilibrium</span>
     </div>
-    
-    <div class="transmission-arrow">➔</div>
 
-    <!-- Chart 3: Loanable Funds Market -->
-    <div class="chart-box">
-        <h3>Loanable Funds Market</h3>
-        <div class="chart-wrapper"><canvas id="lfChart"></canvas></div>
+    <div class="charts-row">
+        <div class="chart-col">
+            <p class="chart-title">Market for Reserves</p>
+            <div id="chartReserve" class="chart-box"></div>
+        </div>
+        <div class="chart-col">
+            <p class="chart-title">Money Market</p>
+            <div id="chartMoney" class="chart-box"></div>
+        </div>
+        <div class="chart-col">
+            <p class="chart-title">Loanable Funds Market</p>
+            <div id="chartLF" class="chart-box"></div>
+        </div>
     </div>
-</div>
 
-<div class="toolbar">
+    <!-- Toggle -->
     <div class="toggle-group">
-        <button class="toggle-btn active" id="btnLimited" onclick="setFramework('limited')">Limited Reserves</button>
-        <button class="toggle-btn" id="btnAmple" onclick="setFramework('ample')">Ample Reserves</button>
+        <button class="toggle-btn active" id="btnLimited">Limited Reserves</button>
+        <button class="toggle-btn" id="btnAmple">Ample Reserves</button>
     </div>
-    
-    <div class="controls-container">
-        <div class="control-item">
-            <div class="control-header">
-                <span id="lblOMO">1. Open Market Ops (Reserve Supply)</span>
-                <span id="valOMO" style="color:var(--accent-blue);">100</span>
-            </div>
-            <input type="range" id="inpOMO" min="20" max="180" step="5" value="100">
-        </div>
-        
-        <div class="control-item" id="iorbControl" style="opacity: 0.4;">
-            <div class="control-header">
-                <span>2. Administered Rate (IORB)</span>
-                <span id="valIORB" style="color:var(--accent-green);">4.0%</span>
-            </div>
-            <input type="range" id="inpIORB" min="1.0" max="8.0" step="0.5" value="4.0" disabled>
-        </div>
-    </div>
-</div>
 
-<footer>© 2026 Dr. Jia's Instructional Suite. Teaching Use Only.</footer>
+    <!-- Controls -->
+    <div class="controls-section">
+        <div class="slider-group">
+            <label>Open Market Operations (Reserve Supply): <span id="valOMO" style="color:#1a5276;">100</span></label>
+            <div class="slider-row">
+                <input type="range" id="inpOMO" min="20" max="180" step="5" value="100">
+                <span class="slider-val" id="dispOMO">100</span>
+            </div>
+        </div>
+        <div class="slider-group disabled-group" id="iorbGroup">
+            <label>Administered Rate (IORB): <span id="valIORB" style="color:#3d6b4f;">4.0%</span></label>
+            <div class="slider-row">
+                <input type="range" id="inpIORB" min="1.0" max="8.0" step="0.5" value="4.0" disabled>
+                <span class="slider-val" id="dispIORB">4.0%</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="source">© 2026 Economics Visualization — Dr. Jia Edition · Textbook interactive built with Apache ECharts</div>
+</div>
 
 <script>
-    let framework = 'limited'; 
-    let resChart, monChart, loanChart;
-    
-    const PR_BASE = 5.0;  // Base Policy Rate (Baseline for Δ calculation)
-    
-    const colors = {
-        resDem: '#2980b9', resSup: '#e74c3c', resEq: '#2c3e50',
-        monDem: '#27ae60', monSup: '#d35400', monEq: '#2c3e50',
-        lfDem: '#8e44ad', lfSup: '#f39c12', lfEq: '#2c3e50',
-        text: '#34495e'
+(function () {
+    /* ── colour palette ────────────────────────────────────────────── */
+    const C = {
+        deepBlue:   '#1a5276',
+        ochre:      '#b85c38',
+        darkPurple: '#5a3d7a',
+        green:      '#3d6b4f',
+        gray:       '#bbb',
+        titleText:  '#1a2a3a',
+        gridLine:   '#e8e8e8'
     };
 
-    function safeDrawText(ctx, text, px, py, area) {
-        ctx.textAlign = 'center';
-        let textWidth = ctx.measureText(text).width;
-        let pad = 6;
-        
-        if (px + textWidth/2 > area.right) px = area.right - textWidth/2 - pad;
-        if (px - textWidth/2 < area.left) px = area.left + textWidth/2 + pad;
-        
-        py = py - 8;
-        if (py < area.top + 16) py = area.top + 18;
-        if (py > area.bottom - 5) py = area.bottom - 5;
-        
-        ctx.fillText(text, px, py);
+    /* ── DOM refs ──────────────────────────────────────────────────── */
+    const elChartReserve = document.getElementById('chartReserve');
+    const elChartMoney   = document.getElementById('chartMoney');
+    const elChartLF      = document.getElementById('chartLF');
+    const elInpOMO  = document.getElementById('inpOMO');
+    const elInpIORB = document.getElementById('inpIORB');
+    const elValOMO  = document.getElementById('valOMO');
+    const elValIORB = document.getElementById('valIORB');
+    const elDispOMO = document.getElementById('dispOMO');
+    const elDispIORB = document.getElementById('dispIORB');
+    const elIorbGroup = document.getElementById('iorbGroup');
+    const elBtnLimited = document.getElementById('btnLimited');
+    const elBtnAmple   = document.getElementById('btnAmple');
+
+    /* ── ECharts init ──────────────────────────────────────────────── */
+    const resChart = echarts.init(elChartReserve, null, { renderer: 'canvas' });
+    const monChart = echarts.init(elChartMoney, null, { renderer: 'canvas' });
+    const lfChart  = echarts.init(elChartLF, null, { renderer: 'canvas' });
+
+    /* ── Economics model ───────────────────────────────────────────── */
+    let framework = 'limited';
+    const PR_BASE = 5.0;
+
+    /* ── axis label graphics helper ────────────────────────────────── */
+    function axisLabels(xText, yText) {
+        return [
+            {
+                type: 'text', left: 'center', bottom: 6,
+                style: { text: xText, fill: '#555', font: '600 11px "Source Sans Pro", sans-serif' }
+            },
+            {
+                type: 'text', top: 'center', left: 4,
+                style: {
+                    text: yText, fill: '#555',
+                    font: '600 11px "Source Sans Pro", sans-serif'
+                },
+                rotation: -Math.PI / 2
+            }
+        ];
     }
 
-    const marketLabelsPlugin = {
-        id: 'marketLabels',
-        afterDraw: (chart) => {
-            if (!chart.config.data.labelsConfig) return;
-            const ctx = chart.ctx; const area = chart.chartArea;
-            const scX = chart.scales.x; const scY = chart.scales.y;
-            ctx.save(); 
-            // 增大图内文字标签的字号
-            ctx.font = 'bold 16px "Segoe UI"';
-            
-            chart.config.data.labelsConfig.forEach(lbl => {
-                ctx.fillStyle = lbl.color;
-                let px = scX.getPixelForValue(lbl.x);
-                let py = scY.getPixelForValue(lbl.y);
-                safeDrawText(ctx, lbl.text, px, py, area);
-            });
-            ctx.restore();
-        }
-    };
-
-    Chart.register(marketLabelsPlugin);
-
-    function initCharts() {
-        const commonOpts = {
-            responsive: true, maintainAspectRatio: false, animation: false,
-            plugins: { legend: { display: false } },
-            scales: { 
-                x: { 
-                    display: true, min: 0, max: 200, grid: { color: '#ecf0f1' },
-                    ticks: { font: { size: 12 } } // 保持刻度字号不变
-                }, 
-                y: { 
-                    min: 0, max: 10, grid: { color: '#ecf0f1' },
-                    ticks: { font: { size: 12 } } // 保持刻度字号不变
-                } 
-            }
+    /* ── curve label helper ────────────────────────────────────────── */
+    function curveLabel(text, color, x, y, xMax, yMax) {
+        const xPct = Math.min(Math.max(x / xMax, 0.05), 0.85);
+        const yPct = Math.min(Math.max(y / yMax, 0.08), 0.88);
+        return {
+            type: 'text',
+            left: (xPct * 100) + '%',
+            top: ((1 - yPct) * 100) + '%',
+            style: {
+                text: text,
+                fill: color,
+                font: 'bold 13px "Source Sans Pro", sans-serif'
+            },
+            silent: true
         };
-
-        resChart = new Chart(document.getElementById('reserveChart'), {
-            type: 'scatter',
-            data: { datasets: [], labelsConfig: [] },
-            options: { 
-                ...commonOpts, 
-                scales: { 
-                    // 增大横纵坐标轴标题的字号
-                    x: { ...commonOpts.scales.x, title: { display: true, text: 'Quantity of Reserves', font:{weight:'bold', size: 15} } },
-                    y: { ...commonOpts.scales.y, title: { display: true, text: 'Policy Rate (iff %)', font:{weight:'bold', size: 15} } } 
-                } 
-            }
-        });
-
-        monChart = new Chart(document.getElementById('moneyChart'), {
-            type: 'scatter',
-            data: { datasets: [], labelsConfig: [] },
-            options: { 
-                ...commonOpts, 
-                scales: { 
-                    x: { ...commonOpts.scales.x, title: { display: true, text: 'Quantity of Money', font:{weight:'bold', size: 15} } },
-                    y: { ...commonOpts.scales.y, title: { display: true, text: 'Nominal Rate (i %)', font:{weight:'bold', size: 15} } } 
-                } 
-            }
-        });
-
-        loanChart = new Chart(document.getElementById('lfChart'), {
-            type: 'scatter',
-            data: { datasets: [], labelsConfig: [] },
-            options: { 
-                ...commonOpts, 
-                scales: { 
-                    x: { ...commonOpts.scales.x, title: { display: true, text: 'Quantity of LF', font:{weight:'bold', size: 15} } },
-                    y: { ...commonOpts.scales.y, title: { display: true, text: 'Real Rate (r %)', font:{weight:'bold', size: 15} } } 
-                } 
-            }
-        });
-
-        updateModels();
     }
 
+    /* ── shared line style helper ──────────────────────────────────── */
+    function lineStyle(color, width, dash) {
+        return {
+            symbol: 'none',
+            lineStyle: { color: color, width: width || 2.5, type: dash || 'solid' },
+            emphasis: { disabled: true },
+            animation: false
+        };
+    }
+
+    /* ── Generate curve data ───────────────────────────────────────── */
+    function genCurve(fn, xMin, xMax, step) {
+        const d = [];
+        for (let x = xMin; x <= xMax; x += step) d.push([x, fn(x)]);
+        return d;
+    }
+
+    /* ── Set framework ─────────────────────────────────────────────── */
     function setFramework(mode) {
         framework = mode;
-        document.getElementById('btnLimited').className = mode === 'limited' ? 'toggle-btn active' : 'toggle-btn';
-        document.getElementById('btnAmple').className = mode === 'ample' ? 'toggle-btn active' : 'toggle-btn';
-        
-        const inpOMO = document.getElementById('inpOMO');
-        const inpIORB = document.getElementById('inpIORB');
-        const ctrlIORB = document.getElementById('iorbControl');
+        elBtnLimited.className = mode === 'limited' ? 'toggle-btn active' : 'toggle-btn';
+        elBtnAmple.className = mode === 'ample' ? 'toggle-btn active' : 'toggle-btn';
 
         if (mode === 'limited') {
-            inpOMO.value = 100;
-            inpIORB.disabled = true;
-            ctrlIORB.style.opacity = '0.4';
-            document.getElementById('lblOMO').innerText = '1. Open Market Ops (Reserve Supply)';
+            elInpOMO.value = 100;
+            elInpIORB.disabled = true;
+            elIorbGroup.className = 'slider-group disabled-group';
         } else {
-            inpOMO.value = 150; 
-            inpIORB.value = 4.0;
-            inpIORB.disabled = false;
-            ctrlIORB.style.opacity = '1';
-            document.getElementById('lblOMO').innerText = '1. Open Market Ops (Reserve Supply)';
+            elInpOMO.value = 150;
+            elInpIORB.value = 4.0;
+            elInpIORB.disabled = false;
+            elIorbGroup.className = 'slider-group';
         }
-        updateModels();
+        update();
     }
 
-    function updateModels() {
-        const omo = parseFloat(document.getElementById('inpOMO').value);
-        const iorb = parseFloat(document.getElementById('inpIORB').value);
-        
-        document.getElementById('valOMO').innerText = omo;
-        document.getElementById('valIORB').innerText = iorb.toFixed(1) + '%';
+    elBtnLimited.addEventListener('click', function () { setFramework('limited'); });
+    elBtnAmple.addEventListener('click', function () { setFramework('ample'); });
 
+    /* ── Main update ───────────────────────────────────────────────── */
+    function update() {
+        const omo  = parseFloat(elInpOMO.value);
+        const iorb = parseFloat(elInpIORB.value);
+
+        elValOMO.textContent = omo;
+        elDispOMO.textContent = omo;
+        elValIORB.textContent = iorb.toFixed(1) + '%';
+        elDispIORB.textContent = iorb.toFixed(1) + '%';
+
+        /* ── Reserve Market ────────────────────────────────────────── */
         let policyRate;
-        let resDemandData = [];
-        let resSupplyData = [{x: omo, y: 0}, {x: omo, y: 10}];
+        const rdFn = (x) => 10 - x * 0.05;
+        const rdData = genCurve(rdFn, 0, 200, 5);
+        const rsData = [[omo, 0], [omo, 10]];
 
         if (framework === 'limited') {
-            for (let x = 20; x <= 180; x+=10) {
-                resDemandData.push({x: x, y: 10 - (x * 0.05)});
-            }
-            policyRate = 10 - (omo * 0.05); 
-            if(policyRate < 0) policyRate = 0;
+            policyRate = Math.max(0, 10 - omo * 0.05);
         } else {
-            for (let x = 20; x <= 180; x+=10) {
-                let y = Math.max(iorb, 10 - (x * 0.05));
-                resDemandData.push({x: x, y: y});
-            }
-            policyRate = Math.max(iorb, 10 - (omo * 0.05)); 
+            policyRate = Math.max(iorb, 10 - omo * 0.05);
         }
 
         let reserveEqLabel = 'Eq';
         if (framework === 'ample') {
-            reserveEqLabel = (10 - (omo * 0.05) > iorb) ? 'Eq (Scarcity Zone)' : 'Eq (IORB)';
+            reserveEqLabel = (10 - omo * 0.05 > iorb) ? 'Eq (Scarcity)' : 'Eq (IORB)';
         }
 
-        resChart.data.datasets = [
-            { borderColor: colors.resDem, borderWidth: 3, pointRadius: 0, showLine: true, data: resDemandData },
-            { borderColor: colors.resSup, borderWidth: 3, pointRadius: 0, showLine: true, data: resSupplyData },
-            { backgroundColor: colors.resEq, pointRadius: 6, data: [{x: omo, y: policyRate}] }
-        ];
-        resChart.data.labelsConfig = [
-            { text: 'Rd', x: 30, y: 8.5, color: colors.resDem },
-            // 为了适应更大的字号，偏移量扩大至 +15
-            { text: 'Rs', x: omo + 15, y: 9, color: colors.resSup },
-            { text: reserveEqLabel, x: omo + 25, y: policyRate, color: colors.resEq }
-        ];
-        resChart.update();
-
-        let deltaRate = policyRate - PR_BASE;
-        
-        let msPosition = 100 - (deltaRate * 20); 
-        if (msPosition < 10) msPosition = 10; 
-        let nominalRate = 11 - (msPosition * 0.05); 
-        
-        let monDemandData = [];
-        for (let x = 20; x <= 180; x+=10) {
-            monDemandData.push({x: x, y: 11 - (x * 0.05)});
-        }
-        
-        monChart.data.datasets = [
-            { borderColor: colors.monDem, borderWidth: 3, pointRadius: 0, showLine: true, data: monDemandData },
-            { borderColor: colors.monSup, borderWidth: 3, pointRadius: 0, showLine: true, data: [{x: msPosition, y: 0}, {x: msPosition, y: 10}] },
-            { backgroundColor: colors.monEq, pointRadius: 6, data: [{x: msPosition, y: nominalRate}] }
-        ];
-        monChart.data.labelsConfig = [
-            { text: 'MD', x: 170, y: 2.5, color: colors.monDem },
-            // 为了适应更大的字号，偏移量扩大至 +15
-            { text: 'MS', x: msPosition + 15, y: 9, color: colors.monSup }
-        ];
-        monChart.update();
-
-        let lfShiftY = deltaRate; 
-        let lfEqQ = 100 - 10 * lfShiftY;
-        let realRate = 4 + 0.5 * lfShiftY;
-
-        let lfDemandData = [], lfSupplyData = [];
-        for (let x = 20; x <= 180; x+=10) {
-            lfDemandData.push({x: x, y: 9 - (x * 0.05)});
-            lfSupplyData.push({x: x, y: (x * 0.05) - 1 + lfShiftY});
+        // In Ample mode, Rd is kinked at IORB
+        let resDemandData;
+        if (framework === 'ample') {
+            resDemandData = [];
+            for (let x = 0; x <= 200; x += 5) {
+                resDemandData.push([x, Math.max(iorb, 10 - x * 0.05)]);
+            }
+        } else {
+            resDemandData = rdData;
         }
 
-        loanChart.data.datasets = [
-            { borderColor: colors.lfDem, borderWidth: 3, pointRadius: 0, showLine: true, data: lfDemandData },
-            { borderColor: colors.lfSup, borderWidth: 3, pointRadius: 0, showLine: true, data: lfSupplyData },
-            { backgroundColor: colors.lfEq, pointRadius: 6, data: [{x: lfEqQ, y: realRate}] }
+        const reserveLabels = [
+            curveLabel('Rd', C.deepBlue, 30, 8.5, 200, 10),
+            curveLabel('Rs', C.ochre, Math.min(omo + 15, 190), 9.3, 200, 10)
         ];
-        loanChart.data.labelsConfig = [
-            { text: 'LF-D', x: 160, y: 1, color: colors.lfDem },
-            { text: 'LF-S', x: 160, y: 7 + lfShiftY, color: colors.lfSup }
+
+        // Equilibrium label
+        reserveLabels.push({
+            type: 'text',
+            left: Math.min(((omo + 8) / 200) * 100, 88) + '%',
+            top: ((1 - policyRate / 10) * 100 - 5) + '%',
+            style: {
+                text: reserveEqLabel + '\n' + policyRate.toFixed(1) + '%',
+                fill: C.titleText,
+                font: 'bold 12px "Source Sans Pro", sans-serif',
+                textAlign: 'left'
+            },
+            silent: true
+        });
+
+        resChart.setOption({
+            animation: false,
+            grid: { left: 55, right: 25, top: 30, bottom: 55 },
+            xAxis: {
+                type: 'value', min: 0, max: 200,
+                axisLine: { lineStyle: { color: '#999' } },
+                splitLine: { lineStyle: { color: C.gridLine } },
+                axisLabel: { fontSize: 10, color: '#666' }
+            },
+            yAxis: {
+                type: 'value', min: 0, max: 10,
+                axisLine: { lineStyle: { color: '#999' } },
+                splitLine: { lineStyle: { color: C.gridLine } },
+                axisLabel: { fontSize: 10, color: '#666', formatter: '{value}%' }
+            },
+            series: [
+                {
+                    name: 'Rd', type: 'line', data: resDemandData,
+                    ...lineStyle(C.deepBlue, 2.5)
+                },
+                {
+                    name: 'Rs', type: 'line', data: rsData,
+                    ...lineStyle(C.ochre, 2.5)
+                },
+                {
+                    name: 'Eq', type: 'scatter', data: [[omo, policyRate]],
+                    symbolSize: 10,
+                    itemStyle: { color: C.titleText, borderColor: '#fff', borderWidth: 2 },
+                    emphasis: { disabled: true },
+                    animation: false
+                }
+            ],
+            graphic: [
+                ...axisLabels('Quantity of Reserves', 'Policy Rate (i_ff %)'),
+                ...reserveLabels
+            ],
+            legend: { show: false }
+        }, true);
+
+        /* ── Money Market ──────────────────────────────────────────── */
+        const deltaRate = policyRate - PR_BASE;
+        let msPosition = 100 - deltaRate * 20;
+        if (msPosition < 10) msPosition = 10;
+        const nominalRate = 11 - msPosition * 0.05;
+
+        const mdFn = (x) => 11 - x * 0.05;
+        const mdData = genCurve(mdFn, 0, 200, 5);
+        const msData = [[msPosition, 0], [msPosition, 10]];
+
+        const moneyLabels = [
+            curveLabel('MD', C.deepBlue, 160, 3, 200, 10),
+            curveLabel('MS', C.ochre, Math.min(msPosition + 15, 190), 9.3, 200, 10)
         ];
-        loanChart.update();
+
+        moneyLabels.push({
+            type: 'text',
+            left: Math.min(((msPosition + 8) / 200) * 100, 88) + '%',
+            top: ((1 - nominalRate / 10) * 100 - 5) + '%',
+            style: {
+                text: 'Eq\ni = ' + nominalRate.toFixed(1) + '%',
+                fill: C.titleText,
+                font: 'bold 12px "Source Sans Pro", sans-serif',
+                textAlign: 'left'
+            },
+            silent: true
+        });
+
+        monChart.setOption({
+            animation: false,
+            grid: { left: 55, right: 25, top: 30, bottom: 55 },
+            xAxis: {
+                type: 'value', min: 0, max: 200,
+                axisLine: { lineStyle: { color: '#999' } },
+                splitLine: { lineStyle: { color: C.gridLine } },
+                axisLabel: { fontSize: 10, color: '#666' }
+            },
+            yAxis: {
+                type: 'value', min: 0, max: 10,
+                axisLine: { lineStyle: { color: '#999' } },
+                splitLine: { lineStyle: { color: C.gridLine } },
+                axisLabel: { fontSize: 10, color: '#666', formatter: '{value}%' }
+            },
+            series: [
+                {
+                    name: 'MD', type: 'line', data: mdData,
+                    ...lineStyle(C.deepBlue, 2.5)
+                },
+                {
+                    name: 'MS', type: 'line', data: msData,
+                    ...lineStyle(C.ochre, 2.5)
+                },
+                {
+                    name: 'Eq', type: 'scatter', data: [[msPosition, nominalRate]],
+                    symbolSize: 10,
+                    itemStyle: { color: C.titleText, borderColor: '#fff', borderWidth: 2 },
+                    emphasis: { disabled: true },
+                    animation: false
+                }
+            ],
+            graphic: [
+                ...axisLabels('Quantity of Money', 'Nominal Interest Rate (i %)'),
+                ...moneyLabels
+            ],
+            legend: { show: false }
+        }, true);
+
+        /* ── Loanable Funds Market ─────────────────────────────────── */
+        const lfShiftY = deltaRate;
+        const lfEqQ = 100 - 10 * lfShiftY;
+        const realRate = 4 + 0.5 * lfShiftY;
+
+        const lfDFn = (x) => 9 - x * 0.05;
+        const lfSFn = (x) => x * 0.05 - 1 + lfShiftY;
+        const lfDData = genCurve(lfDFn, 0, 200, 5);
+        const lfSData = genCurve(lfSFn, 0, 200, 5);
+
+        const lfLabels = [
+            curveLabel('LF-D', C.deepBlue, 160, 1.5, 200, 10),
+            curveLabel('LF-S', C.ochre, 160, Math.min(lfSFn(160), 9.5), 200, 10)
+        ];
+
+        // Clamp equilibrium label position
+        const lfEqLabelY = Math.min(Math.max(realRate, 0.5), 9.5);
+        lfLabels.push({
+            type: 'text',
+            left: Math.min(Math.max(((lfEqQ + 8) / 200) * 100, 10), 85) + '%',
+            top: ((1 - lfEqLabelY / 10) * 100 - 5) + '%',
+            style: {
+                text: 'Eq\nr = ' + realRate.toFixed(1) + '%',
+                fill: C.titleText,
+                font: 'bold 12px "Source Sans Pro", sans-serif',
+                textAlign: 'left'
+            },
+            silent: true
+        });
+
+        lfChart.setOption({
+            animation: false,
+            grid: { left: 55, right: 25, top: 30, bottom: 55 },
+            xAxis: {
+                type: 'value', min: 0, max: 200,
+                axisLine: { lineStyle: { color: '#999' } },
+                splitLine: { lineStyle: { color: C.gridLine } },
+                axisLabel: { fontSize: 10, color: '#666' }
+            },
+            yAxis: {
+                type: 'value', min: 0, max: 10,
+                axisLine: { lineStyle: { color: '#999' } },
+                splitLine: { lineStyle: { color: C.gridLine } },
+                axisLabel: { fontSize: 10, color: '#666', formatter: '{value}%' }
+            },
+            series: [
+                {
+                    name: 'LF-D', type: 'line', data: lfDData,
+                    ...lineStyle(C.deepBlue, 2.5)
+                },
+                {
+                    name: 'LF-S', type: 'line', data: lfSData,
+                    ...lineStyle(C.ochre, 2.5)
+                },
+                {
+                    name: 'Eq', type: 'scatter',
+                    data: [[lfEqQ, realRate]],
+                    symbolSize: 10,
+                    itemStyle: { color: C.titleText, borderColor: '#fff', borderWidth: 2 },
+                    emphasis: { disabled: true },
+                    animation: false
+                }
+            ],
+            graphic: [
+                ...axisLabels('Quantity of Loanable Funds', 'Real Interest Rate (r %)'),
+                ...lfLabels
+            ],
+            legend: { show: false }
+        }, true);
     }
 
-    document.getElementById('inpOMO').addEventListener('input', updateModels);
-    document.getElementById('inpIORB').addEventListener('input', updateModels);
+    /* ── Event listeners ───────────────────────────────────────────── */
+    elInpOMO.addEventListener('input', update);
+    elInpIORB.addEventListener('input', update);
 
-    window.onload = initCharts;
+    /* ── Resize handler ────────────────────────────────────────────── */
+    window.addEventListener('resize', function () {
+        resChart.resize();
+        monChart.resize();
+        lfChart.resize();
+    });
+
+    /* ── Initial render ────────────────────────────────────────────── */
+    update();
+})();
 </script>
 </body>
 </html>
