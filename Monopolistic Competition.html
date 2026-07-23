@@ -244,7 +244,7 @@
     <!-- Custom Legend -->
     <div class="legend-strip">
         <span class="legend-item"><span class="legend-line" style="border-color:#1a5276;"></span> Demand (D)</span>
-        <span class="legend-item"><span class="legend-line dashed" style="border-color:#bbb;"></span> Marginal Revenue (MR)</span>
+        <span class="legend-item"><span class="legend-line" style="border-color:#bbb;"></span> Marginal Revenue (MR)</span>
         <span class="legend-item"><span class="legend-line" style="border-color:#b85c38;"></span> Marginal Cost (MC)</span>
         <span class="legend-item"><span class="legend-line" style="border-color:#5a3d7a;"></span> Avg Total Cost (ATC)</span>
         <span class="legend-item"><span class="legend-dot"></span> Equilibrium</span>
@@ -369,7 +369,7 @@
             {   // MR
                 name: 'Marginal Revenue (MR)',
                 type: 'line', symbol: 'none',
-                lineStyle: { width: 2, color: C.gray, type: 'dashed' },
+                lineStyle: { width: 2, color: C.gray },
                 data: genCurve(q => a - 4 * q), z: 5, animation: false
             },
             {   // MC
