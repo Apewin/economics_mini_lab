@@ -445,11 +445,44 @@ function updateCharts(y, p, potential, adShift, asShift, trade, openness) {
             /* Trade exchange line */
             {
                 type: 'line', data: tradeLineData, symbol: 'none',
-                lineStyle: lineStyle(C.green, 2),
+                lineStyle: lineStyle('#3d6b4f', 2.5),
                 z: 5
             }
         ]
     }, NO_ANIM);
+
+    // Draw arrowhead using graphic component
+    const ppcPixelProd = ppcChart.convertToPixel({gridIndex: 0}, [prodX, prodYCoord]);
+    const ppcPixelCons = ppcChart.convertToPixel({gridIndex: 0}, [consX, consYCoord]);
+
+    const dx = ppcPixelCons[0] - ppcPixelProd[0];
+    const dy = ppcPixelCons[1] - ppcPixelProd[1];
+    const len = Math.sqrt(dx*dx + dy*dy) || 1;
+    const ux = dx / len;
+    const uy = dy / len;
+
+    const arrowSize = 12;
+    const tipX = ppcPixelCons[0] - ux * 6;
+    const tipY = ppcPixelCons[1] - uy * 6;
+    const leftX = tipX - arrowSize * (ux * 0.4 + uy * 0.866);
+    const leftY = tipY - arrowSize * (uy * 0.4 - ux * 0.866);
+    const rightX = tipX - arrowSize * (ux * 0.4 - uy * 0.866);
+    const rightY = tipY - arrowSize * (uy * 0.4 + ux * 0.866);
+
+    ppcChart.setOption({
+        graphic: [{
+            type: 'polygon',
+            shape: {
+                points: [
+                    [ppcPixelCons[0], ppcPixelCons[1]],
+                    [leftX, leftY],
+                    [rightX, rightY]
+                ]
+            },
+            style: { fill: '#3d6b4f' },
+            z: 100
+        }]
+    });
 }
 
 /* ====== INIT ====== */
