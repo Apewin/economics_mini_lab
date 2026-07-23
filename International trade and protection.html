@@ -3,309 +3,295 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AP Micro: International Trade Dashboard</title>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <title>International Trade and Protection</title>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <style>
         :root {
-            --cs-color: #3b82f6;
-            --ps-color: #ef4444;
-            --rev-color: #10b981;
-            --dwl-color: #f59e0b;
-            --pw-color: #64748b;
-            --text-main: #1e293b;
-            --border: #e2e8f0;
+            --cs: #3b82f6;
+            --ps: #ef4444;
+            --rev: #22c55e;
+            --dwl: #f59e0b;
+            --deepBlue: #1a5276;
+            --ochre: #b85c38;
+            --green: #3d6b4f;
+            --gray: #bbb;
+            --text: #1a2a3a;
         }
+        body { background: #f7f7f5; font-family: 'Source Sans Pro', sans-serif; color: var(--text); margin: 0; padding: 24px 16px; }
+        .container { max-width: 880px; margin: 0 auto; background: #fff; border: 1px solid #d4d4d0; padding: 28px 32px; }
+        h2 { font-family: 'Merriweather', serif; font-size: 16px; font-weight: 700; color: var(--text); border-bottom: 2px solid var(--text); padding-bottom: 8px; margin: 0 0 16px 0; }
 
-        body { font-family: 'Inter', system-ui, sans-serif; background: #f8fafc; color: var(--text-main); margin: 0; padding: 20px; height: 100vh; overflow: hidden; }
-        .dashboard { display: flex; height: 95vh; gap: 20px; }
+        /* Legend bar */
+        .legend-bar { display: flex; justify-content: center; gap: 20px; padding: 10px 0 14px; flex-wrap: wrap; }
+        .legend-item { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; font-weight: 600; user-select: none; transition: opacity 0.15s; }
+        .legend-item.inactive { opacity: 0.25; }
+        .legend-item.inactive .legend-label { text-decoration: line-through; }
+        .legend-swatch { width: 14px; height: 14px; }
 
-        /* Left Section: 2/3 */
-        .viz-outer { flex: 2; display: flex; flex-direction: column; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid var(--border); position: relative; }
-        
-        .legend-bar { display: flex; justify-content: center; gap: 25px; padding: 15px; border-bottom: 1px solid #f1f5f9; }
-        .legend-item { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
-        .legend-item.hidden { opacity: 0.15; text-decoration: line-through; }
-        .color-box { width: 14px; height: 14px; border-radius: 2px; }
+        /* Chart */
+        .chart-wrap { position: relative; }
+        #chart { width: 100%; height: 420px; }
 
-        /* Chart & Slider Layout */
-        .chart-container { flex: 1; position: relative; margin-left: 20px; }
-        
-        /* The "Anchor" for the slider - its height will be set via JS */
-        .slider-wrapper {
-            position: absolute;
-            left: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 40px;
-        }
-        .v-slider {
-            appearance: slider-vertical;
-            width: 8px;
-            cursor: pointer;
-            margin: 0;
-            padding: 0;
-        }
-        .slider-hint { font-size: 10px; font-weight: bold; color: var(--pw-color); margin-top: 5px; }
+        /* Controls */
+        .controls { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+        .ctrl-group { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 200px; }
+        .ctrl-group label { font-size: 12px; font-weight: 600; color: #555; }
+        .ctrl-row { display: flex; align-items: center; gap: 10px; }
+        .ctrl-row input[type="range"] { flex: 1; }
+        .ctrl-val { font-size: 13px; font-weight: 700; min-width: 40px; }
+        .policy-toggle { display: flex; align-items: center; gap: 8px; }
+        .policy-toggle button { padding: 4px 14px; border: 1px solid #d4d4d0; background: #fff; font-family: 'Source Sans Pro', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; color: #555; }
+        .policy-toggle button.active { background: var(--text); color: #fff; border-color: var(--text); }
 
-        #viz { width: 100%; height: 100%; }
+        /* Table */
+        .data-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 16px; }
+        .data-table th { text-align: left; padding: 8px 6px; border-bottom: 2px solid #d4d4d0; font-weight: 600; color: #555; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .data-table td { padding: 7px 6px; border-bottom: 1px solid #eee; }
+        .data-table tr:last-child td { border-bottom: none; }
+        .delta-pos { color: #16a34a; font-weight: 700; }
+        .delta-neg { color: #dc2626; font-weight: 700; }
+        .delta-zero { color: #aaa; }
 
-        /* Right Section: 1/3 */
-        .panel { flex: 1; display: flex; flex-direction: column; gap: 15px; min-width: 380px; }
-        .card { background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-
-        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-        th { text-align: left; padding: 10px 5px; border-bottom: 2px solid var(--border); color: #64748b; }
-        td { padding: 8px 5px; border-bottom: 1px solid #f8fafc; }
-        .delta { font-weight: 800; font-family: monospace; }
-        .pos { color: #16a34a; }
-        .neg { color: #dc2626; }
-
-        .control-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .switch { position: relative; width: 40px; height: 20px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider-round { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; border-radius: 20px; transition: .3s; }
-        .slider-round:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: .3s; }
-        input:checked + .slider-round { background-color: var(--text-main); }
-        input:checked + .slider-round:before { transform: translateX(20px); }
-
-        .econ-label { font-size: 13px; font-weight: bold; }
+        .source { margin-top: 14px; font-size: 11px; color: #999; }
     </style>
 </head>
 <body>
 
-<div class="dashboard">
-    <div class="viz-outer">
-        <div class="legend-bar">
-            <div class="legend-item" data-area="cs"><div class="color-box" style="background: var(--cs-color);"></div>Consumer Surplus</div>
-            <div class="legend-item" data-area="ps"><div class="color-box" style="background: var(--ps-color);"></div>Producer Surplus</div>
-            <div class="legend-item" data-area="rev"><div class="color-box" style="background: var(--rev-color);"></div>Revenue / Rent</div>
-            <div class="legend-item" data-area="dwl"><div class="color-box" style="background: var(--dwl-color);"></div>DWL</div>
+<div class="container">
+    <h2>International Trade and Protection</h2>
+
+    <!-- Legend -->
+    <div class="legend-bar" id="legendBar">
+        <div class="legend-item" data-name="Consumer Surplus">
+            <div class="legend-swatch" style="background: var(--cs);"></div>
+            <span class="legend-label">Consumer Surplus</span>
         </div>
-        
-        <div class="chart-container">
-            <div id="sliderWrapper" class="slider-wrapper">
-                <input type="range" id="pwSlider" class="v-slider" min="0" max="100" value="30" step="0.5">
-                <div class="slider-hint">Pw</div>
-            </div>
-            <div id="viz"></div>
+        <div class="legend-item" data-name="Producer Surplus">
+            <div class="legend-swatch" style="background: var(--ps);"></div>
+            <span class="legend-label">Producer Surplus</span>
+        </div>
+        <div class="legend-item" data-name="Revenue / Rent">
+            <div class="legend-swatch" style="background: var(--rev);"></div>
+            <span class="legend-label">Revenue / Rent</span>
+        </div>
+        <div class="legend-item" data-name="DWL">
+            <div class="legend-swatch" style="background: var(--dwl);"></div>
+            <span class="legend-label">Deadweight Loss</span>
         </div>
     </div>
 
-    <div class="panel">
-        <div class="card">
-            <div class="control-header">
-                <span style="font-weight: 800; font-size: 0.9rem;">POLICY: <span id="modeName">Tariff</span></span>
-                <label class="switch">
-                    <input type="checkbox" id="modeToggle">
-                    <span class="slider-round"></span>
-                </label>
-                <span style="font-weight: 800; font-size: 0.9rem;">Quota</span>
-            </div>
-            <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                <label id="magLabel" style="font-size: 0.85rem; font-weight: 700;">Magnitude ($):</label>
-                <span id="magDisplay" style="font-weight: 800; color: var(--ps-color);">0</span>
-            </div>
-            <input type="range" id="policyMag" min="0" max="45" value="0" step="0.5" style="width: 100%;">
-        </div>
+    <!-- Chart -->
+    <div class="chart-wrap">
+        <div id="chart"></div>
+    </div>
 
-        <div class="card" style="flex: 1; overflow-y: auto;">
-            <h4 style="margin: 0 0 10px 0; font-size: 0.9rem; color: #64748b; text-transform: uppercase;">Market Data</h4>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Variable</th>
-                        <th>Free Trade</th>
-                        <th>Policy</th>
-                        <th>&Delta;</th>
-                    </tr>
-                </thead>
-                <tbody id="statsBody"></tbody>
-            </table>
+    <!-- Controls -->
+    <div class="controls">
+        <div class="ctrl-group">
+            <label>World Price (Pw)</label>
+            <div class="ctrl-row">
+                <input type="range" id="pwSlider" min="0" max="100" value="30" step="0.5">
+                <span class="ctrl-val" id="pwVal" style="color: var(--deepBlue);">30</span>
+            </div>
+        </div>
+        <div class="ctrl-group">
+            <label id="policyLabel">Tariff ($)</label>
+            <div class="ctrl-row">
+                <div class="policy-toggle">
+                    <button id="btnTariff" class="active" onclick="setPolicy(false)">Tariff</button>
+                    <button id="btnQuota" onclick="setPolicy(true)">Quota</button>
+                </div>
+                <input type="range" id="magSlider" min="0" max="45" value="0" step="0.5">
+                <span class="ctrl-val" id="magVal" style="color: var(--ochre);">0</span>
+            </div>
         </div>
     </div>
+
+    <!-- Data Table -->
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Variable</th>
+                <th>Free Trade</th>
+                <th>With Policy</th>
+                <th>&Delta;</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+
+    <div class="source">S: P = Q &nbsp;|&nbsp; D: P = 100 − Q &nbsp;|&nbsp; Equilibrium: P* = 50, Q* = 50</div>
 </div>
 
 <script>
-    // --- Initial D3 Setup ---
-    const container = d3.select("#viz");
-    const svg = container.append("svg").attr("viewBox", "0 0 700 500").attr("preserveAspectRatio", "xMidYMid meet");
+(function() {
+    var state = { pw: 30, mag: 0, isQuota: false, show: { cs: true, ps: true, rev: true, dwl: true } };
+    var chart = echarts.init(document.getElementById('chart'));
+    window.addEventListener('resize', function() { chart.resize(); });
 
-    // Margins - left increased to accommodate price labels
-    const margin = {top: 40, right: 40, bottom: 60, left: 100};
-    const width = 700 - margin.left - margin.right;
-    const height = 500 - margin.top - margin.bottom;
+    var C = { cs: '#3b82f6', ps: '#ef4444', rev: '#22c55e', dwl: '#f59e0b', curve: '#1a2a3a', pw: '#888', pd: '#1a2a3a', eq: '#999', proj: '#aaa' };
 
-    const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
-    const x = d3.scaleLinear().domain([0, 100]).range([0, width]);
-    const y = d3.scaleLinear().domain([0, 100]).range([height, 0]);
-
-    // --- Align Slider to Y Axis ---
-    const sliderWrap = document.getElementById('sliderWrapper');
-    const pwSlider = document.getElementById('pwSlider');
-    sliderWrap.style.top = margin.top + "px";
-    pwSlider.style.height = height + "px";
-
-    // --- Static Elements ---
-    // Grid & Ticks
-    g.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x).tickSize(-height).tickPadding(10)).attr("class", "grid");
-    g.append("g").call(d3.axisLeft(y).tickSize(-width).tickPadding(10)).attr("class", "grid");
-    svg.selectAll(".grid line").attr("stroke", "#f1f5f9");
-    svg.selectAll(".grid text").attr("fill", "#cbd5e1").style("font-size", "10px");
-
-    // S & D Lines
-    g.append("line").attr("x1", x(0)).attr("y1", y(0)).attr("x2", x(100)).attr("y2", y(100)).attr("stroke", "#1e293b").attr("stroke-width", 2.5);
-    g.append("line").attr("x1", x(0)).attr("y1", y(100)).attr("x2", x(100)).attr("y2", y(0)).attr("stroke", "#1e293b").attr("stroke-width", 2.5);
-    g.append("text").attr("x", x(98)).attr("y", y(98)).text("S").style("font-weight", "bold").style("font-size", "16px");
-    g.append("text").attr("x", x(98)).attr("y", y(2)).text("D").style("font-weight", "bold").style("font-size", "16px");
-
-    // Pe / Qe Labels
-    g.append("line").attr("x1", 0).attr("y1", y(50)).attr("x2", x(50)).attr("y2", y(50)).attr("stroke", "#94a3b8").attr("stroke-dasharray", "4,4");
-    g.append("line").attr("x1", x(50)).attr("y1", y(50)).attr("x2", x(50)).attr("y2", height).attr("stroke", "#94a3b8").attr("stroke-dasharray", "4,4");
-    g.append("text").attr("x", -40).attr("y", y(50)).attr("dy", "0.35em").text("Pe=50").attr("class", "econ-label").style("fill", "#64748b");
-    g.append("text").attr("x", x(50)).attr("y", height + 25).attr("text-anchor", "middle").text("Qe=50").attr("class", "econ-label").style("fill", "#64748b");
-
-    const areaG = g.append("g");
-    const dynamicG = g.append("g");
-
-    let state = {
-        pw: 30,
-        mag: 0,
-        isQuota: false,
-        show: { cs: true, ps: true, rev: true, dwl: true }
-    };
+    function poly(name, pts, color, op) {
+        return { name: name, type: 'line', data: pts, symbol: 'none', animation: false,
+            lineStyle: { width: 0 }, areaStyle: { color: color, opacity: op }, silent: true };
+    }
 
     function update() {
-        const isImp = state.pw < 50;
-        let pd;
-
-        if(!state.isQuota) {
-            pd = isImp ? Math.min(state.pw + state.mag, 50) : Math.max(state.pw - state.mag, 50);
+        var pw = state.pw, isImp = pw < 50, isEq = (pw === 50), pd;
+        if (!state.isQuota) {
+            pd = isImp ? Math.min(pw + state.mag, 50) : Math.max(pw - state.mag, 50);
         } else {
-            // Quota mag is the "gap" allowed
-            pd = isImp ? (100 - state.mag)/2 : (100 + state.mag)/2;
-            pd = isImp ? Math.max(pd, state.pw) : Math.min(pd, state.pw);
+            if (state.mag <= 0) { pd = pw; }
+            else if (isImp) { pd = Math.max(Math.min((100 - state.mag) / 2, 50), pw); }
+            else { pd = Math.min(Math.max((100 + state.mag) / 2, 50), pw); }
         }
+        var qsf = pw, qdf = 100 - pw, qsp = pd, qdp = 100 - pd;
+        var hasPolicy = Math.abs(pd - pw) > 0.1, hasTrade = !isEq;
 
-        const qsf = state.pw, qdf = 100 - state.pw;
-        const qsp = pd, qdp = 100 - pd;
-
-        renderViz(state.pw, pd, qsf, qdf, qsp, qdp);
-        renderTable(state.pw, pd, qsf, qdf, qsp, qdp);
-    }
-
-    function renderViz(pw, pd, qsf, qdf, qsp, qdp) {
-        areaG.selectAll("*").remove();
-        dynamicG.selectAll("*").remove();
-
-        // 1. Shading
-        if(state.show.cs) drawPoly([[0,100],[0,pd],[qdp,pd]], 'var(--cs-color)', 0.2);
-        if(state.show.ps) drawPoly([[0,0],[0,pd],[qsp,pd]], 'var(--ps-color)', 0.2);
-        
-        const hasPolicy = Math.abs(pd - pw) > 0.1;
-        if(state.show.rev && hasPolicy) {
-            const xl = Math.min(qsp, qdp), xr = Math.max(qsp, qdp);
-            areaG.append("rect").attr("x", x(xl)).attr("y", y(Math.max(pd,pw))).attr("width", x(xr-xl)).attr("height", Math.abs(y(pd)-y(pw))).attr("fill", 'var(--rev-color)').attr("opacity", 0.4);
-        }
-        if(state.show.dwl && hasPolicy) {
-            drawPoly([[qsf,pw],[qsp,pw],[qsp,pd]], 'var(--dwl-color)', 0.5);
-            drawPoly([[qdf,pw],[qdp,pw],[qdp,pd]], 'var(--dwl-color)', 0.5);
-        }
-
-        // 2. Dynamic Price Lines & Labels
-        // Pw
-        drawLabelLine(0, pw, width, pw, "var(--pw-color)", "Pw", true, -40);
-        drawProj(qsf, pw, "var(--pw-color)", "Q1");
-        drawProj(qdf, pw, "var(--pw-color)", "Q1'");
-
-        // Pdom
-        if(hasPolicy) {
-            drawLabelLine(0, pd, Math.max(qsp, qdp), pd, "#1e293b", "Pdom", false, -85);
-            drawProj(qsp, pd, "#1e293b", "Qs2");
-            drawProj(qdp, pd, "#1e293b", "Qd2");
-        }
-    }
-
-    function drawPoly(pts, color, op) {
-        areaG.append("polygon").attr("points", pts.map(d => [x(d[0]), y(d[1])].join(",")).join(" ")).attr("fill", color).attr("opacity", op);
-    }
-
-    function drawLabelLine(x1, y1, x2, y2, col, lab, dash, offset) {
-        dynamicG.append("line").attr("x1", x(x1)).attr("y1", y(y1)).attr("x2", x(x2)).attr("y2", y(y2)).attr("stroke", col).attr("stroke-width", 2).attr("stroke-dasharray", dash ? "4,4" : "0");
-        dynamicG.append("text").attr("x", offset).attr("y", y(y1)).attr("dy", "0.35em").text(lab).attr("class", "econ-label").style("fill", col);
-    }
-
-    function drawProj(qx, qy, col, lab) {
-        dynamicG.append("line").attr("x1", x(qx)).attr("y1", y(qy)).attr("x2", x(qx)).attr("y2", height).attr("stroke", col).attr("stroke-dasharray", "2,2");
-        dynamicG.append("text").attr("x", x(qx)).attr("y", height + 15).attr("text-anchor", "middle").text(lab).style("font-size", "11px").style("fill", col).style("font-weight", "bold");
-    }
-
-    function renderTable(pw, pd, qsf, qdf, qsp, qdp) {
-        const csf = 0.5*(100-pw)**2, psf = 0.5*pw**2;
-        const csp = 0.5*(100-pd)**2, psp = 0.5*pd**2;
-        const rev = Math.abs(pd-pw)*Math.abs(qdp-qsp);
-        const dwl = Math.max(0, (csf+psf) - (csp+psp+rev));
-
-        const data = [
-            {v: "Price (Domestic)", f: pw, p: pd},
-            {v: "Qty Supplied (Dom)", f: qsf, p: qsp},
-            {v: "Qty Demanded (Dom)", f: qdf, p: qdp},
-            {v: "Trade Volume", f: Math.abs(qdf-qsf), p: Math.abs(qdp-qsp)},
-            {v: "Consumer Surplus", f: csf, p: csp, c: 'var(--cs-color)'},
-            {v: "Producer Surplus", f: psf, p: psp, c: 'var(--ps-color)'},
-            {v: "Revenue / Rent", f: 0, p: rev, c: 'var(--rev-color)'},
-            {v: "Deadweight Loss", f: 0, p: dwl, c: 'var(--dwl-color)'}
+        var series = [
+            { name: '_S', type: 'line', data: [[0, 0], [100, 100]], symbol: 'none', animation: false,
+              lineStyle: { width: 2.5, color: C.curve },
+              markPoint: { symbol: 'none', data: [{ coord: [96, 96], label: { show: true, formatter: 'S', fontSize: 15, fontWeight: 'bold', color: C.curve } }] } },
+            { name: '_D', type: 'line', data: [[0, 100], [100, 0]], symbol: 'none', animation: false,
+              lineStyle: { width: 2.5, color: C.curve },
+              markPoint: { symbol: 'none', data: [{ coord: [96, 4], label: { show: true, formatter: 'D', fontSize: 15, fontWeight: 'bold', color: C.curve } }] } },
+            { name: '_Pw', type: 'line', data: [[0, pw], [100, pw]], symbol: 'none', animation: false,
+              lineStyle: { width: 2, type: 'dashed', color: C.pw },
+              markPoint: { symbol: 'none', symbolSize: 0, data: [{ coord: [-2, pw], label: { show: true, formatter: 'Pw = ' + (Math.round(pw * 10) / 10), fontSize: 12, fontWeight: 'bold', color: C.pw } }] } },
+            { name: '_Pd', type: 'line', data: hasPolicy && hasTrade ? [[0, pd], [Math.max(qsp, qdp) + 2, pd]] : [], symbol: 'none', animation: false,
+              lineStyle: { width: 2, color: C.pd },
+              markPoint: { symbol: 'none', symbolSize: 0, data: hasPolicy && hasTrade ? [{ coord: [-2, pd], label: { show: true, formatter: 'Pd = ' + pd.toFixed(1), fontSize: 12, fontWeight: 'bold', color: C.pd } }] : [] } },
+            { name: '_EqH', type: 'line', data: [[0, 50], [50, 50]], symbol: 'none', animation: false, lineStyle: { width: 1, type: 'dotted', color: C.eq } },
+            { name: '_EqV', type: 'line', data: [[50, 50], [50, 0]], symbol: 'none', animation: false, lineStyle: { width: 1, type: 'dotted', color: C.eq },
+              markPoint: { symbol: 'none', symbolSize: 0, data: [
+                  { coord: [0, 50], label: { show: true, formatter: 'Pe=50', fontSize: 11, color: '#999' } },
+                  { coord: [50, 0], label: { show: true, formatter: 'Qe=50', fontSize: 11, color: '#999', position: 'bottom' } }] } },
+            // Areas
+            poly('CS', [[0, 100], [0, pd], [qdp, pd], [qdp, 100], [0, 100]], C.cs, 0.15),
+            poly('PS', [[0, 0], [0, pd], [qsp, pd], [qsp, 0], [0, 0]], C.ps, 0.15)
         ];
 
-        document.getElementById("statsBody").innerHTML = data.map(d => {
-            const diff = d.p - d.f;
-            const dCls = diff > 0.01 ? 'pos' : (diff < -0.01 ? 'neg' : '');
-            return `<tr>
-                <td style="color:${d.c || 'inherit'}; font-weight:700">${d.v}</td>
-                <td>${d.f.toFixed(1)}</td>
-                <td>${d.p.toFixed(1)}</td>
-                <td class="delta ${dCls}">${diff > 0.01 ? '+' : ''}${diff.toFixed(1)}</td>
-            </tr>`;
-        }).join('');
+        if (hasPolicy && hasTrade) {
+            var revL = Math.min(qsp, qdp), revR = Math.max(qsp, qdp);
+            var revTop = Math.max(pw, pd), revBot = Math.min(pw, pd);
+            series.push(poly('Rev', [[revL, revBot], [revR, revBot], [revR, revTop], [revL, revTop], [revL, revBot]], C.rev, 0.25));
+            series.push(poly('DWL', [[qsf, pw], [qsp, pd], [qsp, pw], [qsf, pw]], C.dwl, 0.35));
+            series.push(poly('DWL2', [[qdf, pw], [qdp, pw], [qdp, pd], [qdf, pw]], C.dwl, 0.35));
+        } else {
+            series.push(poly('Rev', [], C.rev, 0));
+            series.push(poly('DWL', [], C.dwl, 0));
+            series.push(poly('DWL2', [], C.dwl, 0));
+        }
+
+        // Projection lines
+        if (hasTrade) {
+            series.push({ name: '_p1', type: 'line', data: [[qsf, pw], [qsf, 0]], symbol: 'none', animation: false, lineStyle: { width: 1, type: 'dotted', color: C.proj },
+                markPoint: { symbol: 'none', symbolSize: 0, data: [{ coord: [qsf, 0], label: { show: true, formatter: 'Qˢ¹', fontSize: 11, fontWeight: 'bold', color: C.proj, position: 'bottom' } }] } });
+            series.push({ name: '_p2', type: 'line', data: [[qdf, pw], [qdf, 0]], symbol: 'none', animation: false, lineStyle: { width: 1, type: 'dotted', color: C.proj },
+                markPoint: { symbol: 'none', symbolSize: 0, data: [{ coord: [qdf, 0], label: { show: true, formatter: 'Q⁰¹', fontSize: 11, fontWeight: 'bold', color: C.proj, position: 'bottom' } }] } });
+        } else {
+            series.push({ name: '_p1', type: 'line', data: [], symbol: 'none', animation: false, lineStyle: { width: 0 } });
+            series.push({ name: '_p2', type: 'line', data: [], symbol: 'none', animation: false, lineStyle: { width: 0 } });
+        }
+        if (hasPolicy && hasTrade) {
+            series.push({ name: '_p3', type: 'line', data: [[qsp, pd], [qsp, 0]], symbol: 'none', animation: false, lineStyle: { width: 1, type: 'dotted', color: C.pd },
+                markPoint: { symbol: 'none', symbolSize: 0, data: [{ coord: [qsp, 0], label: { show: true, formatter: 'Qˢ²', fontSize: 11, fontWeight: 'bold', color: C.pd, position: 'bottom' } }] } });
+            series.push({ name: '_p4', type: 'line', data: [[qdp, pd], [qdp, 0]], symbol: 'none', animation: false, lineStyle: { width: 1, type: 'dotted', color: C.pd },
+                markPoint: { symbol: 'none', symbolSize: 0, data: [{ coord: [qdp, 0], label: { show: true, formatter: 'Q⁰²', fontSize: 11, fontWeight: 'bold', color: C.pd, position: 'bottom' } }] } });
+        } else {
+            series.push({ name: '_p3', type: 'line', data: [], symbol: 'none', animation: false, lineStyle: { width: 0 } });
+            series.push({ name: '_p4', type: 'line', data: [], symbol: 'none', animation: false, lineStyle: { width: 0 } });
+        }
+
+        chart.setOption({
+            animation: false, backgroundColor: '#fff', tooltip: { show: false },
+            grid: { left: 90, right: 40, top: 30, bottom: 50 },
+            xAxis: { type: 'value', min: -5, max: 110,
+                name: 'Quantity', nameLocation: 'middle', nameGap: 30, nameTextStyle: { fontSize: 12, color: '#666' },
+                axisLine: { show: true, lineStyle: { color: '#999' } }, axisTick: { show: false },
+                splitLine: { show: true, lineStyle: { color: '#f0f0f0', type: 'solid' } },
+                axisLabel: { fontSize: 10, color: '#999' } },
+            yAxis: { type: 'value', min: -5, max: 110,
+                name: 'Price', nameLocation: 'middle', nameGap: 50, nameTextStyle: { fontSize: 12, color: '#666' },
+                axisLine: { show: true, lineStyle: { color: '#999' } }, axisTick: { show: false },
+                splitLine: { show: true, lineStyle: { color: '#f0f0f0', type: 'solid' } },
+                axisLabel: { fontSize: 10, color: '#999' } },
+            legend: { show: false,
+                selected: { 'CS': state.show.cs, 'PS': state.show.ps, 'Rev': state.show.rev, 'DWL': state.show.dwl, 'DWL2': state.show.dwl } },
+            series: series
+        }, true);
+
+        // Table
+        var csf = 0.5 * (100 - pw) * (100 - pw), psf = 0.5 * pw * pw;
+        var csp = 0.5 * (100 - pd) * (100 - pd), psp = 0.5 * pd * pd;
+        var tvf = Math.abs(qdf - qsf), tvp = Math.abs(qdp - qsp);
+        var rev = Math.abs(pd - pw) * tvp;
+        var dwl = Math.max(0, (csf + psf) - (csp + psp + rev));
+        var rows = [
+            { v: 'Price (Domestic)', f: pw, p: pd }, { v: 'Qty Supplied', f: qsf, p: qsp },
+            { v: 'Qty Demanded', f: qdf, p: qdp }, { v: 'Trade Volume', f: tvf, p: tvp },
+            { v: 'Consumer Surplus', f: csf, p: csp, c: C.cs }, { v: 'Producer Surplus', f: psf, p: psp, c: C.ps },
+            { v: 'Revenue / Rent', f: 0, p: rev, c: C.rev }, { v: 'Deadweight Loss', f: 0, p: dwl, c: C.dwl }
+        ];
+        var h = '';
+        for (var i = 0; i < rows.length; i++) {
+            var r = rows[i], d = r.p - r.f;
+            var cls = d > 0.01 ? 'delta-pos' : (d < -0.01 ? 'delta-neg' : 'delta-zero');
+            h += '<tr><td style="font-weight:700;' + (r.c ? 'color:' + r.c : '') + '">' + r.v + '</td><td>' + r.f.toFixed(1) + '</td><td>' + r.p.toFixed(1) + '</td><td class="' + cls + '">' + (d > 0.01 ? '+' : '') + d.toFixed(1) + '</td></tr>';
+        }
+        document.getElementById('tableBody').innerHTML = h;
     }
 
-    // --- Event Listeners ---
-    document.getElementById("pwSlider").oninput = function() {
-        state.pw = +this.value;
-        update();
-    };
-
-    document.getElementById("modeToggle").onchange = function() {
-        state.isQuota = this.checked;
-        document.getElementById("modeName").innerText = state.isQuota ? "Quota" : "Tariff";
-        const m = document.getElementById("policyMag");
-        if(state.isQuota) {
-            document.getElementById("magLabel").innerText = "Quota (Allowed Qty):";
-            m.max = 100; m.value = 100; state.mag = 100;
+    window.setPolicy = function(isQuota) {
+        state.isQuota = isQuota;
+        document.getElementById('btnTariff').classList.toggle('active', !isQuota);
+        document.getElementById('btnQuota').classList.toggle('active', isQuota);
+        var s = document.getElementById('magSlider');
+        if (isQuota) {
+            document.getElementById('policyLabel').textContent = 'Quota (allowed qty)';
+            var ft = Math.abs((100 - state.pw) - state.pw);
+            s.max = ft; s.value = ft; state.mag = ft;
         } else {
-            document.getElementById("magLabel").innerText = "Tariff Size ($):";
-            m.max = 45; m.value = 0; state.mag = 0;
+            document.getElementById('policyLabel').textContent = 'Tariff ($)';
+            s.max = 45; s.value = 0; state.mag = 0;
         }
-        document.getElementById("magDisplay").innerText = state.mag;
+        document.getElementById('magVal').textContent = state.mag;
         update();
     };
 
-    document.getElementById("policyMag").oninput = function() {
-        state.mag = +this.value;
-        document.getElementById("magDisplay").innerText = state.mag;
+    document.getElementById('pwSlider').addEventListener('input', function() {
+        state.pw = parseFloat(this.value);
+        document.getElementById('pwVal').textContent = state.pw;
+        if (state.isQuota) {
+            var ft = Math.abs((100 - state.pw) - state.pw);
+            var s = document.getElementById('magSlider');
+            s.max = ft;
+            if (state.mag > ft) { state.mag = ft; s.value = ft; document.getElementById('magVal').textContent = state.mag; }
+        }
         update();
-    };
-
-    document.querySelectorAll(".legend-item").forEach(i => {
-        i.onclick = function() {
-            const area = this.getAttribute("data-area");
-            state.show[area] = !state.show[area];
-            this.classList.toggle("hidden", !state.show[area]);
-            update();
-        };
     });
 
+    document.getElementById('magSlider').addEventListener('input', function() {
+        state.mag = parseFloat(this.value);
+        document.getElementById('magVal').textContent = state.mag;
+        update();
+    });
+
+    document.querySelectorAll('.legend-item').forEach(function(el) {
+        el.addEventListener('click', function() {
+            var n = this.getAttribute('data-name');
+            var k = n === 'Consumer Surplus' ? 'cs' : n === 'Producer Surplus' ? 'ps' : n === 'Revenue / Rent' ? 'rev' : 'dwl';
+            state.show[k] = !state.show[k];
+            this.classList.toggle('inactive');
+            update();
+        });
+    });
+
+    document.getElementById('pwVal').textContent = state.pw;
+    document.getElementById('magVal').textContent = state.mag;
     update();
+})();
 </script>
 </body>
 </html>
