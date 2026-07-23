@@ -5,775 +5,826 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cournot Duopoly Simulation</title>
     <style>
-        :root {
-            --primary: #2c3e50;
-            --secondary: #3498db;
-            --accent: #e74c3c;
-            --bg: #fdfdfd;
-            --font-lg: 20px;
-            --font-xl: 24px;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Source+Sans+Pro:wght@400;600&display=swap');
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f7f7f5;
+            font-family: 'Source Sans Pro', sans-serif;
+            color: #333;
+            padding: 24px 16px;
             margin: 0;
-            padding: 10px 20px;
-            background-color: var(--bg);
-            color: var(--primary);
-            font-size: var(--font-lg);
         }
-        h1 {
-            text-align: center;
-            font-size: 28px;
-            margin-top: 5px;
-            margin-bottom: 0px;
+        .container {
+            max-width: 880px;
+            margin: 0 auto;
+            background: #fff;
+            border: 1px solid #d4d4d0;
+            padding: 28px 32px;
         }
         h2 {
-            font-size: 22px;
-            border-bottom: 2px solid var(--secondary);
-            padding-bottom: 5px;
-            margin-top: 5px;
-            margin-bottom: 10px;
+            font-family: 'Merriweather', serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a2a3a;
+            border-bottom: 2px solid #1a2a3a;
+            padding-bottom: 8px;
+            margin: 0 0 16px 0;
+        }
+        .chart-box {
+            width: 100%;
+            height: 380px;
+            margin: 12px 0;
+        }
+        .source {
+            font-size: 10px;
+            color: #888;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 8px;
+            margin-top: 16px;
         }
 
         .tabs {
             display: flex;
-            justify-content: center;
-            margin-bottom: 10px;
-            margin-top: 10px;
+            gap: 0;
+            margin-bottom: 0;
         }
         .tab-btn {
-            background-color: #ddd;
-            border: none;
-            padding: 12px 24px;
+            font-family: 'Source Sans Pro', sans-serif;
+            background: #eee;
+            border: 1px solid #d4d4d0;
+            border-bottom: none;
+            padding: 8px 18px;
             cursor: pointer;
-            font-size: var(--font-lg);
-            font-weight: bold;
-            transition: 0.3s;
-            margin: 0 5px;
-            border-radius: 8px 8px 0 0;
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            margin-right: -1px;
         }
-        .tab-btn:hover {
-            background-color: #ccc;
-        }
+        .tab-btn:hover { background: #e4e4e0; }
         .tab-btn.active {
-            background-color: var(--secondary);
-            color: white;
+            background: #fff;
+            color: #1a2a3a;
+            border-bottom: 1px solid #fff;
+            margin-bottom: -1px;
+            position: relative;
+            z-index: 1;
         }
 
         .tab-content {
             display: none;
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-top: 1px solid #d4d4d0;
+            padding-top: 18px;
         }
-        .tab-content.active {
-            display: block;
-        }
-
-        .flex-container {
-            display: flex;
-            gap: 15px;
-            align-items: flex-start;
-            justify-content: space-between;
-            width: 100%;
-            flex-wrap: nowrap;
-        }
-        .graph-wrapper {
-            flex: 1;
-            text-align: center;
-            min-width: 0;
-        }
-        canvas {
-            background: #fff;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-            width: 100%;
-            height: auto;
-            max-width: 100%;
-        }
+        .tab-content.active { display: block; }
 
         .controls {
-            background: #f1f2f6;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            font-size: var(--font-lg);
+            background: #f7f7f5;
+            padding: 12px 16px;
+            margin-bottom: 14px;
+            border: 1px solid #e0e0dc;
         }
         .control-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+        }
+        .control-row label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
         }
         input[type="range"] {
-            width: 50%;
-            height: 25px;
+            width: 45%;
             cursor: pointer;
+            accent-color: #1a5276;
         }
         input[type="checkbox"] {
-            width: 25px;
-            height: 25px;
             cursor: pointer;
-            vertical-align: middle;
+            accent-color: #1a5276;
+            margin-right: 4px;
         }
         .checkbox-label {
-            margin-right: 25px;
-            font-weight: bold;
+            margin-right: 18px;
+            font-size: 13px;
+            font-weight: 600;
             cursor: pointer;
+            color: #333;
         }
 
+        .highlight { font-weight: 700; color: #b85c38; }
+
         .btn {
-            background-color: var(--secondary);
-            color: white;
+            font-family: 'Source Sans Pro', sans-serif;
+            background: #1a5276;
+            color: #fff;
             border: none;
-            padding: 12px 24px;
-            border-radius: 5px;
+            padding: 8px 20px;
             cursor: pointer;
-            font-size: var(--font-lg);
-            font-weight: bold;
-            margin-right: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-right: 8px;
         }
-        .btn:hover {
-            background-color: #2980b9;
-        }
+        .btn:hover { background: #1a3a5c; }
         .btn-reset {
-            background-color: #95a5a6;
+            background: #888;
         }
-        .btn-reset:hover {
-            background-color: #7f8c8d;
+        .btn-reset:hover { background: #666; }
+
+        .flex-container {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+        .graph-wrapper {
+            flex: 1;
+            min-width: 0;
         }
 
         .data-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: var(--font-lg);
-            background: white;
+            font-size: 13px;
         }
-        .data-table th,
-        .data-table td {
-            border: 2px solid #ddd;
-            padding: 12px;
+        .data-table th, .data-table td {
+            border: 1px solid #d4d4d0;
+            padding: 6px 10px;
             text-align: center;
         }
         .data-table th {
-            background-color: var(--primary);
-            color: white;
+            background: #1a2a3a;
+            color: #fff;
+            font-weight: 600;
         }
-
         .table-container {
             flex: 0 0 36%;
-            max-height: 600px;
+            max-height: 420px;
             overflow-y: auto;
-            border: 2px solid #ddd;
-            border-radius: 5px;
+            border: 1px solid #d4d4d0;
         }
 
-        .highlight {
-            font-weight: bold;
-            color: var(--accent);
-        }
         .data-box {
-            background: #eaf2f8;
-            padding: 20px;
-            border-radius: 8px;
-            border-left: 5px solid var(--secondary);
-            flex: 0 0 28%;
-            min-width: 200px;
+            flex: 0 0 48%;
+            background: #f7f7f5;
+            border: 1px solid #d4d4d0;
+            padding: 16px;
+            font-size: 13px;
         }
-        .data-box p {
-            margin: 10px 0;
+        .data-box h3 {
+            font-family: 'Merriweather', serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a2a3a;
+            margin: 0 0 10px 0;
         }
+        .data-box p { margin: 6px 0; }
 
-        footer {
+        .profit-info {
             text-align: center;
-            margin-top: 20px;
-            font-size: 16px;
-            color: #7f8c8d;
+            font-size: 13px;
+            margin-top: 4px;
+            padding: 6px 0;
+            border-top: 1px solid #e0e0dc;
         }
 
-        /* Step2 专用：图更紧凑，表格占更多空间 */
-        .step2-graph {
-            flex: 0 0 40% !important;
-            max-width: 40%;
-        }
-        .step2-table {
-            flex: 0 0 55% !important;
-        }
-
-        /* Step3 专用：图更紧凑，数据框占更多空间 */
-        .step3-graph {
-            flex: 0 0 42% !important;
-            max-width: 42%;
-        }
-        .step3-data {
-            flex: 0 0 52% !important;
-        }
-
-        /* 小屏适配：堆叠显示 */
-        @media (max-width: 1100px) {
-            .flex-container {
-                flex-wrap: wrap;
-            }
-            .graph-wrapper {
+        @media (max-width: 700px) {
+            .flex-container { flex-direction: column; }
+            .graph-wrapper, .table-container, .data-box {
                 flex: 1 1 100% !important;
                 max-width: 100% !important;
-            }
-            .table-container,
-            .data-box {
-                flex: 1 1 100% !important;
-                max-height: 400px;
-            }
-            .step2-graph,
-            .step3-graph {
-                flex: 1 1 100% !important;
-                max-width: 100% !important;
-            }
-            .step2-table,
-            .step3-data {
-                flex: 1 1 100% !important;
             }
         }
     </style>
 </head>
 <body>
 
-    <h1>Cournot Duopoly Simulation</h1>
-    <p style="text-align: center; font-weight: bold; margin-top: 5px;">Market Demand: P = 120 - Q &nbsp;&nbsp;|&nbsp;&nbsp; Marginal Cost: MC = 30</p>
+<div class="container">
+    <h2>Cournot Duopoly Simulation — P = 120 − Q, MC = 30</h2>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab(1)">Step 1: Best Response</button>
-        <button class="tab-btn" onclick="switchTab(2)">Step 2: Game Iteration</button>
-        <button class="tab-btn" onclick="switchTab(3)">Step 3: Market Comparison</button>
+        <button class="tab-btn active" onclick="switchTab(1)">Best Response</button>
+        <button class="tab-btn" onclick="switchTab(2)">Game Iteration</button>
+        <button class="tab-btn" onclick="switchTab(3)">Market Comparison</button>
     </div>
 
-    <!-- STEP 1 -->
+    <!-- TAB 1: Best Response -->
     <div id="step1" class="tab-content active">
-        <h2>Step 1: Firm B's Best Response (Given Firm A)</h2>
+        <h2>Tab 1: Firm B's Best Response (Given Firm A)</h2>
         <div class="controls">
             <div class="control-row">
-                <label><strong>1. Assume Firm A Output (Q_A): <span id="val-s1-qa" class="highlight">30</span></strong></label>
+                <label>Firm A Output (Q<sub>A</sub>): <span class="highlight" id="val-s1-qa">30</span></label>
                 <input type="range" id="slider-s1-qa" min="0" max="90" step="1" value="30" oninput="updateStep1()">
             </div>
             <div class="control-row">
-                <label><strong>2. Choose Firm B Output (Q_B): <span id="val-s1-qb" style="color: blue; font-weight: bold;">15</span></strong></label>
+                <label>Firm B Output (Q<sub>B</sub>): <span class="highlight" id="val-s1-qb">15</span></label>
                 <input type="range" id="slider-s1-qb" min="0" max="90" step="1" value="15" oninput="updateStep1()">
             </div>
-            <p style="text-align: center; margin-top: 10px; margin-bottom: 0;">
-                Current Profit: <span class="highlight" id="val-s1-profit">$...</span>
-                &nbsp;&nbsp;|&nbsp;&nbsp; Max Profit is at Q_B = <span class="highlight" id="val-s1-opt-qb">...</span>
-            </p>
+            <div class="profit-info">
+                Current Profit: <span class="highlight" id="val-s1-profit">$…</span>
+                &nbsp;·&nbsp; Optimal Q<sub>B</sub> = <span class="highlight" id="val-s1-opt-qb">…</span>
+            </div>
         </div>
 
         <div class="flex-container">
-            <div class="graph-wrapper">
-                <canvas id="canvas-s1-left" width="450" height="450"></canvas>
-            </div>
-            <div class="graph-wrapper">
-                <canvas id="canvas-s1-middle" width="450" height="450"></canvas>
-            </div>
-            <div class="graph-wrapper">
-                <canvas id="canvas-s1-right" width="450" height="450"></canvas>
-            </div>
+            <div class="graph-wrapper"><div id="chart-s1-left" class="chart-box"></div></div>
+            <div class="graph-wrapper"><div id="chart-s1-mid" class="chart-box"></div></div>
+            <div class="graph-wrapper"><div id="chart-s1-right" class="chart-box"></div></div>
         </div>
     </div>
 
-    <!-- STEP 2 -->
+    <!-- TAB 2: Game Iteration (Cobweb) -->
     <div id="step2" class="tab-content">
-        <h2>Step 2: Iterating to Equilibrium (Cobweb Model)</h2>
+        <h2>Tab 2: Iterating to Equilibrium (Cobweb)</h2>
         <div class="controls">
             <div class="control-row">
-                <label><strong>Initial Assumption for Firm A (Q_A): <span id="val-s2-start" class="highlight">0</span></strong></label>
+                <label>Initial Q<sub>A</sub>: <span class="highlight" id="val-s2-start">0</span></label>
                 <input type="range" id="slider-s2-start" min="0" max="90" step="1" value="0" oninput="resetStep2()">
             </div>
-            <div style="text-align: center; margin-top: 15px;">
+            <div style="text-align:center; margin-top:8px;">
                 <button class="btn" onclick="step2NextTurn()">Play Next Move</button>
-                <button class="btn btn-reset" onclick="resetStep2()">Reset Iteration</button>
+                <button class="btn btn-reset" onclick="resetStep2()">Reset</button>
             </div>
         </div>
 
         <div class="flex-container">
-            <div class="graph-wrapper step2-graph">
-                <canvas id="canvas-s2" width="700" height="700"></canvas>
+            <div class="graph-wrapper">
+                <div id="chart-s2" class="chart-box" style="height:420px;"></div>
             </div>
-            <div class="table-container step2-table">
-                <table class="data-table" id="table-s2">
+            <div class="table-container" id="step2-table-wrap">
+                <table class="data-table">
                     <thead>
-                        <tr>
-                            <th>Turn</th>
-                            <th>Action</th>
-                            <th>Firm A (Q_A)</th>
-                            <th>Firm B (Q_B)</th>
-                        </tr>
+                        <tr><th>Turn</th><th>Action</th><th>Q<sub>A</sub></th><th>Q<sub>B</sub></th></tr>
                     </thead>
-                    <tbody id="tbody-s2">
-                    </tbody>
+                    <tbody id="tbody-s2"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- STEP 3 -->
+    <!-- TAB 3: Market Comparison -->
     <div id="step3" class="tab-content">
-        <h2>Step 3: Market Outcomes & Welfare Analysis</h2>
+        <h2>Tab 3: Market Outcomes & Welfare</h2>
         <div class="controls">
-            <div style="margin-bottom: 15px;">
-                <span style="font-weight: bold; margin-right: 15px;">Show Equilibriums:</span>
+            <div style="margin-bottom:10px;">
+                <span style="font-size:13px; font-weight:600; margin-right:12px;">Show Equilibria:</span>
                 <label class="checkbox-label"><input type="checkbox" id="cb-mono" onchange="updateStep3()"> Monopoly</label>
                 <label class="checkbox-label"><input type="checkbox" id="cb-cournot" onchange="updateStep3()" checked> Cournot</label>
-                <label class="checkbox-label"><input type="checkbox" id="cb-pc" onchange="updateStep3()"> Perfect Competition</label>
+                <label class="checkbox-label"><input type="checkbox" id="cb-pc" onchange="updateStep3()"> Perfect Comp.</label>
             </div>
             <div class="control-row">
-                <label><strong>Market Total Quantity (Q): <span id="val-s3-q" class="highlight">60</span></strong></label>
+                <label>Total Quantity (Q): <span class="highlight" id="val-s3-q">60</span></label>
                 <input type="range" id="slider-s3-q" min="0" max="100" step="1" value="60" oninput="updateStep3()">
             </div>
         </div>
 
         <div class="flex-container">
-            <div class="graph-wrapper step3-graph">
-                <canvas id="canvas-s3" width="840" height="840"></canvas>
+            <div class="graph-wrapper">
+                <div id="chart-s3" class="chart-box" style="height:400px;"></div>
             </div>
-            <div class="data-box step3-data">
-                <h3 style="margin-top: 0;">Market Real-Time Data</h3>
-                <p><strong>Total Quantity (Q):</strong> <span id="stat-q">...</span></p>
-                <p><strong>Market Price (P):</strong> $<span id="stat-p">...</span></p>
-                <hr>
-                <p style="color: #27ae60;"><strong>Consumer Surplus (CS):</strong> $<span id="stat-cs">...</span></p>
-                <p style="color: #2980b9;"><strong>Producer Surplus (PS):</strong> $<span id="stat-ps">...</span></p>
-                <p style="color: #c0392b;"><strong>Deadweight Loss (DWL):</strong> $<span id="stat-dwl">...</span></p>
-                <p style="margin-top: 20px; font-size: 16px; color: #555;">
-                    <em>* Move the slider to explore how quantity limits affect overall welfare compared to the marked equilibria.</em>
-                </p>
+            <div class="data-box">
+                <h3>Market Data</h3>
+                <p><strong>Q:</strong> <span id="stat-q">…</span></p>
+                <p><strong>Price:</strong> $<span id="stat-p">…</span></p>
+                <hr style="border:none; border-top:1px solid #e0e0e0; margin:8px 0;">
+                <p style="color:#3d6b4f;"><strong>Consumer Surplus:</strong> $<span id="stat-cs">…</span></p>
+                <p style="color:#1a5276;"><strong>Producer Surplus:</strong> $<span id="stat-ps">…</span></p>
+                <p style="color:#b85c38;"><strong>Deadweight Loss:</strong> $<span id="stat-dwl">…</span></p>
             </div>
         </div>
     </div>
 
-    <footer>
-        <p>&copy; 2026 Dr. Jia. Instructional Tools. All Rights Reserved.</p>
-    </footer>
+    <div class="source">© 2026 Dr. Jia. Instructional Tools. All Rights Reserved.</div>
+</div>
 
-    <script>
-        class CanvasGraph {
-            // 增加 scale 参数，用于统一缩放所有图形元素（文字大小、点半径、线宽等）
-            constructor(canvasId, xMax, yMax, xLabel, yLabel, scale = 1.0) {
-                this.canvas = document.getElementById(canvasId);
-                this.ctx = this.canvas.getContext('2d');
-                this.w = this.canvas.width;
-                this.h = this.canvas.height;
-                this.padL = 70;
-                this.padR = 50;
-                this.padT = 35;
-                this.padB = 55;
-                this.xMax = xMax;
-                this.yMax = yMax;
-                this.xLabel = xLabel;
-                this.yLabel = yLabel;
-                this.scale = scale; // 保存缩放系数
-            }
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<script>
+const C = {
+    deepBlue: '#1a5276',
+    ochre: '#b85c38',
+    darkPurple: '#5a3d7a',
+    green: '#3d6b4f',
+    gray: '#bbb',
+};
 
-            clear() {
-                this.ctx.clearRect(0, 0, this.w, this.h);
-                this.drawAxes();
-            }
+const DEMAND_A = 120;
+const MC = 30;
 
-            px(x) { return this.padL + (x / this.xMax) * (this.w - this.padL - this.padR); }
-            py(y) { return this.h - this.padB - (y / this.yMax) * (this.h - this.padT - this.padB); }
+/* ───────── Chart instances ───────── */
+let ch1L, ch1M, ch1R, ch2, ch3;
 
-            drawLine(x1, y1, x2, y2, color, width, dash = []) {
-                const ctx = this.ctx;
-                ctx.beginPath();
-                ctx.setLineDash(dash);
-                ctx.moveTo(this.px(x1), this.py(y1));
-                ctx.lineTo(this.px(x2), this.py(y2));
-                ctx.strokeStyle = color;
-                ctx.lineWidth = width * this.scale; // 线宽缩放
-                ctx.stroke();
-                ctx.setLineDash([]);
-            }
+const GRIDS3 = { left: 60, right: 40, top: 40, bottom: 50 };
 
-            drawAxes() {
-                const ctx = this.ctx;
-                ctx.beginPath();
-                ctx.moveTo(this.padL, this.padT - 10);
-                ctx.lineTo(this.padL, this.h - this.padB);
-                ctx.lineTo(this.w - this.padR + 10, this.h - this.padB);
-                ctx.strokeStyle = "#333";
-                ctx.lineWidth = 2 * this.scale;
-                ctx.stroke();
+function makeBaseOpt(xName, yName, xMax, yMax) {
+    return {
+        animation: false,
+        grid: { left: 60, right: 40, top: 40, bottom: 50 },
+        xAxis: {
+            type: 'value', name: xName, nameLocation: 'middle', nameGap: 32, min: 0, max: xMax,
+            splitLine: { show: false },
+            axisLine: { show: true, lineStyle: { color: '#333' } },
+            axisTick: { show: true },
+            nameTextStyle: { fontSize: 11, fontFamily: 'Source Sans Pro', color: '#333' }
+        },
+        yAxis: {
+            type: 'value', name: yName, nameLocation: 'middle', nameGap: 42, min: 0, max: yMax,
+            splitLine: { show: false },
+            axisLine: { show: true, lineStyle: { color: '#333' } },
+            axisTick: { show: true },
+            nameTextStyle: { fontSize: 11, fontFamily: 'Source Sans Pro', color: '#333' }
+        }
+    };
+}
 
-                const fs = 14 * this.scale;
-                ctx.font = `bold ${fs}px Arial`;
-                ctx.fillStyle = "#333";
-                ctx.textAlign = "center";
-                ctx.fillText(this.xLabel, this.padL + (this.w - this.padL - this.padR) / 2, this.h - 12);
+/* ───────── TAB 1 ───────── */
+function initStep1() {
+    ch1L = echarts.init(document.getElementById('chart-s1-left'));
+    ch1M = echarts.init(document.getElementById('chart-s1-mid'));
+    ch1R = echarts.init(document.getElementById('chart-s1-right'));
+    updateStep1();
+}
 
-                ctx.save();
-                ctx.translate(18, this.padT + (this.h - this.padT - this.padB) / 2);
-                ctx.rotate(-Math.PI / 2);
-                ctx.fillText(this.yLabel, 0, 0);
-                ctx.restore();
+function updateStep1() {
+    const qa = +document.getElementById('slider-s1-qa').value;
+    const qb = +document.getElementById('slider-s1-qb').value;
+    document.getElementById('val-s1-qa').textContent = qa;
+    document.getElementById('val-s1-qb').textContent = qb;
 
-                ctx.font = `${12 * this.scale}px Arial`;
-                ctx.fillText("0", this.padL - 15, this.h - this.padB + 15);
-            }
+    const rA = DEMAND_A - qa;
+    const curP = Math.max(0, rA - qb);
+    const profit = (curP - MC) * qb;
+    const optQb = Math.max(0, (rA - MC) / 2);
+    const maxProfit = (rA - optQb - MC) * optQb;
+    const optP = Math.max(0, rA - optQb);
 
-            drawPoint(x, y, color, label, showLines = false, radius = 6, symbol = 'circle') {
-                const ctx = this.ctx;
-                const r = radius * this.scale;
-                if (showLines) {
-                    this.drawLine(x, 0, x, y, "#95a5a6", 1.5, [4, 4]);
-                    this.drawLine(0, y, x, y, "#95a5a6", 1.5, [4, 4]);
-                }
+    document.getElementById('val-s1-profit').textContent = '$' + profit.toFixed(0);
+    document.getElementById('val-s1-opt-qb').textContent = optQb.toFixed(1);
 
-                ctx.beginPath();
-                if (symbol === 'star') {
-                    let rot = Math.PI / 2 * 3;
-                    let cx = this.px(x);
-                    let cy = this.py(y);
-                    let spikes = 5;
-                    let outerRadius = r + 3 * this.scale;
-                    let innerRadius = r - 1 * this.scale;
-                    let step = Math.PI / spikes;
-
-                    ctx.moveTo(cx, cy - outerRadius);
-                    for (let i = 0; i < spikes; i++) {
-                        let sx = cx + Math.cos(rot) * outerRadius;
-                        let sy = cy + Math.sin(rot) * outerRadius;
-                        ctx.lineTo(sx, sy);
-                        rot += step;
-
-                        sx = cx + Math.cos(rot) * innerRadius;
-                        sy = cy + Math.sin(rot) * innerRadius;
-                        ctx.lineTo(sx, sy);
-                        rot += step;
-                    }
-                    ctx.lineTo(cx, cy - outerRadius);
-                    ctx.closePath();
-                    ctx.fillStyle = color;
-                    ctx.fill();
-                } else {
-                    ctx.arc(this.px(x), this.py(y), r, 0, 2 * Math.PI);
-                    ctx.fillStyle = color;
-                    ctx.fill();
-                }
-
-                ctx.strokeStyle = "#fff";
-                ctx.lineWidth = 1.5 * this.scale;
-                ctx.stroke();
-
-                if (label) {
-                    const fs = 13 * this.scale;
-                    ctx.font = `bold ${fs}px Arial`;
-                    ctx.fillStyle = "#000";
-                    ctx.textAlign = "left";
-                    let tx = this.px(x) + 8 * this.scale;
-                    let ty = this.py(y) - 8 * this.scale;
-                    // 防止文字溢出右边界
-                    if (tx + ctx.measureText(label).width > this.w - this.padR) {
-                        ctx.textAlign = "right";
-                        tx = this.px(x) - 8 * this.scale;
-                    }
-                    ctx.fillText(label, tx, ty);
+    /* ── Left: Residual Demand & MR ── */
+    const mrEnd = rA / 2;
+    ch1L.setOption({
+        ...makeBaseOpt('Q_B', 'Price & Cost ($)', 100, 140),
+        series: [
+            {
+                type: 'line', symbol: 'none', lineStyle: { color: C.deepBlue, width: 2.5 },
+                data: [[0, rA], [rA, 0]], label: { show: false }
+            },
+            {
+                type: 'line', symbol: 'none', lineStyle: { color: C.darkPurple, width: 2.5 },
+                data: [[0, rA], [mrEnd, 0]]
+            },
+            {
+                type: 'line', symbol: 'none',
+                lineStyle: { color: C.ochre, width: 2.5, type: 'dashed' },
+                data: [[0, MC], [100, MC]]
+            },
+            {
+                type: 'scatter', symbolSize: 10, symbol: 'diamond',
+                itemStyle: { color: C.green },
+                data: [[optQb, optP]],
+                label: { show: true, formatter: 'Opt P=' + optP.toFixed(0), position: 'right', fontSize: 10, fontFamily: 'Source Sans Pro' }
+            },
+            {
+                type: 'scatter', symbolSize: 10, symbol: 'circle',
+                itemStyle: { color: C.ochre },
+                data: [[qb, curP]],
+                label: { show: true, formatter: 'Current', position: 'right', fontSize: 10, fontFamily: 'Source Sans Pro' }
+            },
+            {
+                type: 'scatter', symbolSize: 0,
+                data: [],
+                markLine: {
+                    silent: true, symbol: 'none',
+                    lineStyle: { color: C.gray, width: 1, type: 'dashed' },
+                    data: [
+                        { xAxis: optQb }, { yAxis: optP },
+                        { xAxis: qb }, { yAxis: curP }
+                    ],
+                    label: { show: false }
                 }
             }
+        ],
+        graphic: [
+            { type: 'text', left: '70%', top: 42, style: { text: 'D (Residual)', fill: C.deepBlue, fontSize: 11, fontFamily: 'Source Sans Pro' } },
+            { type: 'text', left: '55%', top: 42, style: { text: 'MR', fill: C.darkPurple, fontSize: 11, fontFamily: 'Source Sans Pro' } },
+            { type: 'text', left: '82%', top: 260, style: { text: 'MC', fill: C.ochre, fontSize: 11, fontFamily: 'Source Sans Pro' } }
+        ]
+    });
 
-            drawText(text, x, y, color = "black", align = "left") {
-                const ctx = this.ctx;
-                const fs = 14 * this.scale;
-                ctx.font = `bold ${fs}px Arial`;
-                ctx.fillStyle = color;
-                ctx.textAlign = align;
-                let tx = this.px(x);
-                let ty = this.py(y);
-                // 防止溢出右边界
-                if (align === "left" && tx + ctx.measureText(text).width > this.w - this.padR) {
-                    ctx.textAlign = "right";
-                    tx = this.w - this.padR - 2;
-                }
-                ctx.fillText(text, tx, ty);
-            }
-
-            fillPoly(points, color) {
-                const ctx = this.ctx;
-                ctx.beginPath();
-                ctx.moveTo(this.px(points[0].x), this.py(points[0].y));
-                for (let i = 1; i < points.length; i++) {
-                    ctx.lineTo(this.px(points[i].x), this.py(points[i].y));
-                }
-                ctx.closePath();
-                ctx.fillStyle = color;
-                ctx.fill();
-            }
-        }
-
-        const DEMAND_A = 120;
-        const MC = 30;
-
-        let graph1L, graph1M, graph1R;
-
-        function initStep1() {
-            // Step 1 的 Canvas 尺寸为 450，设置 scale=0.75 使文字视觉大小适中
-            const s1Scale = 1.2;
-            graph1L = new CanvasGraph("canvas-s1-left", 100, 130, "Firm B Quantity (Q_B)", "Price & Cost ($)", s1Scale);
-            graph1M = new CanvasGraph("canvas-s1-middle", 100, 2500, "Firm B Quantity (Q_B)", "Firm B Profit ($)", s1Scale);
-            graph1R = new CanvasGraph("canvas-s1-right", 100, 100, "Firm B Quantity (Q_B)", "Firm A Quantity (Q_A)", s1Scale);
-            updateStep1();
-        }
-
-        function updateStep1() {
-            let qa = parseFloat(document.getElementById('slider-s1-qa').value);
-            let qb = parseFloat(document.getElementById('slider-s1-qb').value);
-
-            document.getElementById('val-s1-qa').innerText = qa;
-            document.getElementById('val-s1-qb').innerText = qb;
-
-            let residualA = DEMAND_A - qa;
-            let currentP = Math.max(0, residualA - qb);
-            let profit = (currentP - MC) * qb;
-            let optQb = Math.max(0, (residualA - MC) / 2);
-            let maxProfit = (residualA - optQb - MC) * optQb;
-            let optP = Math.max(0, residualA - optQb);
-
-            document.getElementById('val-s1-profit').innerText = profit.toFixed(0);
-            document.getElementById('val-s1-opt-qb').innerText = optQb.toFixed(1);
-
-            // Left Graph
-            graph1L.clear();
-            graph1L.drawLine(0, residualA, residualA, 0, "blue", 3);
-            graph1L.drawText("D (Residual)", residualA - 15, 8, "blue");
-
-            let mrEnd = residualA / 2;
-            graph1L.drawLine(0, residualA, mrEnd, 0, "green", 3);
-            graph1L.drawText("MR", mrEnd - 5, 8, "green");
-
-            graph1L.drawLine(0, MC, 100, MC, "red", 2, [6, 4]);
-            graph1L.drawText("MC", 90, MC - 5, "red");
-
-            graph1L.drawPoint(optQb, optP, "green", `Optimum P=${optP.toFixed(1)}`, true, 8, 'star');
-            graph1L.drawPoint(qb, currentP, "orange", `Current`, true, 8, 'circle');
-
-            // Middle Graph
-            graph1M.clear();
-            graph1M.ctx.beginPath();
-            let isDrawing = false;
-            for (let x = 0; x <= 100; x++) {
-                let p = (Math.max(0, residualA - x) - MC) * x;
-                if (p >= 0) {
-                    if (!isDrawing) {
-                        graph1M.ctx.moveTo(graph1M.px(x), graph1M.py(p));
-                        isDrawing = true;
-                    } else {
-                        graph1M.ctx.lineTo(graph1M.px(x), graph1M.py(p));
-                    }
+    /* ── Middle: Profit curve ── */
+    const profitData = [];
+    for (let x = 0; x <= 100; x++) {
+        const p = (Math.max(0, rA - x) - MC) * x;
+        if (p >= 0) profitData.push([x, p]);
+    }
+    ch1M.setOption({
+        ...makeBaseOpt('Q_B', 'Firm B Profit ($)', 100, Math.max(maxProfit * 1.25, 500)),
+        series: [
+            {
+                type: 'line', symbol: 'none', lineStyle: { color: C.darkPurple, width: 2.5 },
+                data: profitData
+            },
+            {
+                type: 'scatter', symbolSize: 10, symbol: 'diamond',
+                itemStyle: { color: C.green },
+                data: [[optQb, maxProfit]],
+                label: { show: true, formatter: 'Max Profit', position: 'right', fontSize: 10, fontFamily: 'Source Sans Pro' }
+            },
+            {
+                type: 'scatter', symbolSize: 10, symbol: 'circle',
+                itemStyle: { color: C.ochre },
+                data: [[qb, profit]],
+                label: { show: true, formatter: 'Current', position: 'right', fontSize: 10, fontFamily: 'Source Sans Pro' }
+            },
+            {
+                type: 'scatter', symbolSize: 0,
+                data: [],
+                markLine: {
+                    silent: true, symbol: 'none',
+                    lineStyle: { color: C.gray, width: 1, type: 'dashed' },
+                    data: [
+                        { xAxis: optQb }, { yAxis: maxProfit },
+                        { xAxis: qb }, { yAxis: profit }
+                    ],
+                    label: { show: false }
                 }
             }
-            graph1M.ctx.strokeStyle = "purple";
-            graph1M.ctx.lineWidth = 3 * graph1M.scale;
-            graph1M.ctx.stroke();
-            graph1M.drawText("Profit Curve", optQb + 10, Math.max(100, maxProfit * 0.9), "purple");
+        ],
+        graphic: [
+            { type: 'text', left: '62%', top: 30, style: { text: 'Profit Curve', fill: C.darkPurple, fontSize: 11, fontFamily: 'Source Sans Pro' } }
+        ]
+    });
 
-            graph1M.drawPoint(optQb, maxProfit, "green", "Max Profit", true, 8, 'star');
-            graph1M.drawPoint(qb, profit, "orange", "Current", true, 8, 'circle');
-
-            // Right Graph
-            graph1R.clear();
-            graph1R.drawLine(0, 90, 45, 0, "purple", 3);
-            graph1R.drawText("B's Best Response", 20, 80, "purple");
-
-            graph1R.drawPoint(optQb, qa, "green", "B's Best", true, 8, 'star');
-            graph1R.drawPoint(qb, qa, "orange", "Current", true, 8, 'circle');
-
-            graph1R.ctx.beginPath();
-            graph1R.ctx.setLineDash([4, 4]);
-            graph1R.ctx.moveTo(graph1R.px(0), graph1R.py(qa));
-            graph1R.ctx.lineTo(graph1R.px(90), graph1R.py(qa));
-            graph1R.ctx.strokeStyle = "#999";
-            graph1R.ctx.lineWidth = 1.5 * graph1R.scale;
-            graph1R.ctx.stroke();
-            graph1R.ctx.setLineDash([]);
-
-            graph1R.drawText("Q_A = " + qa.toFixed(1), 5, qa + 3, "#2c3e50", "left");
-            graph1R.drawText("Q_B^opt = " + optQb.toFixed(1), optQb + 2, 5, "#2c3e50", "left");
-        }
-
-        let graph2;
-        let s2_history = [];
-        let s2_turn = 0;
-
-        function initStep2() {
-            // Step 2 尺寸 700，scale=1.0 保持适中
-            graph2 = new CanvasGraph("canvas-s2", 100, 100, "Firm A Quantity (Q_A)", "Firm B Quantity (Q_B)", 1.6);
-            resetStep2();
-        }
-
-        function drawStep2Base() {
-            graph2.clear();
-            graph2.drawLine(45, 0, 0, 90, "red", 3);
-            graph2.drawText("Firm A Best Response", 5, 88, "red");
-
-            graph2.drawLine(0, 45, 90, 0, "blue", 3);
-            graph2.drawText("Firm B Best Response", 65, 8, "blue");
-
-            graph2.drawPoint(30, 30, "black", "Nash Eq (30,30)", true, 6);
-        }
-
-        function resetStep2() {
-            let startQA = parseFloat(document.getElementById('slider-s2-start').value);
-            document.getElementById('val-s2-start').innerText = startQA;
-
-            s2_history = [{ qa: startQA, qb: 0 }];
-            s2_turn = 0;
-
-            document.getElementById('tbody-s2').innerHTML = `
-                    <tr style="background:#f9f9f9;">
-                        <td>0</td>
-                        <td>Start</td>
-                        <td><strong>${startQA.toFixed(1)}</strong></td>
-                        <td>0.0</td>
-                    </tr>
-                `;
-
-            drawStep2Base();
-            graph2.drawPoint(startQA, 0, "orange", "Start", false, 7);
-        }
-
-        function step2NextTurn() {
-            if (s2_turn >= 15) return;
-
-            let last = s2_history[s2_history.length - 1];
-            let nextQA = last.qa;
-            let nextQB = last.qb;
-            let actor = "";
-
-            s2_turn++;
-            if (s2_turn % 2 !== 0) {
-                actor = "Firm B Reacts";
-                nextQB = Math.max(0, 45 - 0.5 * last.qa);
-            } else {
-                actor = "Firm A Reacts";
-                nextQA = Math.max(0, 45 - 0.5 * last.qb);
+    /* ── Right: Best Response ── */
+    ch1R.setOption({
+        ...makeBaseOpt("Q_B", "Q_A", 100, 100),
+        series: [
+            {
+                type: 'line', symbol: 'none', lineStyle: { color: C.darkPurple, width: 2.5 },
+                data: [[0, 90], [45, 0]]
+            },
+            {
+                type: 'scatter', symbolSize: 10, symbol: 'diamond',
+                itemStyle: { color: C.green },
+                data: [[optQb, qa]],
+                label: { show: true, formatter: "B's Best", position: 'right', fontSize: 10, fontFamily: 'Source Sans Pro' }
+            },
+            {
+                type: 'scatter', symbolSize: 10, symbol: 'circle',
+                itemStyle: { color: C.ochre },
+                data: [[qb, qa]],
+                label: { show: true, formatter: 'Current', position: 'right', fontSize: 10, fontFamily: 'Source Sans Pro' }
+            },
+            {
+                type: 'scatter', symbolSize: 0, data: [],
+                markLine: {
+                    silent: true, symbol: 'none',
+                    lineStyle: { color: C.gray, width: 1, type: 'dashed' },
+                    data: [
+                        { yAxis: qa },
+                        { xAxis: optQb }, { yAxis: optQb }
+                    ],
+                    label: { show: false }
+                }
             }
+        ],
+        graphic: [
+            { type: 'text', left: '35%', top: 40, style: { text: "B's Best Response", fill: C.darkPurple, fontSize: 11, fontFamily: 'Source Sans Pro' } },
+            { type: 'text', left: 70, top: 380 - 30, style: { text: 'Q_A = ' + qa.toFixed(0), fill: '#333', fontSize: 10, fontFamily: 'Source Sans Pro' } },
+            { type: 'text', left: '65%', top: 365, style: { text: 'Q_B* = ' + optQb.toFixed(0), fill: '#333', fontSize: 10, fontFamily: 'Source Sans Pro' } }
+        ]
+    });
+}
 
-            s2_history.push({ qa: nextQA, qb: nextQB });
+/* ───────── TAB 2 ───────── */
+let s2_history = [];
+let s2_turn = 0;
 
-            drawStep2Base();
+function initStep2() {
+    ch2 = echarts.init(document.getElementById('chart-s2'));
+    resetStep2();
+}
 
-            graph2.ctx.beginPath();
-            graph2.ctx.moveTo(graph2.px(s2_history[0].qa), graph2.py(s2_history[0].qb));
-            for (let i = 1; i < s2_history.length; i++) {
-                graph2.ctx.lineTo(graph2.px(s2_history[i].qa), graph2.py(s2_history[i].qb));
-            }
-            graph2.ctx.strokeStyle = "orange";
-            graph2.ctx.lineWidth = 2.5 * graph2.scale;
-            graph2.ctx.stroke();
-
-            for (let i = 0; i < s2_history.length; i++) {
-                graph2.drawPoint(s2_history[i].qa, s2_history[i].qb, "orange", "", false, 5);
-            }
-            graph2.drawPoint(nextQA, nextQB, "purple", `Turn ${s2_turn}`, false, 7);
-
-            let tbody = document.getElementById('tbody-s2');
-            let newRow = document.createElement('tr');
-            newRow.innerHTML = `
-                    <td>${s2_turn}</td>
-                    <td>${actor}</td>
-                    <td class="${actor === 'Firm A Reacts' ? 'highlight' : ''}">${nextQA.toFixed(1)}</td>
-                    <td class="${actor === 'Firm B Reacts' ? 'highlight' : ''}">${nextQB.toFixed(1)}</td>
-                `;
-            tbody.appendChild(newRow);
-            tbody.parentElement.parentElement.scrollTop = tbody.parentElement.parentElement.scrollHeight;
+function getStep2Option(cobwebData, pointsData, startPt) {
+    const brA = [[45, 0], [0, 90]];   // Firm A best response
+    const brB = [[0, 45], [90, 0]];   // Firm B best response
+    const series = [
+        // Firm A BR
+        {
+            type: 'line', symbol: 'none', lineStyle: { color: C.ochre, width: 2.5 },
+            data: brA,
+            name: "Firm A's BR"
+        },
+        // Firm B BR
+        {
+            type: 'line', symbol: 'none', lineStyle: { color: C.deepBlue, width: 2.5 },
+            data: brB,
+            name: "Firm B's BR"
+        },
+        // Nash equilibrium
+        {
+            type: 'scatter', symbolSize: 10, symbol: 'diamond',
+            itemStyle: { color: '#1a2a3a' },
+            data: [[30, 30]],
+            label: { show: true, formatter: 'Nash (30,30)', position: 'right', fontSize: 10, fontFamily: 'Source Sans Pro' },
+            name: 'Nash Eq.'
         }
+    ];
 
-        let graph3;
+    // Cobweb path
+    if (cobwebData.length > 0) {
+        series.push({
+            type: 'line', symbol: 'none',
+            lineStyle: { color: C.ochre, width: 2, opacity: 0.7 },
+            data: cobwebData
+        });
+    }
 
-        function initStep3() {
-            // Step 3 尺寸 840，scale=1.35 使文字视觉大小与 Step 2 相当
-            graph3 = new CanvasGraph("canvas-s3", 110, 130, "Total Market Quantity (Q)", "Price & Cost ($)", 2);
-            updateStep3();
+    // Points
+    if (pointsData.length > 0) {
+        series.push({
+            type: 'scatter', symbolSize: 7, symbol: 'circle',
+            itemStyle: { color: C.ochre },
+            data: pointsData
+        });
+    }
+
+    // Start point
+    if (startPt) {
+        series.push({
+            type: 'scatter', symbolSize: 9, symbol: 'circle',
+            itemStyle: { color: C.ochre },
+            data: [startPt],
+            label: { show: true, formatter: 'Start', position: 'right', fontSize: 10, fontFamily: 'Source Sans Pro' }
+        });
+    }
+
+    // Latest point highlight
+    if (pointsData.length > 0) {
+        const last = pointsData[pointsData.length - 1];
+        series.push({
+            type: 'scatter', symbolSize: 12, symbol: 'circle',
+            itemStyle: { color: C.darkPurple },
+            data: [last],
+            label: { show: true, formatter: 'Turn ' + s2_turn, position: 'right', fontSize: 10, fontFamily: 'Source Sans Pro' }
+        });
+    }
+
+    return {
+        animation: false,
+        grid: { left: 60, right: 40, top: 40, bottom: 50 },
+        legend: {
+            show: true, bottom: 4, itemGap: 16,
+            textStyle: { fontSize: 11, fontFamily: 'Source Sans Pro', color: '#333' }
+        },
+        xAxis: {
+            type: 'value', name: 'Q_A', nameLocation: 'middle', nameGap: 32, min: 0, max: 50,
+            splitLine: { show: false },
+            axisLine: { show: true, lineStyle: { color: '#333' } },
+            axisTick: { show: true },
+            nameTextStyle: { fontSize: 12, fontFamily: 'Source Sans Pro', color: '#333' }
+        },
+        yAxis: {
+            type: 'value', name: 'Q_B', nameLocation: 'middle', nameGap: 42, min: 0, max: 50,
+            splitLine: { show: false },
+            axisLine: { show: true, lineStyle: { color: '#333' } },
+            axisTick: { show: true },
+            nameTextStyle: { fontSize: 12, fontFamily: 'Source Sans Pro', color: '#333' }
+        },
+        series
+    };
+}
+
+function resetStep2() {
+    const startQA = +document.getElementById('slider-s2-start').value;
+    document.getElementById('val-s2-start').textContent = startQA;
+    s2_history = [{ qa: startQA, qb: 0 }];
+    s2_turn = 0;
+
+    document.getElementById('tbody-s2').innerHTML =
+        '<tr><td>0</td><td>Start</td><td><strong>' + startQA.toFixed(1) + '</strong></td><td>0.0</td></tr>';
+
+    ch2.setOption(getStep2Option([], [], [startQA, 0]), true);
+}
+
+function step2NextTurn() {
+    if (s2_turn >= 15) return;
+    const last = s2_history[s2_history.length - 1];
+    let nextQA = last.qa, nextQB = last.qb, actor = '';
+
+    s2_turn++;
+    if (s2_turn % 2 !== 0) {
+        actor = 'Firm B Reacts';
+        nextQB = Math.max(0, 45 - 0.5 * last.qa);
+    } else {
+        actor = 'Firm A Reacts';
+        nextQA = Math.max(0, 45 - 0.5 * last.qb);
+    }
+    s2_history.push({ qa: nextQA, qb: nextQB });
+
+    // Build cobweb polyline data
+    const cobwebData = s2_history.map(h => [h.qa, h.qb]);
+    const pointsData = s2_history.slice(1).map(h => [h.qa, h.qb]);
+
+    ch2.setOption(getStep2Option(cobwebData, pointsData, [s2_history[0].qa, s2_history[0].qb]), true);
+
+    // Table
+    const tbody = document.getElementById('tbody-s2');
+    const row = document.createElement('tr');
+    row.innerHTML = '<td>' + s2_turn + '</td><td>' + actor + '</td><td>' + nextQA.toFixed(1) + '</td><td>' + nextQB.toFixed(1) + '</td>';
+    tbody.appendChild(row);
+    const wrap = document.getElementById('step2-table-wrap');
+    wrap.scrollTop = wrap.scrollHeight;
+}
+
+/* ───────── TAB 3 ───────── */
+function initStep3() {
+    ch3 = echarts.init(document.getElementById('chart-s3'));
+    updateStep3();
+}
+
+function updateStep3() {
+    const q = +document.getElementById('slider-s3-q').value;
+    document.getElementById('val-s3-q').textContent = q;
+
+    const showMono = document.getElementById('cb-mono').checked;
+    const showCournot = document.getElementById('cb-cournot').checked;
+    const showPC = document.getElementById('cb-pc').checked;
+
+    const p = Math.max(0, DEMAND_A - q);
+
+    // Surplus areas via ECharts markArea
+    const csColor = 'rgba(61,107,79,0.22)';
+    const psColor = 'rgba(26,82,118,0.22)';
+    const dwlColor = 'rgba(184,92,56,0.25)';
+
+    const demandLineData = [];
+    for (let x = 0; x <= 120; x++) {
+        demandLineData.push([x, DEMAND_A - x]);
+    }
+
+    const series = [
+        // Demand
+        {
+            type: 'line', symbol: 'none', lineStyle: { color: C.deepBlue, width: 2.5 },
+            data: demandLineData,
+            name: 'Demand'
+        },
+        // MC
+        {
+            type: 'line', symbol: 'none',
+            lineStyle: { color: C.ochre, width: 2.5, type: 'dashed' },
+            data: [[0, MC], [110, MC]],
+            name: 'MC'
+        },
+        // Current point
+        {
+            type: 'scatter', symbolSize: 10, symbol: 'circle',
+            itemStyle: { color: '#1a2a3a' },
+            data: [[q, p]],
+            name: 'Current (Q,P)',
+            label: { show: true, formatter: '(' + q + ',' + p.toFixed(0) + ')', position: 'right', fontSize: 10, fontFamily: 'Source Sans Pro' }
+        },
+        // CS area (triangle: origin → (0,P) → (Q,P) → back)
+        {
+            type: 'line', symbol: 'none', lineStyle: { width: 0 }, areaStyle: { color: csColor },
+            data: [[0, DEMAND_A], [0, p], [q, p]],
+            name: 'CS'
+        },
+        // PS area
+        {
+            type: 'line', symbol: 'none', lineStyle: { width: 0 }, areaStyle: { color: psColor },
+            data: p >= MC
+                ? [[0, p], [0, MC], [q, MC], [q, p]]
+                : [[0, MC], [0, p], [q, p], [q, MC]],
+            name: 'PS'
+        },
+        // Reference lines
+        {
+            type: 'scatter', symbolSize: 0, data: [],
+            markLine: {
+                silent: true, symbol: 'none',
+                lineStyle: { color: C.gray, width: 1, type: 'dashed' },
+                data: [{ xAxis: q }, { yAxis: p }],
+                label: { show: false }
+            }
         }
+    ];
 
-        function updateStep3() {
-            let currentQ = parseFloat(document.getElementById('slider-s3-q').value);
-            document.getElementById('val-s3-q').innerText = currentQ;
+    // DWL area
+    if (q < 90 && p >= MC) {
+        series.push({
+            type: 'line', symbol: 'none', lineStyle: { width: 0 }, areaStyle: { color: dwlColor },
+            data: [[q, p], [q, MC], [90, MC]],
+            name: 'DWL'
+        });
+    } else if (q > 90) {
+        series.push({
+            type: 'line', symbol: 'none', lineStyle: { width: 0 }, areaStyle: { color: dwlColor },
+            data: [[90, MC], [q, MC], [q, p]],
+            name: 'DWL'
+        });
+    }
 
-            let showMono = document.getElementById('cb-mono').checked;
-            let showCournot = document.getElementById('cb-cournot').checked;
-            let showPC = document.getElementById('cb-pc').checked;
+    // Equilibrium points
+    if (showMono) {
+        // Monopoly MR line: P = 120 - 2Q → MR from (0,120) to (60,0)
+        series.push({
+            type: 'line', symbol: 'none', lineStyle: { color: C.green, width: 2 },
+            data: [[0, DEMAND_A], [60, 0]],
+            name: 'MR'
+        });
+        series.push({
+            type: 'scatter', symbolSize: 10, symbol: 'diamond',
+            itemStyle: { color: C.darkPurple },
+            data: [[45, 75]],
+            label: { show: true, formatter: 'Monopoly\n(45, 75)', position: 'right', fontSize: 10, fontFamily: 'Source Sans Pro' },
+            name: 'Monopoly'
+        });
+    }
+    if (showCournot) {
+        series.push({
+            type: 'scatter', symbolSize: 10, symbol: 'diamond',
+            itemStyle: { color: C.ochre },
+            data: [[60, 60]],
+            label: { show: true, formatter: 'Cournot\n(60, 60)', position: 'right', fontSize: 10, fontFamily: 'Source Sans Pro' },
+            name: 'Cournot'
+        });
+    }
+    if (showPC) {
+        series.push({
+            type: 'scatter', symbolSize: 10, symbol: 'diamond',
+            itemStyle: { color: C.green },
+            data: [[90, 30]],
+            label: { show: true, formatter: 'Perfect Comp.\n(90, 30)', position: 'right', fontSize: 10, fontFamily: 'Source Sans Pro' },
+            name: 'Perfect Comp.'
+        });
+    }
 
-            graph3.clear();
+    // Graphics labels for curves
+    const graphicEls = [
+        { type: 'text', left: '82%', top: 28, style: { text: 'Demand', fill: C.deepBlue, fontSize: 11, fontFamily: 'Source Sans Pro' } },
+        { type: 'text', left: '88%', top: 268, style: { text: 'MC', fill: C.ochre, fontSize: 11, fontFamily: 'Source Sans Pro' } }
+    ];
+    if (showMono) {
+        graphicEls.push({ type: 'text', left: '52%', top: 28, style: { text: 'MR', fill: C.green, fontSize: 11, fontFamily: 'Source Sans Pro' } });
+    }
 
-            graph3.drawLine(0, DEMAND_A, 120, 0, "blue", 3);
-            graph3.drawText("Demand", 105, 10, "blue");
+    ch3.setOption({
+        animation: false,
+        grid: { left: 60, right: 40, top: 40, bottom: 50 },
+        legend: { show: false },
+        xAxis: {
+            type: 'value', name: 'Quantity (Q)', nameLocation: 'middle', nameGap: 32, min: 0, max: 120,
+            splitLine: { show: false },
+            axisLine: { show: true, lineStyle: { color: '#333' } },
+            axisTick: { show: true },
+            nameTextStyle: { fontSize: 11, fontFamily: 'Source Sans Pro', color: '#333' }
+        },
+        yAxis: {
+            type: 'value', name: 'Price ($)', nameLocation: 'middle', nameGap: 42, min: 0, max: 130,
+            splitLine: { show: false },
+            axisLine: { show: true, lineStyle: { color: '#333' } },
+            axisTick: { show: true },
+            nameTextStyle: { fontSize: 11, fontFamily: 'Source Sans Pro', color: '#333' }
+        },
+        series,
+        graphic: graphicEls
+    }, true);
 
-            graph3.drawLine(0, MC, 110, MC, "red", 2, [6, 4]);
-            graph3.drawText("MC", 100, MC - 5, "red");
+    // Welfare numbers
+    const cs = 0.5 * q * (DEMAND_A - p);
+    const ps = q * (p - MC);
+    const dwl = (q < 90) ? 0.5 * (90 - q) * (p - MC) : 0.5 * (q - 90) * (MC - p);
+    document.getElementById('stat-q').textContent = q.toFixed(0);
+    document.getElementById('stat-p').textContent = p.toFixed(0);
+    document.getElementById('stat-cs').textContent = '$' + cs.toFixed(0);
+    document.getElementById('stat-ps').textContent = '$' + ps.toFixed(0);
+    document.getElementById('stat-dwl').textContent = '$' + Math.max(0, dwl).toFixed(0);
+}
 
-            if (showMono) {
-                graph3.drawLine(0, DEMAND_A, 60, 0, "green", 3);
-                graph3.drawText("MR", 55, 8, "green");
-                graph3.drawPoint(45, 75, "#8e44ad", "Monopoly (45, 75)", true, 6);
-            }
-            if (showCournot) {
-                graph3.drawPoint(60, 60, "#d35400", "Cournot (60, 60)", true, 6);
-            }
-            if (showPC) {
-                graph3.drawPoint(90, 30, "#27ae60", "Perfect Comp (90, 30)", true, 6);
-            }
+/* ───────── Tab switching ───────── */
+function switchTab(idx) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('step' + idx).classList.add('active');
+    document.querySelectorAll('.tab-btn')[idx - 1].classList.add('active');
 
-            let currentP = Math.max(0, DEMAND_A - currentQ);
+    if (idx === 1 && !ch1L) initStep1();
+    if (idx === 2 && !ch2) initStep2();
+    if (idx === 3 && !ch3) initStep3();
 
-            graph3.drawLine(currentQ, 0, currentQ, currentP, "#34495e", 2, [4, 4]);
-            graph3.drawLine(0, currentP, currentQ, currentP, "#34495e", 2, [4, 4]);
-            graph3.drawPoint(currentQ, currentP, "black", "", false, 8);
+    // Resize after display
+    if (idx === 1) { ch1L && ch1L.resize(); ch1M && ch1M.resize(); ch1R && ch1R.resize(); }
+    if (idx === 2) ch2 && ch2.resize();
+    if (idx === 3) ch3 && ch3.resize();
+}
 
-            graph3.fillPoly([{ x: 0, y: DEMAND_A }, { x: 0, y: currentP }, { x: currentQ, y: currentP }],
-                "rgba(46, 204, 113, 0.3)");
+window.addEventListener('resize', () => {
+    ch1L && ch1L.resize(); ch1M && ch1M.resize(); ch1R && ch1R.resize();
+    ch2 && ch2.resize();
+    ch3 && ch3.resize();
+});
 
-            if (currentP >= MC) {
-                graph3.fillPoly([{ x: 0, y: currentP }, { x: 0, y: MC }, { x: currentQ, y: MC }, { x: currentQ,
-                        y: currentP }],
-                    "rgba(52, 152, 219, 0.3)");
-            } else {
-                graph3.fillPoly([{ x: 0, y: MC }, { x: 0, y: currentP }, { x: currentQ, y: currentP }, { x: currentQ,
-                        y: MC }],
-                    "rgba(52, 152, 219, 0.3)");
-            }
-
-            if (currentQ < 90) {
-                graph3.fillPoly([{ x: currentQ, y: currentP }, { x: currentQ, y: MC }, { x: 90, y: MC }],
-                    "rgba(231, 76, 60, 0.4)");
-            } else if (currentQ > 90) {
-                graph3.fillPoly([{ x: 90, y: MC }, { x: currentQ, y: MC }, { x: currentQ, y: currentP }],
-                    "rgba(231, 76, 60, 0.4)");
-            }
-
-            let cs = 0.5 * currentQ * (DEMAND_A - currentP);
-            let ps = currentQ * (currentP - MC);
-            let dwl = (currentQ < 90) ? 0.5 * (90 - currentQ) * (currentP - MC) : 0.5 * (currentQ - 90) * (MC - currentP);
-
-            document.getElementById('stat-q').innerText = currentQ.toFixed(1);
-            document.getElementById('stat-p').innerText = currentP.toFixed(1);
-            document.getElementById('stat-cs').innerText = cs.toFixed(1);
-            document.getElementById('stat-ps').innerText = ps.toFixed(1);
-            document.getElementById('stat-dwl').innerText = dwl.toFixed(1);
-        }
-
-        function switchTab(tabIndex) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-
-            document.getElementById('step' + tabIndex).classList.add('active');
-            document.querySelectorAll('.tab-btn')[tabIndex - 1].classList.add('active');
-
-            if (tabIndex === 1 && !graph1L) initStep1();
-            if (tabIndex === 2 && !graph2) initStep2();
-            if (tabIndex === 3 && !graph3) initStep3();
-        }
-
-        window.onload = () => {
-            initStep1();
-        };
-    </script>
+window.onload = () => { initStep1(); };
+</script>
 </body>
 </html>
