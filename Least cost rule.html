@@ -1,400 +1,709 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Least-Cost Rule Lab (Classroom Pro)</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1"></script>
-    <style>
-        :root {
-            --primary: #2c3e50;
-            --labor: #3498db;
-            --capital: #f39c12;
-            --optimal: #8e44ad;
-            --bg: #f1f3f5;
-            --border: #dee2e6;
-        }
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: var(--bg);
-            margin: 0; padding: 10px 15px;
-            height: 100vh; display: flex; flex-direction: column; align-items: center; box-sizing: border-box;
-            overflow: hidden;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Least-Cost Rule Lab</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Source+Sans+Pro:wght@400;600&display=swap');
 
-        /* Navigation */
-        .tab-nav {
-            display: flex; gap: 8px; margin-bottom: 10px; background: #fff; padding: 4px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); flex: 0 0 auto;
-        }
-        .tab-btn {
-            padding: 8px 20px; border: none; background: transparent; font-size: 15px; font-weight: bold; color: #6c757d; border-radius: 6px; cursor: pointer; transition: 0.2s;
-        }
-        .tab-btn.active { background: var(--primary); color: white; }
+    html, body {
+        margin: 0;
+        padding: 0;
+        background: #f7f7f5;
+        font-family: 'Source Sans Pro', sans-serif;
+        color: #333;
+        padding: 24px 16px;
+    }
 
-        .tab-content { display: none; width: 1280px; height: calc(100vh - 70px); gap: 15px; }
-        .tab-content.active { display: flex; }
+    .container {
+        max-width: 880px;
+        margin: 0 auto;
+        background: #fff;
+        border: 1px solid #d4d4d0;
+        padding: 28px 32px;
+    }
 
-        /* --- Tab 1: Theory Layout --- */
-        .theory-layout { 
-            flex-direction: column; background: white; border-radius: 12px; padding: 15px 20px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; box-sizing: border-box;
-        }
-        
-        .theory-top { flex: 0 0 auto; }
-        
-        .theory-header { text-align: center; margin-bottom: 10px; }
-        .theory-header h1 { margin: 0; color: var(--primary); font-size: 24px; }
-        .theory-header p { margin: 4px 0 0 0; color: #6c757d; font-size: 15px; }
+    h2 {
+        font-family: 'Merriweather', serif;
+        font-size: 16px;
+        font-weight: 700;
+        color: #1a2a3a;
+        border-bottom: 2px solid #1a2a3a;
+        padding-bottom: 8px;
+        margin: 0 0 12px 0;
+    }
 
-        .data-table { width: 100%; border-collapse: collapse; text-align: center; table-layout: fixed; }
-        .data-table th { background: #f8f9fa; color: var(--primary); padding: 6px; border: 2px solid var(--border); font-size: 16px; }
-        .data-table td { padding: 6px; border: 2px solid var(--border); font-size: 20px; font-weight: bold; font-family: 'Consolas', monospace; transition: all 0.2s; }
-        
-        /* Column Visibility */
-        .col-hidden { display: none; }
-        .col-visible { display: table-cell; animation: fadeIn 0.3s ease-out; }
+    .source {
+        font-size: 10px;
+        color: #888;
+        border-top: 1px solid #e0e0e0;
+        padding-top: 8px;
+        margin-top: 16px;
+    }
 
-        /* Horizontal Action Panel */
-        .action-panel { 
-            display: flex; flex-direction: column; gap: 10px; border-top: 3px solid #eee; 
-            padding-top: 10px; margin-top: 10px; flex: 1; min-height: 0; 
-        }
-        .btn-group { 
-            display: flex; flex-direction: row; gap: 10px; align-items: center; flex-wrap: wrap; flex: 0 0 auto;
-        }
-        .step-btn { 
-            padding: 10px 16px; border: none; background: #e9ecef; color: var(--primary); 
-            font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px; transition: 0.2s;
-        }
-        .step-btn:hover:not(.hidden-step) { background: #dde2e6; }
-        .step-btn.active-step { background: var(--primary); color: white; box-shadow: 0 3px 6px rgba(0,0,0,0.2); transform: translateY(-1px); }
-        .step-btn.hidden-step { display: none; }
-        
-        .reset-btn { 
-            margin-left: auto; background: white; border: 1px solid #ccc; color: #666; 
-            padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold;
-        }
-        .reset-btn:hover { background: #f8f9fa; }
+    /* Tabs */
+    .nav-tabs {
+        display: flex;
+        gap: 0;
+        border-bottom: 2px solid #d4d4d0;
+        margin-bottom: 16px;
+    }
+    .tab-btn {
+        padding: 8px 20px;
+        font-size: 13px;
+        font-weight: 600;
+        font-family: 'Source Sans Pro', sans-serif;
+        border: none;
+        border-bottom: 3px solid transparent;
+        cursor: pointer;
+        background: transparent;
+        color: #666;
+        transition: all 0.2s ease;
+    }
+    .tab-btn.active { color: #1a5276; border-bottom-color: #1a5276; }
 
-        .result-panel { 
-            flex: 1; background: #fdfdfd; border-radius: 8px; padding: 12px 16px; 
-            font-size: 17px; line-height: 1.4; border: 2px solid #eee; overflow-y: auto; 
-        }
-        .res-item { padding: 6px 10px; margin-bottom: 6px; border-radius: 6px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.08); display: flex; justify-content: space-between; border-left: 5px solid #dee2e6; font-size: 16px; }
-        .res-item.winner { border: 2px solid var(--optimal); border-left-width: 8px; background: #f9f5ff; font-size: 18px; font-weight: bold; }
+    .panel { display: none; }
+    .panel.active { display: block; }
 
-        /* --- Tab 2: Simulator Layout --- */
-        .control-panel { flex: 0 0 320px; display: flex; flex-direction: column; gap: 10px; }
-        .chart-panel { flex: 1; background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
-        .card { background: white; border-radius: 10px; padding: 12px; border: 1px solid var(--border); }
-        .status-card { border-left: 6px solid var(--optimal); background: #fdfaff; }
-        .factor-card.labor { border-left: 6px solid var(--labor); }
-        .factor-card.capital { border-left: 6px solid var(--capital); }
-        .stat-row { display: flex; justify-content: space-between; margin: 2px 0; font-size: 14px; }
-        .stat-val { font-weight: bold; font-family: monospace; font-size: 17px; }
-        
-        .toggle-row { display: flex; align-items: center; justify-content: space-between; background: white; padding: 10px; border-radius: 10px; border: 1px solid var(--border); font-size: 14px; font-weight: bold; }
-        .switch { position: relative; width: 40px; height: 22px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 22px; }
-        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--optimal); }
-        input:checked + .slider:before { transform: translateX(18px); }
+    /* Instruction box */
+    .instruction-box {
+        background: #fff;
+        border: 1px solid #d4d4d0;
+        border-left: 4px solid #1a5276;
+        padding: 12px 16px;
+        margin-bottom: 16px;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.5;
+    }
 
-        .progress-container { margin-top: 8px; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
-        .progress-bar { height: 100%; background: var(--optimal); width: 0%; transition: width 0.3s; }
+    /* Data table */
+    .data-table-wrap {
+        overflow-x: auto;
+        margin-bottom: 16px;
+    }
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: center;
+    }
+    .data-table th {
+        background: #f1f3f5;
+        color: #1a2a3a;
+        padding: 7px 4px;
+        border: 1px solid #d4d4d0;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    .data-table td {
+        padding: 6px 4px;
+        border: 1px solid #e0e0e0;
+        font-family: 'Consolas', monospace;
+        font-size: 15px;
+        font-weight: 600;
+        transition: background 0.25s;
+    }
+    .data-table .qty-cell {
+        background: #f1f3f5;
+        font-weight: 700;
+        color: #1a2a3a;
+    }
+    .col-hidden { display: none; }
+    .col-visible { display: table-cell; animation: fadeIn 0.3s ease-out; }
 
-        button.hire-btn { width: 100%; padding: 10px; border: none; border-radius: 6px; background: var(--labor); color: white; font-weight: bold; cursor: pointer; margin-top: 5px; font-size: 15px; transition: 0.2s; }
-        .capital button.hire-btn { background: var(--capital); }
-        button.hire-btn:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
-        button.hire-btn:disabled { background: #dee2e6; cursor: not-allowed; transform: none; }
+    /* Highlighted cells */
+    .cell-highlight {
+        background: #fef9e7 !important;
+    }
+    /* Winner row */
+    .row-winner td {
+        background: #f4f0fa !important;
+        border-top: 2px solid #5a3d7a;
+        border-bottom: 2px solid #5a3d7a;
+    }
+    .row-winner td:first-child {
+        border-left: 2px solid #5a3d7a;
+    }
+    .row-winner td:last-child {
+        border-right: 2px solid #5a3d7a;
+    }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    </style>
+    /* Step buttons */
+    .btn-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+    .step-btn {
+        padding: 8px 16px;
+        border: none;
+        background: #e9ecef;
+        color: #1a2a3a;
+        font-weight: 600;
+        font-family: 'Source Sans Pro', sans-serif;
+        font-size: 13px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .step-btn:hover { background: #dde2e6; }
+    .step-btn.active-btn { background: #1a5276; color: #fff; }
+    .step-btn.hidden-step { display: none; }
+    .reset-btn {
+        padding: 8px 16px;
+        border: 1px solid #d4d4d0;
+        background: #fff;
+        color: #666;
+        font-weight: 600;
+        font-family: 'Source Sans Pro', sans-serif;
+        font-size: 13px;
+        cursor: pointer;
+    }
+    .reset-btn:hover { background: #f7f7f5; }
+
+    /* Result panel */
+    .result-panel {
+        background: #fafafa;
+        border: 1px solid #e0e0e0;
+        padding: 14px 16px;
+        font-size: 14px;
+        line-height: 1.6;
+        min-height: 60px;
+    }
+    .res-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        margin-bottom: 6px;
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        font-size: 14px;
+    }
+    .res-item.winner {
+        border: 2px solid #5a3d7a;
+        background: #f4f0fa;
+        font-weight: 700;
+    }
+
+    /* Simulator layout */
+    .sim-layout {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+    }
+    .sim-left {
+        flex: 0 0 280px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .sim-right {
+        flex: 1;
+        min-width: 0;
+    }
+
+    /* Dashboard card */
+    .dash-card {
+        border: 1px solid #d4d4d0;
+        padding: 14px 16px;
+        border-left: 4px solid #5a3d7a;
+    }
+    .dash-card h3 {
+        font-family: 'Merriweather', serif;
+        font-size: 14px;
+        font-weight: 700;
+        color: #1a2a3a;
+        margin: 0 0 8px 0;
+    }
+    .stat-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+    .stat-val {
+        font-weight: 700;
+        font-family: 'Consolas', monospace;
+        font-size: 14px;
+        color: #1a2a3a;
+    }
+
+    /* Progress bar */
+    .progress-wrap {
+        height: 8px;
+        background: #e0e0e0;
+        margin: 6px 0 4px 0;
+        overflow: hidden;
+    }
+    .progress-bar {
+        height: 100%;
+        width: 0%;
+        background: #3d6b4f;
+        transition: width 0.3s;
+    }
+
+    /* Factor cards */
+    .factor-card {
+        border: 1px solid #d4d4d0;
+        padding: 12px 16px;
+    }
+    .factor-card.labor { border-left: 4px solid #1a5276; }
+    .factor-card.capital { border-left: 4px solid #b85c38; }
+    .factor-card h3 {
+        font-family: 'Merriweather', serif;
+        font-size: 13px;
+        font-weight: 700;
+        margin: 0 0 6px 0;
+    }
+    .factor-card.labor h3 { color: #1a5276; }
+    .factor-card.capital h3 { color: #b85c38; }
+
+    .hire-btn {
+        width: 100%;
+        padding: 9px;
+        border: none;
+        font-weight: 600;
+        font-family: 'Source Sans Pro', sans-serif;
+        font-size: 13px;
+        cursor: pointer;
+        color: #fff;
+        margin-top: 6px;
+        transition: opacity 0.2s;
+    }
+    .hire-btn:hover { opacity: 0.85; }
+    .hire-btn:disabled { background: #d4d4d0 !important; cursor: not-allowed; opacity: 1; }
+    .hire-btn.labor-btn { background: #1a5276; }
+    .hire-btn.capital-btn { background: #b85c38; }
+
+    /* Toggle */
+    .toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border: 1px solid #d4d4d0;
+        padding: 10px 14px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #333;
+    }
+    .switch { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #ccc; transition: 0.3s; }
+    .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background: #fff; transition: 0.3s; }
+    input:checked + .slider { background: #5a3d7a; }
+    input:checked + .slider:before { transform: translateX(16px); }
+
+    .reset-link {
+        background: none;
+        border: none;
+        text-decoration: underline;
+        color: #999;
+        cursor: pointer;
+        font-size: 12px;
+        font-family: 'Source Sans Pro', sans-serif;
+        margin-top: 4px;
+        align-self: flex-start;
+    }
+
+    /* Chart area */
+    .chart-box {
+        width: 100%;
+        height: 420px;
+        border: 1px solid #e0e0e0;
+        background: #fff;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+</style>
 </head>
 <body>
 
-    <div class="tab-nav">
-        <button class="tab-btn active" onclick="switchTab(1)">1. Step-by-Step Theory</button>
-        <button class="tab-btn" onclick="switchTab(2)">2. Factory Simulator</button>
+<div class="container">
+    <h2>Least-Cost Rule — Finding the Optimal Input Combination</h2>
+
+    <div class="nav-tabs">
+        <button class="tab-btn active" data-tab="theory">Step-by-Step Theory</button>
+        <button class="tab-btn" data-tab="sim">Factory Simulator</button>
     </div>
 
-    <div id="tab1" class="tab-content active theory-layout">
-        <div class="theory-top">
-            <div class="theory-header">
-                <h1>Solving the Least-Cost Rule (Target Output: 300)</h1>
-                <p>Given: Wage of Labor (P<sub>L</sub>) = $10, Rent of Capital (P<sub>K</sub>) = $20</p>
-            </div>
-            
+    <!-- ========== TAB 1: THEORY ========== -->
+    <div class="panel active" id="panel-theory">
+        <div class="instruction-box">
+            Given: Wage of Labor (P<sub>L</sub>) = $10, Rent of Capital (P<sub>K</sub>) = $20.
+            Find the combination that produces exactly <strong>300 units</strong> at the lowest cost.
+        </div>
+
+        <div class="data-table-wrap">
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th rowspan="2" style="width: 70px;">Qty</th>
-                        <th id="head-labor" colspan="1" style="background: rgba(52, 152, 219, 0.1);">Labor ($10)</th>
-                        <th id="head-capital" colspan="1" style="background: rgba(243, 156, 18, 0.1);">Capital ($20)</th>
+                        <th rowspan="2" style="width:48px;">Qty</th>
+                        <th id="head-labor" colspan="1" style="background:rgba(26,82,118,0.08); color:#1a5276;">Labor ($10)</th>
+                        <th id="head-capital" colspan="1" style="background:rgba(184,92,56,0.08); color:#b85c38;">Capital ($20)</th>
                     </tr>
                     <tr>
-                        <th style="font-size: 14px;">Total Prod (TP)</th>
-                        <th class="col-mp col-hidden" style="font-size: 14px;">Marginal Prod (MP)</th>
-                        <th class="col-rmp col-hidden" style="font-size: 14px;">MP / Price</th>
-                        <th style="font-size: 14px;">Total Prod (TP)</th>
-                        <th class="col-mp col-hidden" style="font-size: 14px;">Marginal Prod (MP)</th>
-                        <th class="col-rmp col-hidden" style="font-size: 14px;">MP / Price</th>
+                        <th style="font-size:12px;">Total Product</th>
+                        <th class="col-mp col-hidden" style="font-size:12px; color:#1a5276;">Marginal Product</th>
+                        <th class="col-rmp col-hidden" style="font-size:12px; color:#1a5276;">MP / $P<sub>L</sub></th>
+                        <th style="font-size:12px;">Total Product</th>
+                        <th class="col-mp col-hidden" style="font-size:12px; color:#b85c38;">Marginal Product</th>
+                        <th class="col-rmp col-hidden" style="font-size:12px; color:#b85c38;">MP / $P<sub>K</sub></th>
                     </tr>
                 </thead>
                 <tbody id="theory-tbody"></tbody>
             </table>
         </div>
 
-        <div class="action-panel">
-            <div class="btn-group">
-                <button class="step-btn" id="s1" onclick="doStep(1)">Step 1: Calculate MP</button>
-                <button class="step-btn hidden-step" id="s2" onclick="doStep(2)">Step 2: MP per Dollar</button>
-                <button class="step-btn hidden-step" id="s3" onclick="doStep(3)">Step 3: Equimarginal Ratios</button>
-                <button class="step-btn hidden-step" id="s4" onclick="doStep(4)">Step 4: Target Output</button>
-                <button class="reset-btn" onclick="resetTheory()">Reset</button>
+        <div class="btn-group">
+            <button class="step-btn" id="s1" onclick="doStep(1)">Step 1: Calculate MP</button>
+            <button class="step-btn hidden-step" id="s2" onclick="doStep(2)">Step 2: MP per Dollar</button>
+            <button class="step-btn hidden-step" id="s3" onclick="doStep(3)">Step 3: Equimarginal Ratios</button>
+            <button class="step-btn hidden-step" id="s4" onclick="doStep(4)">Step 4: Target Output</button>
+            <button class="reset-btn" onclick="resetTheory()">Reset</button>
+        </div>
+
+        <div class="result-panel" id="theory-res">
+            <span style="color:#999;">Click <strong>Step 1</strong> to begin.</span>
+        </div>
+    </div>
+
+    <!-- ========== TAB 2: SIMULATOR ========== -->
+    <div class="panel" id="panel-sim">
+        <div class="sim-layout">
+            <div class="sim-left">
+                <div class="dash-card">
+                    <h3>🏭 Factory Dashboard</h3>
+                    <div class="stat-row"><span>Target Output</span><span class="stat-val">300</span></div>
+                    <div class="stat-row"><span>Actual Output</span><span class="stat-val" id="sim-out">0</span></div>
+                    <div class="progress-wrap"><div class="progress-bar" id="prog-bar"></div></div>
+                    <div class="stat-row"><span>Total Cost</span><span class="stat-val" id="sim-cost" style="color:#b85c38;">$0</span></div>
+                </div>
+
+                <div class="factor-card labor">
+                    <h3>👷 Labor ($10/unit)</h3>
+                    <div class="stat-row"><span>Next MP</span><span class="stat-val" id="n-mp-l">26</span></div>
+                    <div class="stat-row"><span>MP per $</span><span class="stat-val" id="n-r-l">2.6</span></div>
+                    <div class="stat-row"><span>Hired</span><span class="stat-val" id="q-l">0</span></div>
+                    <button class="hire-btn labor-btn" id="hire-l" onclick="simHire('L')">Hire Labor</button>
+                </div>
+
+                <div class="factor-card capital">
+                    <h3>⚙️ Capital ($20/unit)</h3>
+                    <div class="stat-row"><span>Next MP</span><span class="stat-val" id="n-mp-k">60</span></div>
+                    <div class="stat-row"><span>MP per $</span><span class="stat-val" id="n-r-k">3.0</span></div>
+                    <div class="stat-row"><span>Units</span><span class="stat-val" id="q-k">0</span></div>
+                    <button class="hire-btn capital-btn" id="hire-k" onclick="simHire('K')">Add Capital</button>
+                </div>
+
+                <div class="toggle-row">
+                    <span>Show Optimal Strategy</span>
+                    <label class="switch">
+                        <input type="checkbox" id="toggle-opt" onchange="updateChart()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <button class="reset-link" onclick="resetSim()">Reset Simulation</button>
             </div>
-            <div class="result-panel" id="theory-res">
-                <span style="color:#adb5bd; font-size: 20px;">Follow the steps above (left to right) to find the optimal resource combination.</span>
+
+            <div class="sim-right">
+                <div class="chart-box" id="sim-chart"></div>
             </div>
         </div>
     </div>
 
-    <div id="tab2" class="tab-content">
-        <div class="control-panel">
-            <div class="card status-card">
-                <h3 style="margin:0">🏭 Factory Dashboard</h3>
-                <div class="stat-row"><span>Target Output:</span> <span class="stat-val">300 Units</span></div>
-                <div class="stat-row"><span>Actual Output:</span> <span class="stat-val" id="sim-out">0</span></div>
-                <div class="progress-container"><div class="progress-bar" id="prog-bar"></div></div>
-                <div class="stat-row" style="margin-top:10px;"><span>Total Cost:</span> <span class="stat-val" id="sim-cost" style="color:#e53e3e">$0</span></div>
-            </div>
-
-            <div class="toggle-row">
-                <span>Show Optimal Strategy</span>
-                <label class="switch">
-                    <input type="checkbox" id="toggle-opt" onchange="updateChartVisibility()">
-                    <span class="slider"></span>
-                </label>
-            </div>
-
-            <div class="card factor-card labor">
-                <h3 style="margin:0">👷 Labor ($10)</h3>
-                <div class="stat-row"><span>Next MP:</span> <span class="stat-val" id="n-mp-l">26</span></div>
-                <div class="stat-row"><span>MP / $1:</span> <span class="stat-val" id="n-r-l">2.6</span></div>
-                <div class="stat-row"><span>Hired:</span> <span class="stat-val" id="q-l">0</span></div>
-                <button class="hire-btn" id="hire-l" onclick="simHire('L')">Hire Labor</button>
-            </div>
-
-            <div class="card factor-card capital">
-                <h3 style="margin:0">⚙️ Capital ($20)</h3>
-                <div class="stat-row"><span>Next MP:</span> <span class="stat-val" id="n-mp-k">60</span></div>
-                <div class="stat-row"><span>MP / $1:</span> <span class="stat-val" id="n-r-k">3.0</span></div>
-                <div class="stat-row"><span>Units:</span> <span class="stat-val" id="q-k">0</span></div>
-                <button class="hire-btn" id="hire-k" onclick="simHire('K')">Add Capital</button>
-            </div>
-
-            <button onclick="resetSim()" style="background:none; border:none; text-decoration:underline; color:#999; cursor:pointer; margin-top:auto;">Reset Factory Simulation</button>
-        </div>
-
-        <div class="chart-panel">
-            <h3 style="margin:0 0 5px 0; text-align:center">Production Cost Visualization</h3>
-            <div style="flex:1;"><canvas id="simChart"></canvas></div>
-        </div>
-    </div>
+    <div class="source">Interactive demonstration of the Least-Cost Rule (Equimarginal Principle for factor hiring).</div>
+</div>
 
 <script>
-    // --- CONSTANTS & DATA ---
+    // ===== CONSTANTS & DATA =====
     const PL = 10, PK = 20, TARGET = 300;
-    const Q_ARR = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-    const TPL = [26, 48, 66, 80, 91, 100, 107, 112, 116, 119, 121, 122];
-    const TPK = [60, 112, 156, 192, 220, 242, 260, 274, 284, 292, 298, 302];
-    const MPL = [26, 22, 18, 14, 11, 9, 7, 5, 4, 3, 2, 1];
-    const MPK = [60, 52, 44, 36, 28, 22, 18, 14, 10, 8, 6, 4];
-    
-    // Distinct colors for highlighting matched ratios
-    const COLORS = ['#ffeaa7', '#fab1a0', '#55efc4', '#81ecec', '#a29bfe', '#dfe6e9', '#f8a5c2', '#f6e58d', '#ffbe76', '#c7ecee', '#badc58'];
+    const Q_ARR = [1,2,3,4,5,6,7,8,9,10,11,12];
+    const TPL = [26,48,66,80,91,100,107,112,116,119,121,122];
+    const TPK = [60,112,156,192,220,242,260,274,284,292,298,302];
+    const MPL = [26,22,18,14,11,9,7,5,4,3,2,1];
+    const MPK = [60,52,44,36,28,22,18,14,10,8,6,4];
 
-    // --- TAB SYSTEM ---
-    function switchTab(n) {
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(`tab${n}`).classList.add('active');
-        document.querySelectorAll('.tab-btn')[n-1].classList.add('active');
-        if(n === 2 && chart) chart.resize();
-    }
+    const C = {
+        deepBlue: '#1a5276',
+        ochre: '#b85c38',
+        darkPurple: '#5a3d7a',
+        green: '#3d6b4f',
+        gray: '#bbb',
+    };
 
-    // --- THEORY LOGIC ---
+    const RATIO_COLORS = [
+        '#ffeaa7', '#dfe6e9', '#a29bfe', '#fab1a0', '#55efc4',
+        '#81ecec', '#f8a5c2', '#f6e58d', '#ffbe76', '#c7ecee', '#badc58'
+    ];
+
+    // ===== TAB SYSTEM =====
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            const tab = btn.getAttribute('data-tab');
+            document.getElementById(`panel-${tab}`).classList.add('active');
+            if (tab === 'sim' && simChart) setTimeout(() => simChart.resize(), 50);
+        });
+    });
+
+    // ===== TAB 1: THEORY =====
     function initTable() {
-        const b = document.getElementById('theory-tbody');
-        b.innerHTML = '';
+        const tbody = document.getElementById('theory-tbody');
+        tbody.innerHTML = '';
         Q_ARR.forEach((q, i) => {
-            b.innerHTML += `<tr>
-                <td style="background:#f1f3f5;">${q}</td>
-                <td>${TPL[i]}</td><td class="col-mp col-hidden m-l">${MPL[i]}</td><td class="col-rmp col-hidden r-l">${(MPL[i]/PL).toFixed(1)}</td>
-                <td>${TPK[i]}</td><td class="col-mp col-hidden m-k">${MPK[i]}</td><td class="col-rmp col-hidden r-k">${(MPK[i]/PK).toFixed(1)}</td>
-            </tr>`;
+            const tr = document.createElement('tr');
+            tr.innerHTML =
+                `<td class="qty-cell">${q}</td>` +
+                `<td>${TPL[i]}</td>` +
+                `<td class="col-mp col-hidden m-l">${MPL[i]}</td>` +
+                `<td class="col-rmp col-hidden r-l">${(MPL[i]/PL).toFixed(1)}</td>` +
+                `<td>${TPK[i]}</td>` +
+                `<td class="col-mp col-hidden m-k">${MPK[i]}</td>` +
+                `<td class="col-rmp col-hidden r-k">${(MPK[i]/PK).toFixed(1)}</td>`;
+            tbody.appendChild(tr);
         });
     }
 
     let pairs = [];
+
     function doStep(s) {
         const res = document.getElementById('theory-res');
         const hL = document.getElementById('head-labor');
         const hK = document.getElementById('head-capital');
-        
-        document.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active-step'));
-        document.getElementById(`s${s}`).classList.add('active-step');
 
-        if(s === 1) {
+        document.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active-btn'));
+        document.getElementById(`s${s}`).classList.add('active-btn');
+
+        if (s === 1) {
             document.querySelectorAll('.col-mp').forEach(el => el.classList.add('col-visible'));
-            hL.colSpan = 2; hK.colSpan = 2;
+            hL.colSpan = 2;
+            hK.colSpan = 2;
             document.getElementById('s2').classList.remove('hidden-step');
-            res.innerHTML = "<b>Step 1: Marginal Product (MP)</b><br>Calculate the extra output generated by each additional unit. <i>Observe how MP declines (Law of Diminishing Returns).</i>";
+            res.innerHTML = '<strong>Step 1: Marginal Product (MP)</strong><br>' +
+                'Each cell shows the extra output from one more unit of that input. ' +
+                '<em>Notice how MP declines — the Law of Diminishing Returns.</em>';
         }
-        else if(s === 2) {
+        else if (s === 2) {
             document.querySelectorAll('.col-rmp').forEach(el => el.classList.add('col-visible'));
-            hL.colSpan = 3; hK.colSpan = 3;
+            hL.colSpan = 3;
+            hK.colSpan = 3;
             document.getElementById('s3').classList.remove('hidden-step');
-            res.innerHTML = "<b>Step 2: Marginal Product per Dollar (MP/P)</b><br>Divide the MP by the price of the resource to find the 'Output per Dollar'. This normalizes the metrics for a fair comparison.";
+            res.innerHTML = '<strong>Step 2: Marginal Product per Dollar (MP / P)</strong><br>' +
+                'Divide each MP by the input\'s price. This gives <em>output gained per dollar spent</em> — a fair basis for comparison.';
         }
-        else if(s === 3) {
+        else if (s === 3) {
+            // Clear old highlights
             pairs = [];
-            let cIdx = 0;
+            let colorIdx = 0;
             const rlCells = document.querySelectorAll('.r-l');
             const rkCells = document.querySelectorAll('.r-k');
-            for(let i = 0; i < 12; i++) {
-                for(let j = 0; j < 12; j++) {
-                    if(rlCells[i].innerText === rkCells[j].innerText && rlCells[i].innerText !== '0.0') {
-                        let color = COLORS[cIdx % COLORS.length];
-                        pairs.push({ql: i+1, qk: j+1, ratio: rlCells[i].innerText, color});
+            // First clear any previous highlighting
+            rlCells.forEach(c => c.style.backgroundColor = '');
+            rkCells.forEach(c => c.style.backgroundColor = '');
+
+            for (let i = 0; i < 12; i++) {
+                for (let j = 0; j < 12; j++) {
+                    if (rlCells[i].innerText === rkCells[j].innerText && rlCells[i].innerText !== '0.0') {
+                        const color = RATIO_COLORS[colorIdx % RATIO_COLORS.length];
+                        pairs.push({ ql: i+1, qk: j+1, ratio: rlCells[i].innerText, color });
                         rlCells[i].style.backgroundColor = color;
                         rkCells[j].style.backgroundColor = color;
-                        cIdx++;
+                        colorIdx++;
                     }
                 }
             }
             document.getElementById('s4').classList.remove('hidden-step');
-            res.innerHTML = `<b>Step 3: Finding Equimarginal Ratios</b><br>We matched ${pairs.length} combinations where MP<sub>L</sub>/P<sub>L</sub> = MP<sub>K</sub>/P<sub>K</sub>. The firm operates efficiently <i>only</i> at these specific ratio points.`;
+            res.innerHTML = `<strong>Step 3: Equimarginal Ratios</strong><br>` +
+                `Found <strong>${pairs.length}</strong> combinations where MP<sub>L</sub>/P<sub>L</sub> = MP<sub>K</sub>/P<sub>K</sub>. ` +
+                `Only at these color-matched points does the firm use inputs <em>efficiently</em>.`;
         }
-        else if(s === 4) {
-            let html = "<b>Step 4: Verify Target Output (300 Units)</b><br>Which of our optimally matched combinations yields exactly 300 units of Total Product?<br><br>";
+        else if (s === 4) {
+            // Clear winner row styles
+            document.querySelectorAll('#theory-tbody tr').forEach(tr => tr.classList.remove('row-winner'));
+
+            let html = '<strong>Step 4: Verify Target Output (300 Units)</strong><br>' +
+                'Which equimarginal combination produces exactly 300 units at the lowest cost?<br>';
             pairs.forEach(p => {
-                let out = TPL[p.ql-1] + TPK[p.qk-1];
-                let cost = p.ql*PL + p.qk*PK;
-                let isWin = out === TARGET;
-                html += `<div class="res-item ${isWin ? 'winner' : ''}">
+                const out = TPL[p.ql-1] + TPK[p.qk-1];
+                const cost = p.ql * PL + p.qk * PK;
+                const isWin = out === TARGET;
+                html += `<div class="res-item${isWin ? ' winner' : ''}">
                     <span>${p.ql} Labor & ${p.qk} Capital</span>
-                    <span>Output: <b>${out}</b> | Cost: $${cost} ${isWin ? '🎯 Least-Cost!' : ''}</span>
+                    <span>Output: <strong>${out}</strong> &nbsp;|&nbsp; Cost: $${cost}${isWin ? ' 🎯 Least-Cost!' : ''}</span>
                 </div>`;
-                if(isWin) {
-                    document.querySelectorAll('.r-l')[p.ql-1].style.boxShadow = 'inset 0 0 0 4px #8e44ad';
-                    document.querySelectorAll('.r-k')[p.qk-1].style.boxShadow = 'inset 0 0 0 4px #8e44ad';
+                if (isWin) {
+                    // Highlight the winning row
+                    const rows = document.querySelectorAll('#theory-tbody tr');
+                    if (rows[p.ql-1]) rows[p.ql-1].classList.add('row-winner');
+                    // Also highlight the MP/P cells
+                    if (rlCellsGlobal[p.ql-1]) {
+                        rlCellsGlobal[p.ql-1].style.outline = `2px solid ${C.darkPurple}`;
+                        rlCellsGlobal[p.ql-1].style.outlineOffset = '-2px';
+                    }
+                    if (rkCellsGlobal[p.qk-1]) {
+                        rkCellsGlobal[p.qk-1].style.outline = `2px solid ${C.darkPurple}`;
+                        rkCellsGlobal[p.qk-1].style.outlineOffset = '-2px';
+                    }
                 }
             });
             res.innerHTML = html;
         }
     }
 
+    // Keep references for Step 4 highlighting
+    let rlCellsGlobal, rkCellsGlobal;
+
     function resetTheory() {
         initTable();
-        document.getElementById('theory-res').innerHTML = '<span style="color:#adb5bd; font-size: 20px;">Follow the steps above (left to right) to find the optimal resource combination.</span>';
+        rlCellsGlobal = document.querySelectorAll('.r-l');
+        rkCellsGlobal = document.querySelectorAll('.r-k');
+        document.getElementById('theory-res').innerHTML = '<span style="color:#999;">Click <strong>Step 1</strong> to begin.</span>';
         document.getElementById('head-labor').colSpan = 1;
         document.getElementById('head-capital').colSpan = 1;
         document.querySelectorAll('.col-mp, .col-rmp').forEach(el => el.classList.remove('col-visible'));
         document.querySelectorAll('.step-btn').forEach(b => {
-            b.classList.remove('active-step');
-            if(b.id !== 's1') b.classList.add('hidden-step');
+            b.classList.remove('active-btn');
+            if (b.id !== 's1') b.classList.add('hidden-step');
         });
+        // Clear row highlights
+        document.querySelectorAll('#theory-tbody tr').forEach(tr => tr.classList.remove('row-winner'));
+        pairs = [];
     }
 
-    // --- SIMULATOR LOGIC ---
-    let sim = { c: 0, o: 0, ql: 0, qk: 0, path: [{x: 0, y: 0}] };
-    let chart;
+    // ===== TAB 2: SIMULATOR =====
+    let sim = { c: 0, o: 0, ql: 0, qk: 0, path: [[0, 0]] };
+    let simChart;
 
     function getOptimalPath() {
         let o = 0, c = 0, l = 0, k = 0;
-        let p = [{x: 0, y: 0}];
+        const p = [[0, 0]];
         while (o < TARGET) {
-            let rl = l < 12 ? MPL[l]/PL : 0;
-            let rk = k < 12 ? MPK[k]/PK : 0;
+            const rl = l < 12 ? MPL[l] / PL : 0;
+            const rk = k < 12 ? MPK[k] / PK : 0;
             if (rl > rk && rl > 0) { o += MPL[l++]; c += PL; }
-            else if (rk > 0) { o += MPK[k++]; c += PK; } 
+            else if (rk > 0) { o += MPK[k++]; c += PK; }
             else break;
-            p.push({x: c, y: o});
+            p.push([c, o]);
         }
         return { path: p, cost: c };
     }
 
     const optimalData = getOptimalPath();
 
-    function initChart() {
-        const ctx = document.getElementById('simChart').getContext('2d');
-        chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                datasets: [
-                    {
-                        label: 'Optimal Least-Cost Path',
-                        data: optimalData.path,
-                        borderColor: '#8e44ad',
-                        borderWidth: 4,
-                        pointRadius: 0,
-                        hidden: true,
-                        tension: 0
-                    },
-                    {
-                        label: 'Your Strategy',
-                        data: sim.path,
-                        borderColor: '#3498db',
-                        borderWidth: 4,
-                        pointRadius: 6,
-                        pointBackgroundColor: '#fff',
-                        tension: 0
-                    }
-                ]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                scales: {
-                    x: { type: 'linear', min: 0, max: 260, title: { display: true, text: 'Total Cost ($)', font: { size: 15, weight: 'bold' } } },
-                    y: { min: 0, max: 350, title: { display: true, text: 'Total Output (Units)', font: { size: 15, weight: 'bold' } } }
-                },
-                plugins: {
-                    legend: { labels: { font: { size: 13 } } },
-                    annotation: {
-                        annotations: {
-                            targetLine: { type: 'line', yMin: TARGET, yMax: TARGET, borderColor: 'rgba(231, 76, 60, 0.5)', borderWidth: 2, borderDash: [5, 5], label: { content: `Goal: ${TARGET} Units`, display: true, position: 'start' } }
-                        }
+    function initSimChart() {
+        simChart = echarts.init(document.getElementById('sim-chart'));
+        updateChart();
+    }
+
+    function buildChartOption(showOptimal) {
+        const series = [
+            {
+                name: 'Your Strategy',
+                type: 'line',
+                symbol: 'none',
+                lineStyle: { width: 2.5, color: C.deepBlue },
+                data: sim.path,
+                animation: false,
+                markLine: {
+                    silent: true,
+                    symbol: 'none',
+                    animation: false,
+                    lineStyle: { type: 'dashed', color: '#e74c3c', width: 1.5 },
+                    data: [{ yAxis: TARGET }],
+                    label: {
+                        show: true,
+                        formatter: 'Target: 300',
+                        fontSize: 11,
+                        color: '#e74c3c',
+                        fontFamily: 'Source Sans Pro'
                     }
                 }
             }
-        });
+        ];
+
+        if (showOptimal) {
+            series.push({
+                name: 'Optimal Path',
+                type: 'line',
+                symbol: 'none',
+                lineStyle: { width: 2.5, color: C.darkPurple },
+                data: optimalData.path,
+                animation: false
+            });
+        }
+
+        return {
+            animation: false,
+            grid: { left: 60, right: 40, top: 40, bottom: 50 },
+            xAxis: {
+                type: 'value',
+                name: 'Total Cost ($)',
+                nameLocation: 'middle',
+                nameGap: 32,
+                nameTextStyle: { fontSize: 13, fontWeight: 600, fontFamily: 'Source Sans Pro', color: '#555' },
+                min: 0,
+                max: 260,
+                axisLabel: { fontFamily: 'Consolas', fontSize: 12 },
+                splitLine: { lineStyle: { color: '#f0f0f0' } }
+            },
+            yAxis: {
+                type: 'value',
+                name: 'Total Output (Units)',
+                nameLocation: 'middle',
+                nameGap: 42,
+                nameTextStyle: { fontSize: 13, fontWeight: 600, fontFamily: 'Source Sans Pro', color: '#555' },
+                min: 0,
+                max: 350,
+                axisLabel: { fontFamily: 'Consolas', fontSize: 12 },
+                splitLine: { lineStyle: { color: '#f0f0f0' } }
+            },
+            legend: {
+                show: showOptimal,
+                bottom: 6,
+                textStyle: { fontSize: 12, fontFamily: 'Source Sans Pro' }
+            },
+            series: series
+        };
+    }
+
+    function updateChart() {
+        if (!simChart) return;
+        const showOptimal = document.getElementById('toggle-opt').checked;
+        simChart.setOption(buildChartOption(showOptimal), true);
     }
 
     function simHire(type) {
-        if(sim.o >= TARGET) return;
-        if(type === 'L' && sim.ql < 12) {
-            sim.o += MPL[sim.ql]; sim.c += PL; sim.ql++;
-        } else if(type === 'K' && sim.qk < 12) {
-            sim.o += MPK[sim.qk]; sim.c += PK; sim.qk++;
+        if (sim.o >= TARGET) return;
+        if (type === 'L' && sim.ql < 12) {
+            sim.o += MPL[sim.ql];
+            sim.c += PL;
+            sim.ql++;
+        } else if (type === 'K' && sim.qk < 12) {
+            sim.o += MPK[sim.qk];
+            sim.c += PK;
+            sim.qk++;
         }
-        sim.path.push({x: sim.c, y: sim.o});
-        updateChartVisibility(); 
+        sim.path.push([sim.c, sim.o]);
+        updateChart();
         updateSimUI();
     }
 
     function updateSimUI() {
         document.getElementById('sim-out').innerText = sim.o;
-        document.getElementById('sim-cost').innerText = `$${sim.c}`;
+        document.getElementById('sim-cost').innerText = '$' + sim.c;
         document.getElementById('q-l').innerText = sim.ql;
         document.getElementById('q-k').innerText = sim.qk;
-        document.getElementById('prog-bar').style.width = Math.min((sim.o / TARGET) * 100, 100) + "%";
+        document.getElementById('prog-bar').style.width = Math.min((sim.o / TARGET) * 100, 100) + '%';
 
-        let rl = sim.ql < 12 ? (MPL[sim.ql]/PL).toFixed(1) : 0;
-        let rk = sim.qk < 12 ? (MPK[sim.qk]/PK).toFixed(1) : 0;
-        
+        const rl = sim.ql < 12 ? (MPL[sim.ql] / PL).toFixed(1) : '—';
+        const rk = sim.qk < 12 ? (MPK[sim.qk] / PK).toFixed(1) : '—';
         document.getElementById('n-mp-l').innerText = sim.ql < 12 ? MPL[sim.ql] : 'MAX';
         document.getElementById('n-r-l').innerText = rl;
         document.getElementById('n-mp-k').innerText = sim.qk < 12 ? MPK[sim.qk] : 'MAX';
@@ -404,33 +713,21 @@
         document.getElementById('hire-k').disabled = sim.o >= TARGET || sim.qk >= 12;
     }
 
-    function updateChartVisibility() {
-        const isChecked = document.getElementById('toggle-opt').checked;
-        const reached = sim.o >= TARGET;
-        const anns = chart.options.plugins.annotation.annotations;
-
-        chart.setDatasetVisibility(0, isChecked);
-
-        if (isChecked) {
-            anns.optCostLine = { type: 'line', xMin: optimalData.cost, xMax: optimalData.cost, borderColor: '#8e44ad', borderWidth: 2, borderDash: [4, 4], label: { content: `Min Cost: $${optimalData.cost}`, display: true, backgroundColor: '#8e44ad', position: 'start' } };
-        } else { delete anns.optCostLine; }
-
-        if (reached) {
-            anns.actCostLine = { type: 'line', xMin: sim.c, xMax: sim.c, borderColor: '#3498db', borderWidth: 3, label: { content: `Your Cost: $${sim.c}`, display: true, backgroundColor: '#3498db', position: 'end' } };
-        } else { delete anns.actCostLine; }
-
-        chart.update();
-    }
-
     function resetSim() {
-        sim = { c: 0, o: 0, ql: 0, qk: 0, path: [{x: 0, y: 0}] };
+        sim = { c: 0, o: 0, ql: 0, qk: 0, path: [[0, 0]] };
         document.getElementById('toggle-opt').checked = false;
-        chart.data.datasets[1].data = sim.path;
-        updateChartVisibility();
+        updateChart();
         updateSimUI();
     }
 
-    window.onload = () => { initTable(); initChart(); updateSimUI(); };
+    // ===== INIT =====
+    window.addEventListener('DOMContentLoaded', () => {
+        initTable();
+        rlCellsGlobal = document.querySelectorAll('.r-l');
+        rkCellsGlobal = document.querySelectorAll('.r-k');
+        initSimChart();
+        updateSimUI();
+    });
 </script>
 </body>
 </html>
