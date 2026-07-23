@@ -3,249 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consumer Choice Theory - Interactive Classroom</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+    <title>Consumer Choice — Deriving the Demand Curve</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #f7f7f5;
+            font-family: 'Source Sans Pro', 'Segoe UI', system-ui, sans-serif;
+            color: #333;
+            padding: 24px 16px;
             margin: 0;
-            padding: 20px;
-            background-color: #f8f9fa;
-            color: #2c3e50;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            box-sizing: border-box;
-        }
-        .app-container {
-            display: flex;
-            width: 100%;
-            flex-grow: 1;
-            gap: 20px;
-            min-height: 0;
-        }
-        .panel-left {
-            width: 55%;
-            background: #ffffff;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.06);
-            display: flex;
-            flex-direction: column;
-        }
-        .panel-right {
-            width: 45%;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        .chart-container-top {
-            height: 60%;
-            background: #ffffff;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.06);
-            display: flex;
-            flex-direction: column;
-        }
-        .controls-container-bottom {
-            height: 40%;
-            background: #ffffff;
-            border-radius: 10px;
-            padding: 25px;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.06);
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 15px;
-        }
-        
-        /* Headers & Reset Button layout */
-        .header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #ecf0f1;
-            padding-bottom: 10px;
-            margin-bottom: 5px;
-        }
-        h2 {
-            margin: 0;
-            font-size: 20px;
-            font-weight: 700;
-            color: #1e272e;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .panel-left h2, .chart-container-top h2 {
-            border-bottom: 2px solid #ecf0f1;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .reset-btn {
-            background-color: #95a5a6;
-            color: white;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .reset-btn:hover {
-            background-color: #7f8c8d;
         }
 
-        .control-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-            background: #f1f2f6;
-            padding: 12px 18px;
-            border-radius: 8px;
-        }
-        .control-row label {
-            font-weight: 700;
-            font-size: 16px;
-            width: 180px;
-            color: #2f3542;
-        }
-        .slider-wrapper {
-            display: flex;
-            align-items: center;
-            flex-grow: 1;
-            gap: 15px;
-        }
-        input[type="range"] {
-            flex-grow: 1;
-            cursor: pointer;
-            height: 6px;
-        }
-        .value-badge {
-            font-size: 18px;
-            font-weight: 800;
-            color: #d35400;
-            min-width: 75px;
-            text-align: right;
+        .container {
+            max-width: 880px;
+            margin: 0 auto;
             background: #fff;
-            padding: 5px 10px;
-            border-radius: 6px;
-            border: 1px solid #dfe4ea;
+            border: 1px solid #d4d4d0;
+            padding: 28px 32px;
         }
-        .radio-group {
-            display: flex;
-            gap: 30px;
-            flex-grow: 1;
+
+        h2 {
+            font-family: 'Merriweather', 'Georgia', serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a2a3a;
+            border-bottom: 2px solid #1a2a3a;
+            padding-bottom: 8px;
+            margin: 0 0 12px 0;
         }
-        .radio-label {
+
+        .chart-box { width: 100%; height: 400px; margin: 12px 0; }
+        .chart-box-sm { width: 100%; height: 300px; margin: 12px 0; }
+
+        .source {
+            font-size: 10px;
+            color: #888;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 8px;
+            margin-top: 16px;
+        }
+
+        /* Controls */
+        .controls-section { margin-top: 16px; border-top: 1px solid #e0e0e0; padding-top: 16px; }
+
+        .radio-group { display: flex; gap: 24px; margin-bottom: 14px; }
+        .radio-group label {
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            color: #333;
+        }
+        .radio-group input[type="radio"] { cursor: pointer; accent-color: #1a5276; }
+
+        .slider-group { margin-bottom: 12px; }
+        .slider-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a2a3a;
+            margin-bottom: 4px;
+        }
+
+        .slider-row { display: flex; align-items: center; gap: 10px; }
+        .slider-row input[type="range"] {
+            flex: 1;
             cursor: pointer;
-            font-size: 16px !important;
-            font-weight: 600 !important;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #d4d4d0;
+            border-radius: 0;
+            outline: none;
         }
-        input[type="radio"] {
-            transform: scale(1.3);
+        .slider-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #1a5276;
+            border: 2px solid #fff;
+            border-radius: 0;
+            cursor: pointer;
         }
-        canvas {
-            width: 100% !important;
-            flex-grow: 1;
-            min-height: 0;
+        .slider-row input[type="range"]::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            background: #1a5276;
+            border: 2px solid #fff;
+            border-radius: 0;
+            cursor: pointer;
         }
-        
-        /* Copyright text formatting */
-        .copyright {
-            margin-top: 15px;
-            font-size: 11px;
-            color: #95a5a6;
+
+        .slider-val {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a5276;
+            min-width: 52px;
             text-align: right;
-            border-top: 1px solid #f1f2f6;
-            padding-top: 10px;
         }
+
+        .reset-btn {
+            background: #d4d4d0;
+            color: #333;
+            border: none;
+            padding: 6px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: 'Source Sans Pro', sans-serif;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .reset-btn:hover { background: #bbb; }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h2>Consumer Choice — Deriving the Demand Curve</h2>
 
-    <div class="app-container">
-        <!-- Left half: Consumer Equilibrium Graph -->
-        <div class="panel-left">
-            <h2>1. Consumer Equilibrium & Effects Breakdown</h2>
-            <canvas id="equilibriumChart"></canvas>
-            
-            <!-- Copyright / Credits -->
-            <div class="copyright">
-                &copy; 2026 Teaching Tool for AP/IB/A-Level Economics. Dr.Jia All rights reserved.
+        <!-- Chart 1: Consumer Equilibrium -->
+        <div id="eqChart" class="chart-box"></div>
+
+        <!-- Chart 2: Derived Demand Curve -->
+        <div id="demandChart" class="chart-box-sm"></div>
+
+        <!-- Controls -->
+        <div class="controls-section">
+            <div class="radio-group">
+                <label><input type="radio" name="goodType" value="normal" checked> Normal Good</label>
+                <label><input type="radio" name="goodType" value="inferior"> Inferior Good</label>
             </div>
+
+            <div class="slider-group">
+                <label for="priceX">Price of Good X (P<sub>x</sub>)</label>
+                <div class="slider-row">
+                    <input type="range" id="priceX" min="1.5" max="9.5" step="0.05" value="5">
+                    <span class="slider-val" id="priceXVal">$5.00</span>
+                </div>
+            </div>
+
+            <div class="slider-group">
+                <label for="income">Consumer Income (I)</label>
+                <div class="slider-row">
+                    <input type="range" id="income" min="70" max="140" step="1" value="100">
+                    <span class="slider-val" id="incomeVal">$100</span>
+                </div>
+            </div>
+
+            <button class="reset-btn" id="resetBtn">Reset</button>
         </div>
 
-        <!-- Right half: Split vertically -->
-        <div class="panel-right">
-            <div class="chart-container-top">
-                <h2>2. Derived Demand Curve for Good X</h2>
-                <canvas id="demandChart"></canvas>
-            </div>
-            
-            <div class="controls-container-bottom">
-                <div class="header-row">
-                    <h2>Interactive Parameters</h2>
-                    <button class="reset-btn" id="resetBtn">↺ Reset Values</button>
-                </div>
-                
-                <div class="control-row">
-                    <label>Good X Type:</label>
-                    <div class="radio-group">
-                        <label class="radio-label"><input type="radio" name="goodType" value="normal" checked> Normal Good</label>
-                        <label class="radio-label"><input type="radio" name="goodType" value="inferior"> Inferior Good</label>
-                    </div>
-                </div>
-
-                <div class="control-row">
-                    <label for="priceX">Price of Good X (P<sub>X</sub>):</label>
-                    <div class="slider-wrapper">
-                        <input type="range" id="priceX" min="1.5" max="9.5" step="0.05" value="5">
-                        <span class="value-badge" id="priceXLabel">$5.00</span>
-                    </div>
-                </div>
-
-                <div class="control-row">
-                    <label for="income">Consumer Income (I):</label>
-                    <div class="slider-wrapper">
-                        <input type="range" id="income" min="70" max="140" step="1" value="100">
-                        <span class="value-badge" id="incomeLabel">$100</span>
-                    </div>
-                </div>
-            </div>
+        <div class="source">
+            © 2026 Teaching Tool for AP/IB/A-Level Economics. Dr.Jia — All rights reserved.
         </div>
     </div>
 
     <script>
-        // Set Global Font Settings for better Classroom Visibility
-        Chart.defaults.font.size = 15;
-        Chart.defaults.color = '#2f3542';
+    (function () {
+        /* ── Constants ── */
+        const Py = 5, Px_init = 5, I_init = 100;
 
-        const Py = 5;
-        const Px_init = 5;
-        const I_init = 100;
-
-        // Core Mathematical Engine for Indifference Curves and Optima
+        /* ── Economics Engine (unchanged) ── */
         function getCoordinates(Px, I, type) {
-            let xA = 10, yA = 10; 
-            let xB, yB, xC, yC;
-            let ic0_params, ic1_params;
+            let xA = 10, yA = 10;
+            let xB, yB, xC, yC, ic0_params, ic1_params;
 
             if (type === 'normal') {
                 xC = 0.5 * I / Px;
                 yC = 0.5 * I / Py;
-
                 ic0_params = { x0: 0, y0: 0, k: 100 };
                 xB = Math.sqrt(100 * Py / Px);
                 yB = 100 / xB;
@@ -253,17 +181,14 @@
             } else {
                 xC = 10 * Math.pow(5 / Px, 0.8) * Math.pow(100 / I, 1.5);
                 yC = (I - Px * xC) / Py;
-
-                let c0 = 25; 
-                ic0_params = { 
-                    x0: xA - c0, 
-                    y0: yA - c0 * (Px_init / Py), 
-                    k: c0 * c0 * (Px_init / Py) 
+                let c0 = 25;
+                ic0_params = {
+                    x0: xA - c0,
+                    y0: yA - c0 * (Px_init / Py),
+                    k: c0 * c0 * (Px_init / Py)
                 };
-
                 xB = Math.sqrt(ic0_params.k * Py / Px) + ic0_params.x0;
                 yB = ic0_params.y0 + ic0_params.k / (xB - ic0_params.x0);
-
                 let c1 = 25 * Math.sqrt(5 / Px);
                 ic1_params = {
                     x0: xC - c1,
@@ -275,166 +200,362 @@
         }
 
         function generateICPoints(params, max_x) {
-            let points = [];
+            let pts = [];
             let startX = Math.max(0.1, params.x0 + 0.1);
             for (let x = startX; x <= max_x; x += 0.5) {
                 let y = params.y0 + params.k / (x - params.x0);
-                if (y > -2 && y <= 40) points.push({ x: x, y: y });
+                if (y > -2 && y <= 40) pts.push([x, y]);
             }
-            return points;
+            return pts;
         }
 
-        const ctxEq = document.getElementById('equilibriumChart').getContext('2d');
-        const ctxDe = document.getElementById('demandChart').getContext('2d');
+        /* ── Chart Instances ── */
+        const eqChart = echarts.init(document.getElementById('eqChart'));
+        const deChart = echarts.init(document.getElementById('demandChart'));
 
-        // Main Consumer Equilibrium Chart
-        const eqChart = new Chart(ctxEq, {
-            type: 'line',
-            data: {
-                datasets: [
-                    { label: 'Initial Budget (BL₀)', data: [], borderColor: '#7f8c8d', borderWidth: 3, borderDash: [6, 6], pointRadius: 0, fill: false },
-                    { label: 'Initial Curve (IC₀)', data: [], borderColor: '#3498db', borderWidth: 3, borderDash: [6, 6], pointRadius: 0, fill: false, tension: 0.2 },
-                    { label: 'New Budget Line (BL₁)', data: [], borderColor: '#c0392b', borderWidth: 4, pointRadius: 0, fill: false },
-                    { label: 'New Curve (IC₁)', data: [], borderColor: '#2980b9', borderWidth: 4, pointRadius: 0, fill: false, tension: 0.2 },
-                    { label: 'Compensated Budget Line', data: [], borderColor: '#8e44ad', borderWidth: 2.5, pointRadius: 0, fill: false },
-                    { label: 'Optima Dots', data: [], backgroundColor: (ctx) => ['#2c3e50', '#8e44ad', '#27ae60'][ctx.dataIndex], pointRadius: 9, showLine: false }
+        /* ── Equilibrium Chart Option ── */
+        const eqOption = {
+            animation: false,
+            tooltip: { show: false },
+            legend: {
+                top: 0,
+                left: 'center',
+                itemWidth: 24,
+                itemHeight: 3,
+                textStyle: { fontFamily: 'Source Sans Pro, sans-serif', fontSize: 11, color: '#333' },
+                data: [
+                    { name: 'BL₀ (Initial)', icon: 'line' },
+                    { name: 'IC₀ (Initial)', icon: 'line' },
+                    { name: 'BL₁ (New)', icon: 'line' },
+                    { name: 'IC₁ (New)', icon: 'line' },
+                    { name: 'Compensated BL', icon: 'line' }
                 ]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: { type: 'linear', min: 0, max: 45, title: { display: true, text: 'Quantity of Good X', font: {size: 16, weight: 'bold'} } },
-                    y: { type: 'linear', min: 0, max: 28, title: { display: true, text: 'Quantity of Good Y', font: {size: 16, weight: 'bold'} } }
+            grid: { left: 58, right: 30, top: 40, bottom: 54 },
+            xAxis: {
+                type: 'value',
+                min: 0,
+                max: 45,
+                name: 'Quantity of Good X',
+                nameLocation: 'middle',
+                nameGap: 34,
+                nameTextStyle: { fontFamily: 'Source Sans Pro, sans-serif', fontWeight: 600, fontSize: 13, color: '#1a2a3a' },
+                axisLabel: { fontFamily: 'Source Sans Pro, sans-serif', fontSize: 11, color: '#555' },
+                axisLine: { lineStyle: { color: '#bbb' } },
+                splitLine: { show: false }
+            },
+            yAxis: {
+                type: 'value',
+                min: 0,
+                max: 28,
+                name: 'Quantity of Good Y',
+                nameLocation: 'middle',
+                nameGap: 42,
+                nameTextStyle: { fontFamily: 'Source Sans Pro, sans-serif', fontWeight: 600, fontSize: 13, color: '#1a2a3a' },
+                axisLabel: { fontFamily: 'Source Sans Pro, sans-serif', fontSize: 11, color: '#555' },
+                axisLine: { lineStyle: { color: '#bbb' } },
+                splitLine: { show: false }
+            },
+            series: [
+                /* 0 – BL₀ initial budget line (dashed) */
+                {
+                    name: 'BL₀ (Initial)',
+                    type: 'line',
+                    data: [[0, I_init / Py], [I_init / Px_init, 0]],
+                    lineStyle: { color: '#bbb', width: 1.5, type: 'dashed' },
+                    symbol: 'none',
+                    z: 2
                 },
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: { 
-                            font: { size: 14, weight: 'bold' },
-                            filter: (item) => ['New Budget Line (BL₁)', 'New Curve (IC₁)', 'Compensated Budget Line'].includes(item.text) 
-                        }
+                /* 1 – IC₀ initial indifference curve (dashed) */
+                {
+                    name: 'IC₀ (Initial)',
+                    type: 'line',
+                    data: [],
+                    lineStyle: { color: '#1a5276', width: 1.5, type: 'dashed' },
+                    symbol: 'none',
+                    smooth: false,
+                    z: 2
+                },
+                /* 2 – BL₁ current budget line (solid) */
+                {
+                    name: 'BL₁ (New)',
+                    type: 'line',
+                    data: [],
+                    lineStyle: { color: '#b85c38', width: 2.5 },
+                    symbol: 'none',
+                    z: 2
+                },
+                /* 3 – IC₁ current indifference curve (solid) */
+                {
+                    name: 'IC₁ (New)',
+                    type: 'line',
+                    data: [],
+                    lineStyle: { color: '#1a5276', width: 2.5 },
+                    symbol: 'none',
+                    smooth: false,
+                    z: 2
+                },
+                /* 4 – Compensated budget line */
+                {
+                    name: 'Compensated BL',
+                    type: 'line',
+                    data: [],
+                    lineStyle: { color: '#5a3d7a', width: 1.5, type: 'dashed' },
+                    symbol: 'none',
+                    z: 2
+                },
+                /* 5 – Mark areas (sub + income effect zones) */
+                {
+                    name: 'effects',
+                    type: 'line',
+                    data: [],
+                    symbol: 'none',
+                    lineStyle: { width: 0 },
+                    z: 0,
+                    markArea: {
+                        silent: true,
+                        data: [
+                            [
+                                {
+                                    name: 'Substitution Effect',
+                                    xAxis: 10,
+                                    yAxis: 0,
+                                    itemStyle: { color: 'rgba(90,61,122,0.10)' },
+                                    label: {
+                                        show: true,
+                                        position: 'insideTop',
+                                        formatter: 'Substitution',
+                                        fontFamily: 'Source Sans Pro, sans-serif',
+                                        fontSize: 11,
+                                        fontWeight: 600,
+                                        color: '#5a3d7a'
+                                    }
+                                },
+                                { xAxis: 10, yAxis: 0 }
+                            ],
+                            [
+                                {
+                                    name: 'Income Effect',
+                                    xAxis: 10,
+                                    yAxis: 0,
+                                    itemStyle: { color: 'rgba(61,107,79,0.10)' },
+                                    label: {
+                                        show: true,
+                                        position: 'insideTop',
+                                        formatter: 'Income',
+                                        fontFamily: 'Source Sans Pro, sans-serif',
+                                        fontSize: 11,
+                                        fontWeight: 600,
+                                        color: '#3d6b4f'
+                                    }
+                                },
+                                { xAxis: 10, yAxis: 0 }
+                            ]
+                        ]
+                    }
+                },
+                /* 6 – Points A, B, C */
+                {
+                    name: 'points',
+                    type: 'scatter',
+                    data: [],
+                    symbolSize: 12,
+                    z: 3,
+                    label: {
+                        show: true,
+                        position: 'right',
+                        offset: [8, 0],
+                        fontFamily: 'Source Sans Pro, sans-serif',
+                        fontSize: 13,
+                        fontWeight: 700
                     },
-                    annotation: {
-                        annotations: {
-                            lineA: { type: 'line', xMin: 0, xMax: 0, yMin: 0, yMax: 0, borderColor: 'rgba(44, 62, 80, 0.4)', borderWidth: 2, borderDash: [4, 4] },
-                            lineB: { type: 'line', xMin: 0, xMax: 0, yMin: 0, yMax: 0, borderColor: 'rgba(142, 68, 173, 0.4)', borderWidth: 2, borderDash: [4, 4] },
-                            lineC: { type: 'line', xMin: 0, xMax: 0, yMin: 0, yMax: 0, borderColor: 'rgba(39, 174, 96, 0.4)', borderWidth: 2, borderDash: [4, 4] },
-                            
-                            subZone: { type: 'box', xMin: 0, xMax: 0, yMin: 0, yMax: 1.5, backgroundColor: 'rgba(142, 68, 173, 0.2)', borderWidth: 1, borderColor: 'rgba(142, 68, 173, 0.5)' },
-                            incZone: { type: 'box', xMin: 0, xMax: 0, yMin: 1.6, yMax: 3.1, backgroundColor: 'rgba(39, 174, 96, 0.2)', borderWidth: 1, borderColor: 'rgba(39, 174, 96, 0.5)' },
-                            
-                            labelA: { type: 'label', xValue: 0, yValue: 0, content: 'A', font: { size: 18, weight: 'bold' }, color: '#2c3e50', backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 4 },
-                            labelB: { type: 'label', xValue: 0, yValue: 0, content: 'B', font: { size: 18, weight: 'bold' }, color: '#8e44ad', backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 4 },
-                            labelC: { type: 'label', xValue: 0, yValue: 0, content: 'C', font: { size: 18, weight: 'bold' }, color: '#27ae60', backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 4 },
-                            
-                            txtSub: { type: 'label', xValue: 0, yValue: 0.75, content: 'Sub Effect', font: { size: 14, weight: 'bold' }, color: '#8e44ad' },
-                            txtInc: { type: 'label', xValue: 0, yValue: 2.35, content: 'Income Effect', font: { size: 14, weight: 'bold' }, color: '#218c74' }
-                        }
-                    }
+                    itemStyle: {}
                 }
-            }
-        });
+            ]
+        };
+        eqChart.setOption(eqOption);
 
-        // Demand Curve Chart
-        const deChart = new Chart(ctxDe, {
-            type: 'line',
-            data: {
-                datasets: [
-                    { label: 'Initial Demand', data: [], borderColor: '#95a5a6', borderWidth: 2.5, borderDash: [6, 6], pointRadius: 0, fill: false },
-                    { label: 'Current Demand', data: [], borderColor: '#2c3e50', borderWidth: 4, pointRadius: 0, fill: false },
-                    { label: 'Market Position', data: [], backgroundColor: '#c0392b', pointRadius: 9, showLine: false }
+        /* ── Demand Chart Option ── */
+        const deOption = {
+            animation: false,
+            tooltip: { show: false },
+            legend: {
+                top: 0,
+                left: 'center',
+                itemWidth: 24,
+                itemHeight: 3,
+                textStyle: { fontFamily: 'Source Sans Pro, sans-serif', fontSize: 11, color: '#333' },
+                data: [
+                    { name: 'Demand (I = $100)', icon: 'line' },
+                    { name: 'Demand (Current I)', icon: 'line' },
+                    { name: 'Current (Q, P)', icon: 'circle' }
                 ]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: { type: 'linear', min: 0, max: 45, title: { display: true, text: 'Quantity Demanded (Qₓ)', font: {size: 16, weight: 'bold'} } },
-                    y: { type: 'linear', min: 0, max: 11, title: { display: true, text: 'Price of Good X (Pₓ)', font: {size: 16, weight: 'bold'} } }
+            grid: { left: 58, right: 30, top: 40, bottom: 54 },
+            xAxis: {
+                type: 'value',
+                min: 0,
+                max: 45,
+                name: 'Quantity Demanded (Qx)',
+                nameLocation: 'middle',
+                nameGap: 34,
+                nameTextStyle: { fontFamily: 'Source Sans Pro, sans-serif', fontWeight: 600, fontSize: 13, color: '#1a2a3a' },
+                axisLabel: { fontFamily: 'Source Sans Pro, sans-serif', fontSize: 11, color: '#555' },
+                axisLine: { lineStyle: { color: '#bbb' } },
+                splitLine: { show: false }
+            },
+            yAxis: {
+                type: 'value',
+                min: 0,
+                max: 11,
+                name: 'Price of Good X (Px)',
+                nameLocation: 'middle',
+                nameGap: 42,
+                nameTextStyle: { fontFamily: 'Source Sans Pro, sans-serif', fontWeight: 600, fontSize: 13, color: '#1a2a3a' },
+                axisLabel: { fontFamily: 'Source Sans Pro, sans-serif', fontSize: 11, color: '#555' },
+                axisLine: { lineStyle: { color: '#bbb' } },
+                splitLine: { show: false }
+            },
+            series: [
+                /* 0 – Initial demand curve (dashed gray, at I_init) */
+                {
+                    name: 'Demand (I = $100)',
+                    type: 'line',
+                    data: [],
+                    lineStyle: { color: '#bbb', width: 1.5, type: 'dashed' },
+                    symbol: 'none',
+                    z: 2
                 },
-                plugins: {
-                    legend: {
-                        labels: {
-                            font: { size: 14, weight: 'bold' },
-                            filter: (item) => item.text !== 'Initial Demand' 
-                        }
-                    }
+                /* 1 – Current demand curve (solid deepBlue) */
+                {
+                    name: 'Demand (Current I)',
+                    type: 'line',
+                    data: [],
+                    lineStyle: { color: '#1a5276', width: 2.5 },
+                    symbol: 'none',
+                    z: 2
+                },
+                /* 2 – Current price-quantity point */
+                {
+                    name: 'Current (Q, P)',
+                    type: 'scatter',
+                    data: [],
+                    symbolSize: 12,
+                    itemStyle: { color: '#b85c38' },
+                    label: {
+                        show: true,
+                        position: 'right',
+                        offset: [8, 0],
+                        fontFamily: 'Source Sans Pro, sans-serif',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: '#b85c38',
+                        formatter: function (p) { return '(' + p.data[0].toFixed(1) + ', $' + p.data[1].toFixed(2) + ')'; }
+                    },
+                    z: 3
                 }
-            }
-        });
+            ]
+        };
+        deChart.setOption(deOption);
 
-        const staticNormalDemand = [];
-        const staticInferiorDemand = [];
+        /* ── Static Demand Curves (at I_init) ── */
+        const staticNormalDemand = [], staticInferiorDemand = [];
         for (let p = 1.5; p <= 10; p += 0.2) {
-            staticNormalDemand.push({ x: getCoordinates(p, 100, 'normal').xC, y: p });
-            staticInferiorDemand.push({ x: getCoordinates(p, 100, 'inferior').xC, y: p });
+            staticNormalDemand.push([getCoordinates(p, I_init, 'normal').xC, p]);
+            staticInferiorDemand.push([getCoordinates(p, I_init, 'inferior').xC, p]);
         }
 
+        /* ── Update Simulation ── */
         function updateSimulation() {
-            const Px = parseFloat(document.getElementById('priceX').value);
-            const I = parseFloat(document.getElementById('income').value);
-            const type = document.querySelector('input[name="goodType"]:checked').value;
+            var Px  = parseFloat(document.getElementById('priceX').value);
+            var I   = parseFloat(document.getElementById('income').value);
+            var type = document.querySelector('input[name="goodType"]:checked').value;
 
-            document.getElementById('priceXLabel').innerText = `$${Px.toFixed(2)}`;
-            document.getElementById('incomeLabel').innerText = `$${I}`;
+            document.getElementById('priceXVal').textContent = '$' + Px.toFixed(2);
+            document.getElementById('incomeVal').textContent = '$' + I;
 
-            const { xA, yA, xB, yB, xC, yC, ic0_params, ic1_params } = getCoordinates(Px, I, type);
+            var c = getCoordinates(Px, I, type);
+            var xA = c.xA, yA = c.yA, xB = c.xB, yB = c.yB, xC = c.xC, yC = c.yC;
 
-            // Left Chart: Lines
-            eqChart.data.datasets[0].data = [{ x: 0, y: 100 / Py }, { x: 100 / Px_init, y: 0 }];
-            eqChart.data.datasets[1].data = generateICPoints(ic0_params, 55);
-            eqChart.data.datasets[2].data = [{ x: 0, y: I / Py }, { x: I / Px, y: 0 }];
-            eqChart.data.datasets[3].data = generateICPoints(ic1_params, 55);
-            eqChart.data.datasets[4].data = [{ x: 0, y: yB + xB * (Px / Py) }, { x: xB + yB * (Py / Px), y: 0 }];
-            eqChart.data.datasets[5].data = [{ x: xA, y: yA }, { x: xB, y: yB }, { x: xC, y: yC }];
+            /* -- Equilibrium chart update -- */
+            var subXMin = Math.min(xA, xB), subXMax = Math.max(xA, xB);
+            var incXMin = Math.min(xB, xC), incXMax = Math.max(xB, xC);
 
-            // Annotations
-            const anno = eqChart.options.plugins.annotation.annotations;
-            anno.lineA.xMin = anno.lineA.xMax = xA; anno.lineA.yMax = yA;
-            anno.lineB.xMin = anno.lineB.xMax = xB; anno.lineB.yMax = yB;
-            anno.lineC.xMin = anno.lineC.xMax = xC; anno.lineC.yMax = yC;
+            eqChart.setOption({
+                series: [
+                    { /* 0 – BL₀ */ data: [[0, I_init / Py], [I_init / Px_init, 0]] },
+                    { /* 1 – IC₀ */ data: generateICPoints(c.ic0_params, 55) },
+                    { /* 2 – BL₁ */ data: [[0, I / Py], [I / Px, 0]] },
+                    { /* 3 – IC₁ */ data: generateICPoints(c.ic1_params, 55) },
+                    { /* 4 – Compensated BL */ data: [[0, yB + xB * (Px / Py)], [xB + yB * (Py / Px), 0]] },
+                    { /* 5 – Mark areas */
+                        markArea: { data: [
+                            [
+                                { name: 'Substitution Effect', xAxis: subXMin, yAxis: 0,
+                                  itemStyle: { color: 'rgba(90,61,122,0.10)' },
+                                  label: { show: true, position: 'insideTop', formatter: 'Substitution',
+                                           fontFamily: 'Source Sans Pro, sans-serif', fontSize: 11, fontWeight: 600, color: '#5a3d7a' }
+                                },
+                                { xAxis: subXMax, yAxis: 0 }
+                            ],
+                            [
+                                { name: 'Income Effect', xAxis: incXMin, yAxis: 0,
+                                  itemStyle: { color: 'rgba(61,107,79,0.10)' },
+                                  label: { show: true, position: 'insideTop', formatter: 'Income',
+                                           fontFamily: 'Source Sans Pro, sans-serif', fontSize: 11, fontWeight: 600, color: '#3d6b4f' }
+                                },
+                                { xAxis: incXMax, yAxis: 0 }
+                            ]
+                        ]}
+                    },
+                    { /* 6 – Scatter points A, B, C */
+                        data: [
+                            { value: [xA, yA], itemStyle: { color: '#1a2a3a' }, label: { color: '#1a2a3a', formatter: 'A' } },
+                            { value: [xB, yB], itemStyle: { color: '#5a3d7a' }, label: { color: '#5a3d7a', formatter: 'B' } },
+                            { value: [xC, yC], itemStyle: { color: '#3d6b4f' }, label: { color: '#3d6b4f', formatter: 'C' } }
+                        ]
+                    }
+                ]
+            });
 
-            anno.labelA.xValue = xA + 1; anno.labelA.yValue = yA + 1.5;
-            anno.labelB.xValue = xB + 1; anno.labelB.yValue = yB + 1.5;
-            anno.labelC.xValue = xC + 1; anno.labelC.yValue = yC + 1.5;
-
-            anno.subZone.xMin = Math.min(xA, xB); anno.subZone.xMax = Math.max(xA, xB);
-            anno.incZone.xMin = Math.min(xB, xC); anno.incZone.xMax = Math.max(xB, xC);
-
-            anno.txtSub.xValue = (xA + xB) / 2;
-            anno.txtInc.xValue = (xB + xC) / 2;
-
-            eqChart.update('none');
-
-            // Right Chart
-            deChart.data.datasets[0].data = (type === 'normal') ? staticNormalDemand : staticInferiorDemand;
-            const dynamicDemandCurve = [];
-            for (let p = 1.5; p <= 10; p += 0.2) {
-                dynamicDemandCurve.push({ x: getCoordinates(p, I, type).xC, y: p });
+            /* -- Demand chart update -- */
+            var dynamicDemand = [];
+            for (var p = 1.5; p <= 10; p += 0.2) {
+                dynamicDemand.push([getCoordinates(p, I, type).xC, p]);
             }
-            deChart.data.datasets[1].data = dynamicDemandCurve;
-            deChart.data.datasets[2].data = [{ x: xC, y: Px }];
-            
-            deChart.update('none');
+
+            deChart.setOption({
+                series: [
+                    { /* 0 – Initial demand */ data: (type === 'normal') ? staticNormalDemand : staticInferiorDemand },
+                    { /* 1 – Current demand */ data: dynamicDemand },
+                    { /* 2 – Current point */  data: [[xC, Px]] }
+                ]
+            });
         }
 
-        // --- Reset Logic ---
-        document.getElementById('resetBtn').addEventListener('click', () => {
-            // Restore Values Without Changing Good Type
+        /* ── Reset Button ── */
+        document.getElementById('resetBtn').addEventListener('click', function () {
             document.getElementById('priceX').value = 5;
             document.getElementById('income').value = 100;
-            // Re-render
             updateSimulation();
         });
 
-        // Event Listeners
+        /* ── Event Listeners ── */
         document.getElementById('priceX').addEventListener('input', updateSimulation);
         document.getElementById('income').addEventListener('input', updateSimulation);
-        document.querySelectorAll('input[name="goodType"]').forEach(r => r.addEventListener('change', updateSimulation));
+        document.querySelectorAll('input[name="goodType"]').forEach(function (r) {
+            r.addEventListener('change', updateSimulation);
+        });
 
-        // Initial Paint
+        /* ── Responsive Resize ── */
+        window.addEventListener('resize', function () {
+            eqChart.resize();
+            deChart.resize();
+        });
+
+        /* ── Initial Paint ── */
         updateSimulation();
+    })();
     </script>
 </body>
 </html>
