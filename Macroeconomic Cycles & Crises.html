@@ -5,242 +5,233 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Macroeconomic Cycles & Crises Visualizer</title>
 <style>
-    :root {
-        --bg-main: #f1f5f9;
-        --bg-card: #ffffff;
-        --text-primary: #0f172a;
-        --text-secondary: #334155;
-        --border-color: #cbd5e1;
-        
-        --color-say: #059669;
-        --color-marx: #dc2626;
-        --color-keynes: #2563eb;
-        --color-gold: #f59e0b;
-        --path-idle: #475569;
-    }
+    @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Source+Sans+Pro:wght@400;600&display=swap');
 
     html, body {
-        width: 100%;
-        height: 100vh;
         margin: 0;
         padding: 0;
-        overflow: hidden; /* Lock window, zero scrollbars */
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        background-color: var(--bg-main);
-        color: var(--text-primary);
-        display: flex;
-        flex-direction: column;
+        background: #f7f7f5;
+        font-family: 'Source Sans Pro', sans-serif;
+        color: #333;
     }
 
-    header {
-        background: var(--bg-card);
-        border-bottom: 2px solid var(--border-color);
-        padding: 10px 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-        flex-shrink: 0;
+    .container {
+        max-width: 880px;
+        margin: 0 auto;
+        background: #fff;
+        border: 1px solid #d4d4d0;
+        padding: 28px 32px;
     }
-    header h1 {
-        margin: 0 0 8px 0;
-        font-size: 28px;
-        font-weight: 900;
-        color: #1e293b;
-    }
-    .nav-tabs {
-        display: flex;
-        gap: 15px;
-        background: #e2e8f0;
-        padding: 6px;
-        border-radius: 40px;
-    }
-    .tab-btn {
-        padding: 8px 25px;
+
+    h2 {
+        font-family: 'Merriweather', serif;
         font-size: 16px;
         font-weight: 700;
+        color: #1a2a3a;
+        border-bottom: 2px solid #1a2a3a;
+        padding-bottom: 8px;
+        margin: 0 0 12px 0;
+    }
+
+    .source {
+        font-size: 10px;
+        color: #888;
+        border-top: 1px solid #e0e0e0;
+        padding-top: 8px;
+        margin-top: 16px;
+    }
+
+    /* Tabs */
+    .nav-tabs {
+        display: flex;
+        gap: 0;
+        border-bottom: 2px solid #d4d4d0;
+        margin-bottom: 16px;
+    }
+    .tab-btn {
+        padding: 8px 20px;
+        font-size: 13px;
+        font-weight: 600;
+        font-family: 'Source Sans Pro', sans-serif;
         border: none;
-        border-radius: 30px;
+        border-bottom: 3px solid transparent;
         cursor: pointer;
         background: transparent;
-        color: #475569;
+        color: #666;
         transition: all 0.2s ease;
     }
-    .tab-btn.active[data-model="say"] { background: var(--color-say); color: white; box-shadow: 0 4px 10px rgba(5,150,105,0.4); }
-    .tab-btn.active[data-model="marx"] { background: var(--color-marx); color: white; box-shadow: 0 4px 10px rgba(220,38,38,0.4); }
-    .tab-btn.active[data-model="keynes"] { background: var(--color-keynes); color: white; box-shadow: 0 4px 10px rgba(37,99,235,0.4); }
+    .tab-btn.active[data-model="say"] { color: #3d6b4f; border-bottom-color: #3d6b4f; }
+    .tab-btn.active[data-model="marx"] { color: #8b4545; border-bottom-color: #8b4545; }
+    .tab-btn.active[data-model="keynes"] { color: #1a5276; border-bottom-color: #1a5276; }
 
-    .dashboard {
-        display: flex;
-        flex: 1;
-        width: 98%;
-        max-width: 1500px;
-        margin: 15px auto;
-        background: var(--bg-card);
-        border-radius: 16px;
-        box-shadow: 0 10px 25px rgba(15,23,42,0.08);
-        border: 2px solid var(--border-color);
-        overflow: hidden;
-        min-height: 0;
-    }
+    /* Panels */
+    .panel { display: none; }
+    .panel.active { display: block; }
 
-    .panel { display: none; width: 100%; height: 100%; }
-    .panel.active { display: flex; }
-
-    /* Left Control Sidebar */
-    .control-column {
-        width: 30%;
-        padding: 30px;
-        border-right: 2px solid var(--border-color);
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        background: #fafaf9;
-        box-sizing: border-box;
-    }
-    .control-column h2 { font-size: 32px; margin-top: 0; font-weight: 900; }
-    .say h2 { color: var(--color-say); }
-    .marx h2 { color: var(--color-marx); }
-    .keynes h2 { color: var(--color-keynes); }
-    
+    /* Instruction box */
     .instruction-box {
-        background: #ffffff;
-        border: 2px solid #cbd5e1;
-        border-left: 8px solid #cbd5e1;
-        padding: 20px;
-        border-radius: 12px;
-        margin: 20px 0;
-        font-size: 20px;
-        font-weight: 700;
-        line-height: 1.4;
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        background: #fff;
+        border: 1px solid #d4d4d0;
+        border-left: 4px solid #d4d4d0;
+        padding: 12px 16px;
+        margin-bottom: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.5;
     }
-    .say .instruction-box { border-left-color: var(--color-say); }
-    .marx .instruction-box { border-left-color: var(--color-marx); }
-    .keynes .instruction-box { border-left-color: var(--color-keynes); }
+    .say .instruction-box { border-left-color: #3d6b4f; }
+    .marx .instruction-box { border-left-color: #8b4545; }
+    .keynes .instruction-box { border-left-color: #1a5276; }
 
-    .action-btn {
-        width: 100%;
-        padding: 18px;
-        font-size: 22px;
-        font-weight: 800;
-        border: none;
-        border-radius: 12px;
-        cursor: pointer;
-        color: white;
-        box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+    /* Metrics */
+    .metrics {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 12px;
     }
-    .say .action-btn { background: var(--color-say); }
-    .marx .action-btn { background: var(--color-marx); }
-    .keynes .action-btn { background: var(--color-keynes); }
-
-    .metrics { display: flex; flex-direction: column; gap: 12px; }
     .metric-row {
-        display: flex; justify-content: space-between; align-items: center;
-        font-size: 18px; font-weight: 700; color: var(--text-secondary);
-        background: white; border: 2px solid var(--border-color);
-        padding: 12px 18px; border-radius: 10px;
+        flex: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+        font-weight: 600;
+        color: #555;
+        background: #fafafa;
+        border: 1px solid #d4d4d0;
+        padding: 8px 12px;
     }
-    .metric-val { font-size: 24px; font-weight: 900; color: var(--text-primary); }
-    .highlight-debt { background: #eff6ff; border-color: #60a5fa; color: #1d4ed8; padding: 4px 10px; border-radius: 6px; font-size: 26px; }
-    .highlight-hoard { color: var(--color-marx); font-size: 24px; }
-    .highlight-circ { color: #15803d; font-size: 24px; }
+    .metric-val {
+        font-size: 14px;
+        font-weight: 700;
+        color: #1a2a3a;
+    }
+    .highlight-debt {
+        color: #1a5276;
+        font-weight: 700;
+    }
+    .highlight-hoard {
+        color: #8b4545;
+        font-weight: 700;
+    }
+    .highlight-circ {
+        color: #3d6b4f;
+        font-weight: 700;
+    }
 
-    /* Auto-Scaling Canvas */
-    .canvas-column {
-        width: 70%;
-        height: 100%;
-        position: relative;
-        background: #ffffff;
+    /* Button */
+    .action-btn {
+        padding: 8px 20px;
+        font-size: 13px;
+        font-weight: 600;
+        font-family: 'Source Sans Pro', sans-serif;
+        border: none;
+        cursor: pointer;
+        color: #fff;
+        transition: opacity 0.2s;
+    }
+    .action-btn:hover { opacity: 0.85; }
+    .say .action-btn { background: #3d6b4f; }
+    .marx .action-btn { background: #8b4545; }
+    .keynes .action-btn { background: #1a5276; }
+
+    .controls-row {
         display: flex;
         align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
-        background-size: 30px 30px;
+        gap: 16px;
+        margin-bottom: 16px;
     }
-    
+
+    /* Flow diagram */
+    .canvas-wrap {
+        position: relative;
+        width: 100%;
+        border: 1px solid #e0e0e0;
+        background: #fff;
+        overflow: hidden;
+    }
     .flow-diagram {
         position: relative;
         width: 800px;
         height: 600px;
-        flex-shrink: 0;
-        transform-origin: center center;
+        transform-origin: top left;
     }
 
-    /* Nodes Layout */
+    /* Nodes */
     .node {
         position: absolute;
         width: 180px;
         height: 75px;
-        border-radius: 12px;
-        font-weight: 800;
-        font-size: 18px;
+        font-family: 'Source Sans Pro', sans-serif;
+        font-weight: 600;
+        font-size: 16px;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
         box-sizing: border-box;
-        border: 4px solid #94a3b8;
-        background: #ffffff;
-        color: #1e293b;
+        border: 2px solid #999;
+        background: #fff;
+        color: #333;
         z-index: 10;
-        box-shadow: 0 6px 15px rgba(0,0,0,0.08);
     }
-    .node-households { top: 35px; left: 310px; border-color: #16a34a; }
-    .node-firms { bottom: 35px; left: 310px; border-color: #2563eb; }
-    
-    /* Pulled further apart to create 200px gap for "National Debt" text */
-    .node-gov { top: 262px; left: 120px; border-color: #475569; } 
-    .node-financial { top: 262px; right: 120px; border-color: #ea580c; }
-    
-    .icon { font-size: 26px; }
+    .node-households { top: 35px; left: 310px; border-color: #3d6b4f; }
+    .node-firms { bottom: 35px; left: 310px; border-color: #1a5276; }
+    .node-gov { top: 262px; left: 120px; border-color: #888; }
+    .node-financial { top: 262px; right: 120px; border-color: #b85c38; }
+    .icon { font-size: 22px; }
 
-    /* SVG Graphical Links */
+    /* SVG paths */
     .svg-lines {
-        position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        z-index: 1;
     }
     .svg-lines path {
         fill: none;
-        stroke: var(--path-idle);
-        stroke-width: 5px;
+        stroke: #999;
+        stroke-width: 3px;
         stroke-dasharray: 12, 8;
         transition: stroke 0.3s, stroke-width 0.3s;
     }
-    
     .svg-lines path.active-path {
-        stroke: var(--color-gold);
-        stroke-width: 8px;
+        stroke: #b8960b;
+        stroke-width: 5px;
         stroke-dasharray: none;
-        filter: drop-shadow(0 0 6px rgba(245,158,11,0.6));
+        filter: drop-shadow(0 0 4px rgba(184,150,11,0.5));
     }
-
     .path-text {
-        font-size: 16px;
-        font-weight: 800;
-        fill: #334155;
-        letter-spacing: 0.5px;
+        font-family: 'Source Sans Pro', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        fill: #666;
     }
 
-    /* Red Flash Alert for Economic Crisis */
+    /* Crisis flash */
     @keyframes flashCrisis {
-        0%, 100% { stroke: #dc2626; stroke-width: 10px; filter: drop-shadow(0 0 12px #dc2626); stroke-dasharray: none; }
-        50% { stroke: #e2e8f0; stroke-width: 4px; filter: none; stroke-dasharray: 12, 8; }
+        0%, 100% { stroke: #8b4545; stroke-width: 8px; stroke-dasharray: none; }
+        50% { stroke: #ddd; stroke-width: 3px; stroke-dasharray: 12, 8; }
     }
     .svg-lines path.crisis-flash {
         animation: flashCrisis 0.6s infinite !important;
     }
 
-    /* Moving Coins */
+    /* Moving coins */
     .gold-coin {
         position: absolute;
-        width: 32px; height: 32px;
-        background: radial-gradient(circle at 35% 35%, #fde047 0%, #d97706 100%);
-        border-radius: 50%; color: white;
-        font-weight: 900; font-size: 16px;
-        display: flex; align-items: center; justify-content: center;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        z-index: 20; opacity: 0;
+        width: 28px; height: 28px;
+        background: radial-gradient(circle at 35% 35%, #d4b86a 0%, #b8960b 100%);
+        border-radius: 50%;
+        color: #fff;
+        font-weight: 700;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        z-index: 20;
+        opacity: 0;
         animation: run-flow 1.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
     }
 
@@ -255,133 +246,118 @@
 </head>
 <body>
 
-<header>
-    <h1>Macroeconomic Cycles & Crises Visualizer</h1>
+<div class="container">
+    <h2>Macroeconomic Cycles & Crises</h2>
+
     <div class="nav-tabs">
         <button class="tab-btn active" data-model="say">Say's Law</button>
         <button class="tab-btn" data-model="marx">Marxian Circuit</button>
         <button class="tab-btn" data-model="keynes">Keynesian Intervention</button>
     </div>
-</header>
 
-<div class="dashboard">
     <!-- PANEL 1: SAY'S LAW -->
     <div class="panel active" id="panel-say">
-        <div class="control-column say">
-            <div>
-                <h2>Say's Law</h2>
-                <div class="instruction-box" id="text-say">Ready to simulate.</div>
-            </div>
-            <div>
+        <div class="say">
+            <div class="instruction-box" id="text-say">Ready to simulate.</div>
+            <div class="controls-row">
                 <div class="metrics">
                     <div class="metric-row"><span>Factor Market</span><span class="metric-val">100% Balanced</span></div>
                     <div class="metric-row"><span>Product Market</span><span class="metric-val">100% Cleared</span></div>
                 </div>
-                <button class="action-btn" id="btn-say" style="margin-top:20px;">Next Step</button>
+                <button class="action-btn" id="btn-say">Next Step</button>
             </div>
-        </div>
-        <div class="canvas-column">
-            <div class="flow-diagram" id="dg-say">
-                <div class="node node-households"><span class="icon">🏠</span> Households</div>
-                <div class="node node-firms"><span class="icon">🏭</span> Firms</div>
-                <svg class="svg-lines" viewBox="0 0 800 600">
-                    <defs>
-                        <marker id="arrow-idle" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 Z" fill="var(--path-idle)"/></marker>
-                        <marker id="arrow-gold" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 Z" fill="var(--color-gold)"/></marker>
-                    </defs>
-                    <path id="path-say-factor" d="M 310 525 C 50 450, 50 150, 310 75" marker-end="url(#arrow-idle)" />
-                    <path id="path-say-product" d="M 490 75 C 750 150, 750 450, 490 525" marker-end="url(#arrow-idle)" />
-                    
-                    <text class="path-text" dy="-15"><textPath href="#path-say-factor" startOffset="50%" text-anchor="middle">Factor Market (Wages)</textPath></text>
-                    <text class="path-text" dy="-15"><textPath href="#path-say-product" startOffset="50%" text-anchor="middle">Product Market (Goods)</textPath></text>
-                </svg>
+            <div class="canvas-wrap">
+                <div class="flow-diagram" id="dg-say">
+                    <div class="node node-households"><span class="icon">🏠</span> Households</div>
+                    <div class="node node-firms"><span class="icon">🏭</span> Firms</div>
+                    <svg class="svg-lines" viewBox="0 0 800 600">
+                        <defs>
+                            <marker id="arrow-idle" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 Z" fill="#999"/></marker>
+                            <marker id="arrow-gold" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 Z" fill="#b8960b"/></marker>
+                        </defs>
+                        <path id="path-say-factor" d="M 310 525 C 50 450, 50 150, 310 75" marker-end="url(#arrow-idle)" />
+                        <path id="path-say-product" d="M 490 75 C 750 150, 750 450, 490 525" marker-end="url(#arrow-idle)" />
+                        <text class="path-text" dy="-15"><textPath href="#path-say-factor" startOffset="50%" text-anchor="middle">Factor Market (Wages)</textPath></text>
+                        <text class="path-text" dy="-15"><textPath href="#path-say-product" startOffset="50%" text-anchor="middle">Product Market (Goods)</textPath></text>
+                    </svg>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- PANEL 2: MARXIAN CIRCUIT -->
     <div class="panel" id="panel-marx">
-        <div class="control-column marx">
-            <div>
-                <h2>Marxian Circuit</h2>
-                <div class="instruction-box" id="text-marx">Cycle 1 Ready.<br>Total Capital available: $18.</div>
-            </div>
-            <div>
+        <div class="marx">
+            <div class="instruction-box" id="text-marx">Cycle 1 Ready.<br>Total Capital available: $18.</div>
+            <div class="controls-row">
                 <div class="metrics">
                     <div class="metric-row"><span>Circulating Capital</span><span class="metric-val highlight-circ" id="m-marx-circ">$18</span></div>
                     <div class="metric-row"><span>Idle Capital (M')</span><span class="metric-val highlight-hoard" id="m-marx-idle">$0</span></div>
                 </div>
-                <button class="action-btn" id="btn-marx" style="margin-top:20px;">Next Step</button>
+                <button class="action-btn" id="btn-marx">Next Step</button>
             </div>
-        </div>
-        <div class="canvas-column">
-            <div class="flow-diagram" id="dg-marx">
-                <div class="node node-households"><span class="icon">🧑‍🔧</span> Labor</div>
-                <div class="node node-firms"><span class="icon">🏭</span> Firm</div>
-                <div class="node node-financial"><span class="icon">🔒</span> Idle Capital</div>
-                <svg class="svg-lines" viewBox="0 0 800 600">
-                    <path id="path-marx-factor" d="M 310 525 C 50 450, 50 150, 310 75" marker-end="url(#arrow-idle)"/>
-                    <path id="path-marx-product" d="M 490 75 C 750 150, 750 450, 490 525" marker-end="url(#arrow-idle)"/>
-                    <path id="path-marx-idle" d="M 490 525 C 520 460, 530 400, 545 337" marker-end="url(#arrow-idle)"/>
-                    
-                    <text class="path-text" dy="-15"><textPath href="#path-marx-factor" startOffset="50%" text-anchor="middle">Factor Market (Wages)</textPath></text>
-                    <text class="path-text" dy="-15"><textPath href="#path-marx-product" startOffset="50%" text-anchor="middle">Product Market (Goods)</textPath></text>
-                    <text class="path-text" dy="-15"><textPath href="#path-marx-idle" startOffset="50%" text-anchor="middle">Surplus Value</textPath></text>
-                </svg>
+            <div class="canvas-wrap">
+                <div class="flow-diagram" id="dg-marx">
+                    <div class="node node-households"><span class="icon">🧑‍🔧</span> Labor</div>
+                    <div class="node node-firms"><span class="icon">🏭</span> Firm</div>
+                    <div class="node node-financial"><span class="icon">🔒</span> Idle Capital</div>
+                    <svg class="svg-lines" viewBox="0 0 800 600">
+                        <path id="path-marx-factor" d="M 310 525 C 50 450, 50 150, 310 75" marker-end="url(#arrow-idle)"/>
+                        <path id="path-marx-product" d="M 490 75 C 750 150, 750 450, 490 525" marker-end="url(#arrow-idle)"/>
+                        <path id="path-marx-idle" d="M 490 525 C 520 460, 530 400, 545 337" marker-end="url(#arrow-idle)"/>
+                        <text class="path-text" dy="-15"><textPath href="#path-marx-factor" startOffset="50%" text-anchor="middle">Factor Market (Wages)</textPath></text>
+                        <text class="path-text" dy="-15"><textPath href="#path-marx-product" startOffset="50%" text-anchor="middle">Product Market (Goods)</textPath></text>
+                        <text class="path-text" dy="-15"><textPath href="#path-marx-idle" startOffset="50%" text-anchor="middle">Surplus Value</textPath></text>
+                    </svg>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- PANEL 3: KEYNESIAN INTERVENTION -->
     <div class="panel" id="panel-keynes">
-        <div class="control-column keynes">
-            <div>
-                <h2>Keynesian View</h2>
-                <div class="instruction-box" id="text-keynes">System Ready.</div>
-            </div>
-            <div>
+        <div class="keynes">
+            <div class="instruction-box" id="text-keynes">System Ready.</div>
+            <div class="controls-row">
                 <div class="metrics">
                     <div class="metric-row"><span>Private Savings</span><span class="metric-val" id="m-keynes-save">$0</span></div>
                     <div class="metric-row"><span>Gov Debt Balance</span><span class="metric-val highlight-debt" id="m-keynes-debt">$0</span></div>
                 </div>
-                <button class="action-btn" id="btn-keynes" style="margin-top:20px;">Next Step</button>
+                <button class="action-btn" id="btn-keynes">Next Step</button>
             </div>
-        </div>
-        <div class="canvas-column">
-            <div class="flow-diagram" id="dg-keynes">
-                <div class="node node-households"><span class="icon">🏠</span> Households</div>
-                <div class="node node-firms"><span class="icon">🏭</span> Firms</div>
-                <div class="node node-gov"><span class="icon">🏛️</span> Government</div>
-                <div class="node node-financial"><span class="icon">🏦</span> Banks</div>
-                <svg class="svg-lines" viewBox="0 0 800 600">
-                    <path id="path-keynes-factor" d="M 310 525 C 50 450, 50 150, 310 75" marker-end="url(#arrow-idle)"/>
-                    <path id="path-keynes-product" d="M 490 75 C 750 150, 750 450, 490 525" marker-end="url(#arrow-idle)"/>
-                    
-                    <!-- Modified Keynesian paths matching wider layout -->
-                    <path id="path-keynes-leak" d="M 490 75 C 540 120, 590 180, 590 262" marker-end="url(#arrow-idle)"/>
-                    <path id="path-keynes-borrow" d="M 500 300 L 300 300" marker-end="url(#arrow-idle)"/>
-                    <path id="path-keynes-inject" d="M 210 337 C 210 420, 250 480, 310 525" marker-end="url(#arrow-idle)"/>
-                    
-                    <text class="path-text" dy="-15"><textPath href="#path-keynes-factor" startOffset="50%" text-anchor="middle">Factor Market (Wages)</textPath></text>
-                    <text class="path-text" dy="-15"><textPath href="#path-keynes-product" startOffset="50%" text-anchor="middle">Product Market (Goods)</textPath></text>
-                    <text class="path-text" dy="-15"><textPath href="#path-keynes-leak" startOffset="50%" text-anchor="middle">Saving</textPath></text>
-                    
-                    <!-- Hardcoded XY alignment to guarantee text is perfectly upright and centered in the gap -->
-                    <text class="path-text" x="400" y="290" text-anchor="middle">National Debt</text>
-                    
-                    <text class="path-text" dy="-15"><textPath href="#path-keynes-inject" startOffset="50%" text-anchor="middle">Gov Spending</textPath></text>
-                </svg>
+            <div class="canvas-wrap">
+                <div class="flow-diagram" id="dg-keynes">
+                    <div class="node node-households"><span class="icon">🏠</span> Households</div>
+                    <div class="node node-firms"><span class="icon">🏭</span> Firms</div>
+                    <div class="node node-gov"><span class="icon">🏛️</span> Government</div>
+                    <div class="node node-financial"><span class="icon">🏦</span> Banks</div>
+                    <svg class="svg-lines" viewBox="0 0 800 600">
+                        <path id="path-keynes-factor" d="M 310 525 C 50 450, 50 150, 310 75" marker-end="url(#arrow-idle)"/>
+                        <path id="path-keynes-product" d="M 490 75 C 750 150, 750 450, 490 525" marker-end="url(#arrow-idle)"/>
+                        <path id="path-keynes-leak" d="M 490 75 C 540 120, 590 180, 590 262" marker-end="url(#arrow-idle)"/>
+                        <path id="path-keynes-borrow" d="M 500 300 L 300 300" marker-end="url(#arrow-idle)"/>
+                        <path id="path-keynes-inject" d="M 210 337 C 210 420, 250 480, 310 525" marker-end="url(#arrow-idle)"/>
+                        <text class="path-text" dy="-15"><textPath href="#path-keynes-factor" startOffset="50%" text-anchor="middle">Factor Market (Wages)</textPath></text>
+                        <text class="path-text" dy="-15"><textPath href="#path-keynes-product" startOffset="50%" text-anchor="middle">Product Market (Goods)</textPath></text>
+                        <text class="path-text" dy="-15"><textPath href="#path-keynes-leak" startOffset="50%" text-anchor="middle">Saving</textPath></text>
+                        <text class="path-text" x="400" y="290" text-anchor="middle">National Debt</text>
+                        <text class="path-text" dy="-15"><textPath href="#path-keynes-inject" startOffset="50%" text-anchor="middle">Gov Spending</textPath></text>
+                    </svg>
+                </div>
             </div>
         </div>
     </div>
+
+    <div class="source">Illustrative models — Say's Law, Marxian reproduction circuit, Keynesian leakages &amp; injections.</div>
 </div>
 
 <script>
     function respondResize() {
         document.querySelectorAll('.panel.active .flow-diagram').forEach(el => {
             const container = el.parentElement;
-            const scale = Math.min(container.clientWidth / 830, container.clientHeight / 630);
+            const scale = Math.min(container.clientWidth / 800, 1);
             el.style.transform = `scale(${scale})`;
+            container.style.height = (600 * scale) + 'px';
         });
     }
     window.addEventListener('resize', respondResize);
@@ -394,7 +370,7 @@
             const model = btn.getAttribute('data-model');
             document.getElementById(`panel-${model}`).classList.add('active');
             resetStateMachines();
-            setTimeout(respondResize, 30); 
+            setTimeout(respondResize, 30);
         });
     });
 
@@ -411,11 +387,11 @@
         const targetContainer = document.getElementById(containerId);
         const targetPath = document.getElementById(pathId);
         const dAttribute = targetPath.getAttribute('d');
-        
+
         targetPath.classList.add('active-path');
         targetPath.setAttribute('marker-end', 'url(#arrow-gold)');
 
-        for(let i=0; i<count; i++) {
+        for (let i = 0; i < count; i++) {
             const coin = document.createElement('div');
             coin.className = 'gold-coin';
             coin.textContent = '$';
@@ -429,18 +405,18 @@
 
     function resetStateMachines() {
         clearVisuals();
-        
+
         sayStep = 0;
         document.getElementById('text-say').innerHTML = "Ready to simulate.";
         document.getElementById('btn-say').textContent = "Next Step";
-        
+
         marxStep = 0; marxCirc = 18; marxIdle = 0;
         document.getElementById('m-marx-circ').textContent = "$18";
-        document.getElementById('m-marx-circ').style.color = "#15803d";
+        document.getElementById('m-marx-circ').style.color = "#3d6b4f";
         document.getElementById('m-marx-idle').textContent = "$0";
         document.getElementById('text-marx').innerHTML = "Cycle 1 Ready.<br>Total Capital available: $18.";
         document.getElementById('btn-marx').textContent = "Next Step";
-        
+
         keynesStep = 0;
         document.getElementById('m-keynes-save').textContent = "$0";
         document.getElementById('m-keynes-debt').textContent = "$0";
@@ -451,7 +427,7 @@
     // SAY'S LAW
     document.getElementById('btn-say').addEventListener('click', () => {
         clearVisuals();
-        switch(sayStep) {
+        switch (sayStep) {
             case 0:
                 document.getElementById('text-say').innerHTML = "<strong>Step 1: Factor Market</strong><br>Wages flow to Households.";
                 emitParticles('dg-say', 'path-say-factor', 6);
@@ -477,22 +453,22 @@
         if (marxStep === 9) { resetStateMachines(); return; }
 
         const cycleNum = Math.floor(marxStep / 3) + 1;
-        const phase = marxStep % 3; 
+        const phase = marxStep % 3;
 
         if (phase === 0) {
             document.getElementById('text-marx').innerHTML = `<strong>Cycle ${cycleNum} - Phase A: Wages</strong><br>Firms pay $${marxCirc} to purchase Labor.`;
-            emitParticles('dg-marx', 'path-marx-factor', Math.max(3, marxCirc/2));
+            emitParticles('dg-marx', 'path-marx-factor', Math.max(3, marxCirc / 2));
         } else if (phase === 1) {
             document.getElementById('text-marx').innerHTML = `<strong>Cycle ${cycleNum} - Phase B: Consumption</strong><br>Labor spends all wages back into goods.`;
-            emitParticles('dg-marx', 'path-marx-product', Math.max(3, marxCirc/2));
+            emitParticles('dg-marx', 'path-marx-product', Math.max(3, marxCirc / 2));
         } else if (phase === 2) {
             marxCirc -= 6; marxIdle += 6;
             document.getElementById('m-marx-circ').textContent = `$${marxCirc}`;
             document.getElementById('m-marx-idle').textContent = `$${marxIdle}`;
-            
+
             if (marxCirc <= 0) {
-                document.getElementById('text-marx').innerHTML = `<strong style='color:#dc2626; font-size:24px;'>CRISIS: RUN OUT OF CAPITAL!</strong><br><br>Cycle 3 depleted. Purchasing power destroyed. System collapses.`;
-                document.getElementById('m-marx-circ').style.color = '#dc2626';
+                document.getElementById('text-marx').innerHTML = `<strong style='color:#8b4545; font-size:18px;'>CRISIS: RUN OUT OF CAPITAL!</strong><br><br>Cycle 3 depleted. Purchasing power destroyed. System collapses.`;
+                document.getElementById('m-marx-circ').style.color = '#8b4545';
                 document.getElementById('path-marx-factor').classList.add('crisis-flash');
                 document.getElementById('path-marx-product').classList.add('crisis-flash');
                 emitParticles('dg-marx', 'path-marx-idle', 4);
@@ -506,10 +482,10 @@
         marxStep++;
     });
 
-    // KEYNESIAN INTERVENTION - NEW 6 STEP LOGIC
+    // KEYNESIAN INTERVENTION
     document.getElementById('btn-keynes').addEventListener('click', () => {
         clearVisuals();
-        switch(keynesStep) {
+        switch (keynesStep) {
             case 0:
                 document.getElementById('text-keynes').innerHTML = "<strong>Step 1: Normal Flow</strong><br>Economy moves smoothly. Income equals expenditure.";
                 emitParticles('dg-keynes', 'path-keynes-factor', 4);
@@ -523,8 +499,7 @@
                 keynesStep = 2;
                 break;
             case 2:
-                document.getElementById('text-keynes').innerHTML = "<strong style='color:#dc2626; font-size:24px;'>Step 3: Underconsumption Crisis!</strong><br><br>Demand collapses due to hoarding. Production halts and the economy stagnates.";
-                // Flash main paths red to indicate crisis
+                document.getElementById('text-keynes').innerHTML = "<strong style='color:#8b4545; font-size:18px;'>Step 3: Underconsumption Crisis!</strong><br><br>Demand collapses due to hoarding. Production halts and the economy stagnates.";
                 document.getElementById('path-keynes-factor').classList.add('crisis-flash');
                 document.getElementById('path-keynes-product').classList.add('crisis-flash');
                 keynesStep = 3;
@@ -545,7 +520,7 @@
                 document.getElementById('text-keynes').innerHTML = "<strong>Step 6: Debt-Backed Recovery</strong><br>Cycle restored, sustained entirely by the new sovereign debt liabilities.";
                 emitParticles('dg-keynes', 'path-keynes-factor', 5);
                 setTimeout(() => emitParticles('dg-keynes', 'path-keynes-product', 5), 500);
-                document.getElementById('btn-keynes').textContent = "Restart Simulation";
+                document.getElementById('btn-keynes').textContent = "Restart";
                 keynesStep = 6;
                 break;
             case 6:
