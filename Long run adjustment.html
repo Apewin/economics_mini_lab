@@ -35,7 +35,7 @@
 
         .chart-box {
             width: 100%;
-            height: 350px;
+            height: 380px;
             margin: 12px 0;
         }
 
@@ -385,7 +385,7 @@
     function axisLabels(xText, yText) {
         return [
             {
-                type: 'text', left: 'center', bottom: 4,
+                type: 'text', left: 'center', bottom: 12,
                 style: { text: xText, fill: '#555', font: '600 12px "Source Sans Pro", sans-serif' }
             },
             {
@@ -522,21 +522,15 @@
 
         mktChart.setOption({
             animation: false,
-            grid: { left: 60, right: 40, top: 40, bottom: 50 },
+            grid: { left: 60, right: 40, top: 40, bottom: 70 },
             xAxis: {
                 type: 'value', min: 0, max: 220,
-                name: 'Industry Quantity (Q)',
-                nameLocation: 'middle', nameGap: 30,
-                nameTextStyle: { fontSize: 12, fontWeight: 600, fontFamily: 'Source Sans Pro', color: '#555' },
                 axisLine: { lineStyle: { color: '#999' } },
                 splitLine: { lineStyle: { color: C.gridLine } },
                 axisLabel: { fontSize: 10, color: '#666' }
             },
             yAxis: {
                 type: 'value', min: 0, max: 50,
-                name: 'Price (P)',
-                nameLocation: 'middle', nameGap: 40,
-                nameTextStyle: { fontSize: 12, fontWeight: 600, fontFamily: 'Source Sans Pro', color: '#555' },
                 axisLine: { lineStyle: { color: '#999' } },
                 splitLine: { lineStyle: { color: C.gridLine } },
                 axisLabel: { fontSize: 10, color: '#666', formatter: '${value}' }
@@ -601,18 +595,12 @@
             grid: { left: 60, right: 40, top: 40, bottom: 50 },
             xAxis: {
                 type: 'value', min: 0, max: 16,
-                name: 'Firm Output (q)',
-                nameLocation: 'middle', nameGap: 30,
-                nameTextStyle: { fontSize: 12, fontWeight: 600, fontFamily: 'Source Sans Pro', color: '#555' },
                 axisLine: { lineStyle: { color: '#999' } },
                 splitLine: { lineStyle: { color: C.gridLine } },
                 axisLabel: { fontSize: 10, color: '#666' }
             },
             yAxis: {
                 type: 'value', min: 0, max: 50,
-                name: 'Price & Cost ($)',
-                nameLocation: 'middle', nameGap: 40,
-                nameTextStyle: { fontSize: 12, fontWeight: 600, fontFamily: 'Source Sans Pro', color: '#555' },
                 axisLine: { lineStyle: { color: '#999' } },
                 splitLine: { lineStyle: { color: C.gridLine } },
                 axisLabel: { fontSize: 10, color: '#666', formatter: '${value}' }
